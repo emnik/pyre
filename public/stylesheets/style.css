@@ -1,0 +1,52 @@
+@import url(http://fonts.googleapis.com/css?family=Ubuntu:400,500,700&subset=latin,greek);
+
+html {
+	height:100%;
+}
+body {
+  font: 14px "Ubuntu", sans-serif;
+  background-color: #1B1B21;
+  margin: 0px 0px 0px 0px;
+  height:100%;
+}
+
+header{
+	margin: 0px;
+	padding: 0px;
+}
+
+a {
+  color: #00B7FF;
+}
+
+h1, p {
+	padding-left: 20px; 
+}
+
+h1>small {
+	color: #333;
+}
+
+#wrapper {
+	min-height:100%;
+	position:relative;
+}
+
+#footer {
+	width:100%;
+	height:40px;
+	position:absolute;
+	bottom:0px;
+	left:0px;
+	color:#F6F4EC;
+}
+
+#footer > .row {
+	margin-right: 0px;
+	margin-left: 0px;
+}
+
+.row {
+	margin-right: 0px;
+	margin-left: 0px;
+}

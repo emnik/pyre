@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	<% include ./partials/head %>
+	<link rel="stylesheet" href="/stylesheets/bootstrap-switch.min.css" />
+	</head>
+
+<body>
+	<header>
+		<% include ./partials/header %>
+	</header>
+
+	<div id="myModal" class="modal fade">
+	  <div class="modal-dialog">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h4 class="modal-title">Change profile</h4>
+	      </div>
+	      <div class="modal-body">
+	        <p>Are you sure you want to change the working profile?</p>
+	      </div>
+	      <div class="modal-footer">
+	        <button name="cancelbtn" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+	        <button name="okbtn" type="button" class="btn btn-primary">Yes</button>
+	      </div>
+	    </div><!-- /.modal-content -->
+	  </div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
+
+
+	<div id="errModal" class="modal fade">
+	  <div class="modal-dialog">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h4 class="modal-title">Overlap Error</h4>
+	      </div>
+	      <div class="modal-body">
+	        <p>There is an overlap in time windows for the current time. Please edit the profile to fix it.<br/>
+	        Until then the status is set to <strong>Paused</strong>.</p>
+	      </div>
+	      <div class="modal-footer">
+	        <button name="okerr" type="button" class="btn btn-primary">OK</button>
+	      </div>
+	    </div><!-- /.modal-content -->
+	  </div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
+
+
+
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-xs-10 col-md-7">
+				<form id="mainform" method="post" action="/therm">
+					<select class="form-control" name="selected_profile">
+					<% profiles.forEach(function(item){ %>
+					  <option value="<%=item.id%>"
+					  <%if (item.status==1){ %> selected="selected" <% } %>>
+					  	<%= item.name %>
+					  </option>
+					 <%});%>
+					</select>
+				</form>
+			</div>
+			<div class="col-xs-2 col-md-5">
+				<button type="button" class="btn btn-primary pull-right" onclick="window.location='./edit/'">
+					<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+				</button>
+			</div>
+		</div>
+
+
+		<div class="row"  style="padding-top:0px;"> <!-- I had padding-top:10px for 320x280 -->
+    		<div id="temp" class="col-xs-8 col-md-7" style="color:#F6F4EC;">
+    			<h4 style="margin-bottom:5px;"><strong>Cur. Temp</strong></h4>
+    			<p style="padding-left:0px;">
+    				<span style="font-size:30px;">
+						<strong>
+							...
+						</strong>&deg;C</h1>
+    				</span>
+    			</p>
+    		</div>
+    		<div id="status" class="col-xs-4 col-md-5 text-right" style="color:#F6F4EC;">
+    			<h4 style="margin-bottom:5px;"><strong>Status:</strong></h4>
+    			<p style="font-size:20px;padding-left:0px;"><strong>...</strong></p> <!-- status can be either: Working / Paused / Overlap-->
+    		</div>
+		</div>
+	</div>
+
+
+	<div class="row" style="color:#F6F4EC; margin-top:0px;">
+		<div class="col-xs-12">
+			<p class="text-left" style="padding-left:15px;">Sensors: <strong>
+			<%var arr = Object.keys(sensor_location).map(function(k) { return sensor_location[k].location });%>
+			<%=arr.join(' / ');%>
+			</strong></p>
+			<p class="text-left" style="padding-left:15px;">Target Temp: <strong><% if (state.err==="") {%><%=time_window_data[0].temp%><% } else {%> - <%}%> &deg C </strong></p>
+		</div>
+	</div>
+</body>
+
+<% include ./partials/javascript.ejs %>
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+	var prevstate = "";
+	var curstate = ""; // so we know when the state changes and call the setRelay function
+	var curdate = new Date();
+	var curday = curdate.getDay();
+
+	$( document ).ready(function() {
+
+		var socket = io.connect();
+		socket.on('temperatures', function(data){
+			console.log(data);
+			if(Object.keys(data).length>0){
+				$('#temp>p>span>strong').text(data.mean_sensor_<%=sensors%>);
+				manage(data.mean_sensor_<%=sensors%>);
+			}
+		});
+
+		// $('#myModal').on('shown.bs.modal', function () {
+		//   $("[name='cancelbtn']").focus();
+		// });
+
+		var selected_profile;
+		$('select').on('focus', function(){
+			selected_profile = this.value;
+		}).change(function(){
+			$('#myModal').modal('show');
+		});
+
+		$("[name='okbtn']").click(function(){
+			console.log("user confirms to change profile");
+			$('#myModal').modal('hide');
+			$('form#mainform').submit();
+		});
+
+		$("[name='okerr']").click(function(){
+			$('#errModal').modal('hide');
+		});
+
+		$("[name='cancelbtn']").click(function(){
+			$('select').val(selected_profile);
+			console.log("the profile change has been canceled");
+		});
+
+
+		if (<%=(state.err==="Overlap")%>) //true if there is an overlap
+		{
+			$("#status>p>strong").text("Overlap");
+			$("#status>p>strong").css({"color":"#BB3D3D", "font-size":"100%"});
+			$('#errModal').modal('show');
+			curstate = "Paused";
+			setRelay();
+		}
+		else if (<%=(state.err==="No_time_window")%>) //true if not in a time window
+		{
+			$("#status>p>strong").text("Paused");
+			$("#status>p>strong").css({"color":"#666666", "font-size":"100%"});
+			curstate = "Paused";
+			setRelay();
+		}
+		else //no error -we are in a time window...
+		{
+			$("#status>p>strong").css({"color":"#F6F4EC", "font-size":"80%"});
+			$("#status>p>strong").text("Waiting data...");
+			curstate = "";
+		}
+
+	}); //end of $(document).ready
+
+	function getCurTime(){
+		var d = new Date();
+		var n = d.getDay();
+		var h = d.getHours();
+		var m = d.getMinutes();
+		if (h<10) h="0"+h;
+		if (m<10) m="0"+m;
+		var curtime = h+":"+m;
+		return {time:curtime, day:n};
+	}
+
+	function setRelay(){
+		if (curstate != prevstate){
+			$.ajax({
+				type: "POST",
+				contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
+				url: "../relay/actions",
+				data: JSON.stringify({status:curstate}),
+				/*JavaScript Object Notation is a way to share data between applications in object format.
+				However, you cannot send an object over an HTTP request without first turning it into a string
+				and sending it as a single variable. The functions JSON.parse() and JSON.stringify() do this for us.*/
+				success: function(rdata) { //rdata = remote data that the server sends as feedback...
+					console.log(rdata.result);
+					if (rdata.result==="ok"){
+						prevstate = curstate;
+					}
+				},
+				dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
+			});
+		}
+
+	}
+
+	function manage(curTemp){
+		var cur = getCurTime();
+		if (<%=(state.err==="")%>) //true if there is no error so we are in a time window...
+		{
+			if (cur.time >= '<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].on_time%><%};%>' && cur.time < '<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].off_time%><%};%>') {
+				if (curTemp < '<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].temp%><%};%>'){
+					//the status is: working
+					$("#status>p>strong").text("Working");
+					$("#status>p>strong").css({"color":"#F6F4EC", "font-size":"100%"});
+					curstate = "Working";
+					console.log(curstate);
+					setRelay();
+				}
+				else {
+					//the status is: paused
+					$("#status>p>strong").text("Paused");
+					$("#status>p>strong").css({"color":"#666666", "font-size":"100%"});
+					curstate = "Paused";
+					console.log(curstate);
+					setRelay();
+				}
+			}
+			else {
+				//we just went off the timw window so we refresh to get new data
+				//console.log('refresh');
+				location.reload();
+			}
+		}
+		else if (<%=(state.err==="No_time_window")%>) //true if we are not in a time window...
+		{
+			console.log("Not in a time window...");
+			if (<%=(Object.keys(time_window_next).length!==0)%>) //true if there is a following time window...
+			{
+				console.log("There is a following time window. Waiting...");
+				//when we get in this following time window we refresh to update our data...
+				if (cur.time >= '<%if (Object.keys(time_window_next).length!==0)%><%=time_window_next.on_time%>' && cur.time < '<%if (Object.keys(time_window_next).length!==0)%><%=time_window_next.off_time%>') {
+				location.reload();
+				//console.log('refresh on new time window!!!');
+				}
+				console.log("Or maybe the next day comes first!");
+				// console.log(cur.day, curday);
+				if (cur.day > curday)
+				{
+					//console.log("refresh on new day!!!");
+					location.reload();
+				}
+			}
+			else //there is not a time window neither a following one so we refresh for new data on the next day!!!
+			{
+				console.log("There isn't a time window following. Will refresh on next day! Waiting...");
+				if (cur.day > curday)
+				{
+					//console.log("refresh on new day!!!");
+					location.reload();
+				}
+			}
+		}
+		else //there is an Overlap!!!
+		{
+			console.log("Do nothing - wait for the user to fix the overlap!!!");
+		}
+	}
+
+</script>
