@@ -134,5 +134,5 @@ io.sockets.on('connection', function(socket){
         socket.emit('temperatures', temperature.result);
         // app.locals.startTemp = temperature.result; //holds the last values.
       }
-    }, 8000); //we want data every 8 seconds
+    }, 60000); //we want data every 1 min
 });

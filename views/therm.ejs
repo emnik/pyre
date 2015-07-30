@@ -51,7 +51,7 @@
 		<div class="row">
 			<div class="col-xs-10 col-md-7">
 				<form id="mainform" method="post" action="/therm">
-					<select class="form-control" name="selected_profile">
+					<select id="profiles" class="form-control" name="selected_profile">
 					<% profiles.forEach(function(item){ %>
 					  <option value="<%=item.id%>"
 					  <%if (item.status==1){ %> selected="selected" <% } %>>
@@ -110,6 +110,12 @@
 
 	$( document ).ready(function() {
 
+		if (<%=tempdata!=={}%>) //true if we have initial temperature data...
+		{
+			$('#temp>p>span>strong').text(<%=tempdata%>);
+			manage(<%=tempdata%>);			
+		}
+
 		var socket = io.connect();
 		socket.on('temperatures', function(data){
 			console.log(data);
@@ -124,7 +130,7 @@
 		// });
 
 		var selected_profile;
-		$('select').on('focus', function(){
+		$('#profiles').on('focus', function(){
 			selected_profile = this.value;
 		}).change(function(){
 			$('#myModal').modal('show');
@@ -141,7 +147,7 @@
 		});
 
 		$("[name='cancelbtn']").click(function(){
-			$('select').val(selected_profile);
+			$('#profiles').val(selected_profile);
 			console.log("the profile change has been canceled");
 		});
 
@@ -161,7 +167,7 @@
 			curstate = "Paused";
 			setRelay();
 		}
-		else //no error -we are in a time window...
+		else if (<%=tempdata==={}%>) //no error -we are in a time window... but no initial time data
 		{
 			$("#status>p>strong").css({"color":"#F6F4EC", "font-size":"80%"});
 			$("#status>p>strong").text("Waiting data...");

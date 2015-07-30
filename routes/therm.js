@@ -1,7 +1,9 @@
 var express = require('express');
 var router = express.Router();
 
+var temperature = require("../my_modules/temperature");
 var sqlite3 = require('sqlite3').verbose();
+var db = new sqlite3.Database('./sensor-data.sqlite');
 // var ds1820 = require('../my_modules/ds1820');
 
 
@@ -12,7 +14,7 @@ var sqlite3 = require('sqlite3').verbose();
 */
 // router.post('/profile', function(req, res, next){
 //   var selected_profile = req.body.selected_profile;
-//   // console.log("selected_profile= " + selected_profile);
+//   console.log("selected_profile= " + selected_profile);
 //   var db = new sqlite3.Database('./sensor-data.sqlite');
 //   db.serialize(function(){
 //     db.run("UPDATE profile SET status=0");
@@ -21,66 +23,47 @@ var sqlite3 = require('sqlite3').verbose();
 //   db.close();
 //   res.redirect('/therm');
 // })
+
 function update_profile (req, res, next){
-  // console.log("the method used is:"+ req.method);
+  console.log("the method used is:"+ req.method);
   if (req.method=='POST'){
     var selected_profile = req.body.selected_profile;
-    // console.log("selected_profile= " + selected_profile);
-    var db = new sqlite3.Database('./sensor-data.sqlite');
+    console.log("selected_profile= " + selected_profile);
+    // var db = new sqlite3.Database('./sensor-data.sqlite');
     db.serialize(function(){
       db.run("UPDATE profile SET status=0");
       db.run("UPDATE profile SET status=1 WHERE id=?",selected_profile);
-      db.close();
+      // db.close();
+      next();
     });
-    next();
+
+    }
+    else
+    {
+       next();
+    }
   }
-  else {
-    next();
-  }
-
-}
 
 
-/*
-* I used the following function when I was sending the select box data (selected_profile) with a GET method
-* from the view (to /therm). The only problem with sending the data this way was that it was shown in the
-* location bar and that caused the location bar to be visible when I access the web page e.g from a mobile
-* phone and I didn't want that! So I change it to a post function :-)
-*/
-    // function set_profile(req, res, next){
-      // if (req.query.selected_profile>0){
-      //   var db = new sqlite3.Database('./sensor-data.sqlite');
-      //   db.serialize(function(){
-      //     db.run("UPDATE profile SET status=0");
-      //     db.run("UPDATE profile SET status=1 WHERE id=?",req.query.selected_profile);
-      //     db.close();
-      //     next();
-      //   })
-      // }
-      // else
-      // {
-      //   next();
-      // }
-    // }
 
 
     function get_profiles(req,res,next){
-      var db = new sqlite3.Database('./sensor-data.sqlite');
+      // var db = new sqlite3.Database('./sensor-data.sqlite');
         db.all("SELECT * FROM profile", function(err, rows){
           if (err){
             console.log("From get_profiles:");
             console.log(err);
           }
           req.profiles = rows;
-          // console.log(rows);
-          db.close();
+          console.log(rows);
+          // db.close();
           next();
       })
     }
 
 
     function get_time_window_data(req, res, next){
-       var db = new sqlite3.Database('./sensor-data.sqlite');
+       // var db = new sqlite3.Database('./sensor-data.sqlite');
        //get current daynum: 0=Sunday,... 6=Saturday
        var d = new Date();
        var n = d.getDay();
@@ -169,7 +152,7 @@ function update_profile (req, res, next){
           }
           next(); //next should be called once!
         })
-      db.close();
+      // db.close();
     };
 
     function compare(a,b) {
@@ -195,7 +178,7 @@ function update_profile (req, res, next){
     }
 
     function get_sensors(req, res, next){
-      var db = new sqlite3.Database('./sensor-data.sqlite');
+      // var db = new sqlite3.Database('./sensor-data.sqlite');
            if (req.state.err===""){
                var sensors_arr=req.time_window_data[0].sensor_ids.split(',');
                var sensors = sensors_arr.map(function(p){ return '"' + p + '"'; }).join(',');
@@ -210,23 +193,46 @@ function update_profile (req, res, next){
            db.all("SELECT location FROM sensors WHERE id IN ("+sensors+")", function(err,rows){
               req.locations = rows;
               // console.log(rows);
-              db.close();
+              // db.close();
               next();
            })
     }
 
-    function render_therm(req,res){
-      res.render('therm', {profiles: req.profiles, sensors: req.sensors, sensor_location:req.locations, time_window_data: req.time_window_data, state:req.state, time_window_next:req.time_window_next});
+    function get_therm_data(req, res, next){
+      /* Get the initial temperature data for the view*/
+      temperature.get_temp_data(240);
+      console.log(temperature.result);
+      if (temperature.result.mean_sensor_1!=0)
+      {
+        switch (req.sensors) {
+          case '1':
+            req.tempdata = temperature.result.mean_sensor_1;
+            break;
+          case '2':
+            req.tempdata = temperature.result.mean_sensor_2;
+            break;
+          case 'all':
+            req.tempdata = temperature.result.mean_sensor_all;
+            break;  
+          default:
+            req.tempdata = {};
+        }
+      // console.log(req.tempdata);
+      }
+      next();
     }
+
+    function render_therm(req,res){
+      res.render('therm', {tempdata: req.tempdata, profiles: req.profiles, sensors: req.sensors, sensor_location:req.locations, time_window_data: req.time_window_data, state:req.state, time_window_next:req.time_window_next});
+      }
 
 
 
     // When I used the GET method to send the select box data to /therm I had as a first callback function
     // in the following line the set_profile function
     // *I use router.use (instead of router.get()) to catch both GET and POST requests
-    router.use('/', update_profile, get_profiles, get_time_window_data, set_status, get_sensors, render_therm);
-
-
+    router.use('/', update_profile, get_profiles,get_time_window_data, set_status, get_sensors, get_therm_data,  render_therm);
+   
 
     //GET therm page with one sqlite query
     //router.get('/therm', function(req, res) {

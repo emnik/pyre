@@ -6,7 +6,7 @@ var sqlite3 = require('sqlite3').verbose();
 function readRemoteTemp(callback)
 {
   var xbeeAPI = new xbee_api.XBeeAPI({
-    api_mode: 1, //ATAP1
+    api_mode: 2, //ATAP2
     module: "802.15.4",
     raw_frames: false
   });
@@ -24,6 +24,7 @@ function readRemoteTemp(callback)
     {
       var buf = new Buffer(4);
       buf = frame.data;
+      //console.log(buf);
       //var buf = frame.data;
       var value = buf.readFloatLE(0);
       //console.log(value);
