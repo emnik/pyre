@@ -13,5 +13,5 @@
 * A 4 Digit LED Tube module 
 * Some Resistors and many cables 
 
-*The Software* 
+**The Software:** 
 It is a responsive web app that is coded in javascript using the NODE.JS, EJS, Bootstrap frameworks
