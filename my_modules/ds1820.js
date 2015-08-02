@@ -3,7 +3,7 @@
   var sys = require('sys');
   var sqlite3 = require('sqlite3').verbose();
   var ds18b20 = require('ds18b20');
-
+  var db = new sqlite3.Database('./sensor-data.sqlite');
 
   // Setup up database CRUD and temperature data access
 
@@ -11,7 +11,7 @@
 
   // Write a single temperature record in JSON format to database table.
   function insertLocalTemp(data){
-     var db = new sqlite3.Database('./sensor-data.sqlite');
+     //var db = new sqlite3.Database('./sensor-data.sqlite');
      // data is a javascript object
      var statement = db.prepare("INSERT INTO sensor_data (timestamp, sensor_id, value) VALUES (?, 1, ?)");
      // Insert values into prepared statement
@@ -23,7 +23,7 @@
      });
      // Execute the statement
      statement.finalize();
-     db.close();
+     //db.close();
   }
 
 

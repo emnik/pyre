@@ -4,11 +4,13 @@
 */
 
 var sqlite3 = require('sqlite3').verbose();
+var db = new sqlite3.Database('./sensor-data.sqlite');
+db.configure("busyTimeout", 2000);
 var result = {};
 
 function get_temp_data(duration) {
-  var db = new sqlite3.Database('./sensor-data.sqlite');
-  db.configure("busyTimeout", 2000);
+  // var db = new sqlite3.Database('./sensor-data.sqlite');
+  // db.configure("busyTimeout", 2000);
   var mean_sensor_1, mean_sensor_2;
   var add_sensor_1 = 0;
   var add_sensor_2 = 0;
@@ -57,7 +59,7 @@ function get_temp_data(duration) {
     //console.log(result);
 
   });
-  db.close();
+  //db.close();
 }
 
 module.exports.get_temp_data =  get_temp_data;

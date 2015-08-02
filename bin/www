@@ -97,8 +97,25 @@ function onListening() {
   var msecs = (60 * 0.5) * 1000; // log interval duration in milliseconds - Now is set in 30000msec = 30sec = 1/2 min
   ds1820.logLocalTemp(msecs);
   // Start Remote temperature logging
-  ds1820_xbee.logRemoteTemp(); //the interval is defined by the sender XBee! When we get a value we store it!
+  
+  var d = require('domain').create();
 
+  d.on('error', function(err){
+      // handle the error safely
+      console.log('error caugth in domain...');
+      console.log(err);
+      ds1820_xbee.logRemoteTemp();
+  });
+
+
+  d.run(function(){
+    process.nextTick(function(){
+      ds1820_xbee.logRemoteTemp(); //the interval is defined by the sender XBee! When we get a value we store it!    
+    })
+  });
+
+
+  
   // Send a message to console
   console.log('Server up and running!');
 }
