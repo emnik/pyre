@@ -24,7 +24,7 @@ function readRemoteTemp(callback)
     {
       var buf = frame.data;
       var value = buf.readFloatLE(0);
-      //console.log(value);
+      console.log(value);
       var data = {
         temperature_record:[{
         unix_time: Date.now(),
