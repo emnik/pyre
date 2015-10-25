@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	<% include ../partials/head %>
+	</head>
+
+<body>
+	<header>
+		<% include ../partials/header_edits %>
+		<link rel="stylesheet" href="/stylesheets/select2.css" />
+	</header>
+
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-xs-12 col-md-6 col-lg-6">
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<h5>Set DAY target temp and sensors</h5>
+					</div>
+					<div class="panel-body">
+						<div class="input-group">
+							<input id="setDayTargetTemp" type="text" value=<%=dayTemp.temp%> name="setDayTargetTemp">
+						</div>
+						<div style="padding-top:15px;">
+							<select id="daysensors" class="form-control" style="width:100%;" name="daysensors" multiple="multiple">
+							<optgroup label="Sensor location:">
+								<% sensors.forEach(function(item){ %>
+								  <option value="<%=item.id%>"
+								  <%var arr = dayTemp.sensor_ids.split(',');
+								  for (var i=0; i<arr.length; i++){
+								  	if (item.id==arr[i]) {%> selected="selected" <%}
+								  }%>><%= item.location %>
+								  </option>
+								 <%});%>
+							 </select>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-xs-12 col-md-6 col-lg-6">
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<h5>Set NIGHT target temp and sensors</h5>
+					</div>
+					<div class="panel-body">
+						<div class="input-group">
+							<input id="setNightTargetTemp" type="text" value=<%=nightTemp.temp%> name="setNightTargetTemp">
+						</div>
+						<div style="padding-top:15px;">
+							<select id="nightsensors" class="form-control" style="width:100%;" name="nightsensors" multiple="multiple">
+								<optgroup label="Sensor location:">
+								<% sensors.forEach(function(item){ %>
+								  <option value="<%=item.id%>"
+								  <%var arr = nightTemp.sensor_ids.split(',');
+								  for (var i=0; i<arr.length; i++){
+								  	if (item.id==arr[i]) {%> selected="selected" <%}
+								  }%>><%= item.location %>
+								  </option>
+								 <%});%>
+							 </select>
+						</div>						
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row" style="padding-bottom:20px;">
+			<div class="col-xs-12 col-md-12 col-lg-12">
+				<button id="resetbtn" type="button" class="btn btn-danger pull-left">Reset</button>
+				<div class="btn-group pull-right" role="group" aria-label="...">
+					<button id="setbtn" type="button" class="btn btn-success">Set</button>
+					<button id="morebtn" type="button" class="btn btn-success"><span class="glyphicon glyphicon-tasks"</span></button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</body>
+
+<% include ../partials/javascript.ejs %>
+<script src="/javascripts/bootstrap.touchspin.js"></script>
+<script src="/javascripts/select2/select2.min.js"></script>
+
+<script>
+
+	$( document ).ready(function() {
+
+		$('#resetbtn').click(function(){
+			var curDayValue = $("input[name='setDayTargetTemp']").val();
+			var curNightValue = $("input[name='setNightTargetTemp']").val();
+			$("input[name='setDayTargetTemp']").val(<%=dayTemp.temp%>);
+			$("input[name='setNightTargetTemp']").val(<%=nightTemp.temp%>);
+			if (curDayValue!=<%=dayTemp.temp%>){
+				setTemp(<%=dayTemp.temp%>, '<%=dayTemp.name%>');
+				console.log("The day target temp has been resseted to "+<%=dayTemp.temp%>+" deg C.");		
+			}
+			else
+			{
+				console.log("the Day Temperature is the same. No need for action...");
+			}
+			if (curNightValue!=<%=nightTemp.temp%>){
+				setTemp(<%=nightTemp.temp%>,'<%=nightTemp.name%>');
+				console.log("The night target temp has been resseted to "+<%=nightTemp.temp%>+" deg C.");		
+			}
+			else
+			{
+				console.log("the Night Temperature is the same. No need for action...");
+			}
+			$("#setbtn").empty();
+			$("#setbtn").append('Set');
+			
+		})
+
+		$('#setbtn').click(function(){
+			var newDaytemp = $("input[name='setDayTargetTemp']").val();
+			setTemp(newDaytemp, '<%=dayTemp.name%>');
+			console.log("the Day Temperature is updated to "+newDaytemp+ "deg C.");
+			var newNighttemp = $("input[name='setNightTargetTemp']").val();
+			setTemp(newNighttemp, '<%=nightTemp.name%>');
+			console.log("the Night Temperature is updated to "+newNighttemp+ "deg C.");
+			$("#setbtn").empty();
+			$("#setbtn").append('Set <span class="glyphicon glyphicon-ok"</span>');
+		})
+		
+		$('#daysensors').select2({
+			minimumResultsForSearch: Infinity,
+			placeholder: "Select day sensors"
+		});
+
+		$('#nightsensors').select2({
+			minimumResultsForSearch: Infinity,
+			placeholder: "Select night sensors"
+		});
+
+	}) //end of ( document ).ready(function()
+
+	function setTemp(t, name){
+		$.ajax({
+			type: "POST",
+			contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
+			url: "/edit/update_temp",
+			data: JSON.stringify({newtemp:t, name:name}),
+			/*JavaScript Object Notation is a way to share data between applications in object format.
+			However, you cannot send an object over an HTTP request without first turning it into a string
+			and sending it as a single variable. The functions JSON.parse() and JSON.stringify() do this for us.*/
+			success: function(rdata) { //rdata = remote data that the server sends as feedback...
+				console.log(rdata.result);
+				if (rdata.result==="ok"){
+					console.log("success");
+				}
+			},
+			dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
+		});
+	}
+
+	$("input[name='setDayTargetTemp']").TouchSpin({
+		min: 0, // Minimum value.
+		max: 100, // Maximum value.
+		decimals: 1,
+		boostat: 3, // Boost at every nth step.
+		maxboostedstep: 10, // Maximum step when boosted.
+		postfix: '&deg C', // Text after the input.
+		prefix: 'TEMP :', // Text before the input.
+		step: 0.1, // Incremental/decremental step on up/down change.
+		stepinterval: 100, // Refresh rate of the spinner in milliseconds.
+		stepintervaldelay: 500 // Time in milliseconds before the spinner starts to spin.
+	});
+
+	$("input[name='setNightTargetTemp']").TouchSpin({
+		min: 0, // Minimum value.
+		max: 100, // Maximum value.
+		decimals: 1,
+		boostat: 3, // Boost at every nth step.
+		maxboostedstep: 10, // Maximum step when boosted.
+		postfix: '&deg C', // Text after the input.
+		 prefix: 'TEMP :', // Text before the input.
+		step: 0.1, // Incremental/decremental step on up/down change.
+		stepinterval: 100, // Refresh rate of the spinner in milliseconds.
+		stepintervaldelay: 500 // Time in milliseconds before the spinner starts to spin.
+	});
+
+	$("input[name='setDayTargetTemp']").change(function(){
+		$("#setbtn").empty();
+		$("#setbtn").append('Set <span class="glyphicon glyphicon-transfer"</span>');
+	})
+
+	$("input[name='setNightTargetTemp']").change(function(){
+		$("#setbtn").empty();
+		$("#setbtn").append('Set <span class="glyphicon glyphicon-transfer"</span>');
+	})
+
+</script>

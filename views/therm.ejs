@@ -2,7 +2,7 @@
 <html>
 	<head>
 	<% include ./partials/head %>
-	<link rel="stylesheet" href="/stylesheets/bootstrap-switch.min.css" />
+	<link rel="stylesheet" href="/stylesheets/select2.css" />
 	</head>
 
 <body>
@@ -51,7 +51,7 @@
 		<div class="row">
 			<div class="col-xs-10 col-md-7">
 				<form id="mainform" method="post" action="/therm">
-					<select id="profiles" class="form-control" name="selected_profile">
+					<select id="profiles" style="width: 100%" class="form-control" name="selected_profile">
 					<% profiles.forEach(function(item){ %>
 					  <option value="<%=item.id%>"
 					  <%if (item.status==1){ %> selected="selected" <% } %>>
@@ -62,45 +62,53 @@
 				</form>
 			</div>
 			<div class="col-xs-2 col-md-5">
-				<button type="button" class="btn btn-primary pull-right" onclick="window.location='./edit/'">
-					<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+				<button type="button" class="btn btn-primary pull-right" onclick="editProfile()">
+					<span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
 				</button>
 			</div>
 		</div>
 
 
-		<div class="row"  style="padding-top:0px;"> <!-- I had padding-top:10px for 320x280 -->
+		<div class="row"> <!-- I had padding-top:10px for 320x280 -->
     		<div id="temp" class="col-xs-8 col-md-7" style="color:#F6F4EC;">
-    			<h4 style="margin-bottom:5px;"><strong>Cur. Temp</strong></h4>
-    			<p style="padding-left:0px;">
-    				<span style="font-size:30px;">
-						<strong>
+    			<h5><strong>Cur. Temp</strong></h5>
+    			<h3 style="margin-top:5px">
+    				<span>
 							...
-						</strong>&deg;C</h1>
-    				</span>
-    			</p>
+    				</span>&deg;C
+    			</h3>
     		</div>
     		<div id="status" class="col-xs-4 col-md-5 text-right" style="color:#F6F4EC;">
-    			<h4 style="margin-bottom:5px;"><strong>Status:</strong></h4>
-    			<p style="font-size:20px;padding-left:0px;"><strong>...</strong></p> <!-- status can be either: Working / Paused / Overlap-->
+    			<h5><strong>Status:</strong></h5>
+    			<h4><span class="label label-default">...</span></h4>
+    			<!-- <p style="font-size:20px;padding-left:0px;"><strong>...</strong></p>  -->
+    			<!-- status can be either: Working / Paused / Overlap-->
     		</div>
 		</div>
 	</div>
 
 
-	<div class="row" style="color:#F6F4EC; margin-top:0px;">
+	<div class="row" style="margin:0px; color:white;">
 		<div class="col-xs-12">
-			<p class="text-left" style="padding-left:15px;">Sensors: <strong>
-			<%var arr = Object.keys(sensor_location).map(function(k) { return sensor_location[k].location });%>
-			<%=arr.join(' / ');%>
-			</strong></p>
-			<p class="text-left" style="padding-left:15px;">Target Temp: <strong><% if (state.err==="") {%><%=time_window_data[0].temp%><% } else {%> - <%}%> &deg C </strong></p>
+			<p>Target Temp: <strong><% if (state.err==="") {%><%=time_window_data[0].temp%><% } else {%> - <%}%> &deg C </strong></p>
+			<p>Sensors:
+				<span class="label-group">
+				<%var arr = Object.keys(sensor_location).map(function(k) { return sensor_location[k].location });%>
+				<!-- <%=arr.join(' / ');%> -->
+				<% arr.forEach(function(location){%>
+					<span class="label label-default">
+						<%=location;%>
+					</span>					
+				<%})%>
+				</span>
+			</p>
 		</div>
 	</div>
 </body>
 
 <% include ./partials/javascript.ejs %>
 <script src="/socket.io/socket.io.js"></script>
+<script src="/javascripts/select2/select2.min.js"></script>"
 
 <script>
 	var prevstate = "";
@@ -112,7 +120,7 @@
 
 		if (<%=tempdata!=={}%>) //true if we have initial temperature data...
 		{
-			$('#temp>p>span>strong').text(<%=tempdata%>);
+			$('#temp>h3>span').text(<%=tempdata%>);
 			manage(<%=tempdata%>);			
 		}
 
@@ -120,7 +128,7 @@
 		socket.on('temperatures', function(data){
 			console.log(data);
 			if(Object.keys(data).length>0){
-				$('#temp>p>span>strong').text(data.mean_sensor_<%=sensors%>);
+				$('#temp>h3>span').text(data.mean_sensor_<%=sensors%>);
 				manage(data.mean_sensor_<%=sensors%>);
 			}
 		});
@@ -154,28 +162,56 @@
 
 		if (<%=(state.err==="Overlap")%>) //true if there is an overlap
 		{
-			$("#status>p>strong").text("Overlap");
-			$("#status>p>strong").css({"color":"#BB3D3D", "font-size":"100%"});
+			$("#status>h4>span").removeClass("label-success, label-info");
+			$("#status>h4>span").addClass("label-danger");
+			$("#status>h4>span").text("Overlap");
+			// $("#status>h4>span").css({"color":"#BB3D3D", "font-size":"100%"});
 			$('#errModal').modal('show');
 			curstate = "Paused";
 			setRelay();
 		}
 		else if (<%=(state.err==="No_time_window")%>) //true if not in a time window
 		{
-			$("#status>p>strong").text("Paused");
-			$("#status>p>strong").css({"color":"#666666", "font-size":"100%"});
+			$("#status>h4>span").removeClass("label-success, label-danger");
+			$("#status>h4>span").addClass("label-info");
+			$("#status>h4>span").text("Paused");
+			// $("#status>h4>span").css({"color":"#666666", "font-size":"100%"});
 			curstate = "Paused";
 			setRelay();
 		}
 		else if (<%=tempdata==={}%>) //no error -we are in a time window... but no initial time data
 		{
-			$("#status>p>strong").css({"color":"#F6F4EC", "font-size":"80%"});
-			$("#status>p>strong").text("Waiting data...");
+			// $("#status>h4>span").css({"color":"#F6F4EC", "font-size":"80%"});
+			$("#status>h4>span").removeClass("label-success, label-danger");
+			$("#status>h4>span").addClass("label-info");
+			$("#status>h4>span").text("Waiting data...");
 			curstate = "";
 		}
 
+		$('#profiles').select2({
+			minimumResultsForSearch: Infinity
+		});
+
 	}); //end of $(document).ready
 
+	function editProfile(){
+		var curprofile;
+		curprofile = $('#profiles').val();
+		// console.log(curprofile);
+		window.location.href = "/edit/"+curprofile;
+	}
+
+	function changeBackground(curstate){
+		if (curstate=="Working"){			
+			$('html').css("background-image", "url(../images/flames_2.jpg)");
+		}
+		else if (curstate=="Paused")
+		{
+			$('html').css("background-image", "url(../images/blue_flames_2.jpg)");
+		}
+		
+	} 
+	
 	function getCurTime(){
 		var d = new Date();
 		var n = d.getDay();
@@ -189,6 +225,7 @@
 
 	function setRelay(){
 		if (curstate != prevstate){
+			changeBackground(curstate);
 			$.ajax({
 				type: "POST",
 				contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
@@ -216,16 +253,20 @@
 			if (cur.time >= '<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].on_time%><%};%>' && cur.time < '<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].off_time%><%};%>') {
 				if (curTemp < '<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].temp%><%};%>'){
 					//the status is: working
-					$("#status>p>strong").text("Working");
-					$("#status>p>strong").css({"color":"#F6F4EC", "font-size":"100%"});
+					$("#status>h4>span").removeClass("label-info, label-danger");
+					$("#status>h4>span").addClass("label-success");
+					$("#status>h4>span").text("Working");
+					// $("#status>h4>span").css({"color":"#F6F4EC", "font-size":"100%"});
 					curstate = "Working";
 					console.log(curstate);
 					setRelay();
 				}
 				else {
 					//the status is: paused
-					$("#status>p>strong").text("Paused");
-					$("#status>p>strong").css({"color":"#666666", "font-size":"100%"});
+					$("#status>h4>span").removeClass("label-success, label-danger");
+					$("#status>h4>span").addClass("label-info");
+					$("#status>h4>span").text("Paused");
+					// $("#status>h4>span").css({"color":"#666666", "font-size":"100%"});
 					curstate = "Paused";
 					console.log(curstate);
 					setRelay();

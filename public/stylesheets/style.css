@@ -2,29 +2,93 @@
 
 html {
 	height:100%;
+	background: url(../images/flames_mono_2.jpg) no-repeat center center fixed; 
+  	-webkit-background-size: cover;
+  	-moz-background-size: cover;
+  	-o-background-size: cover;
+  	background-size: cover;
 }
+
 body {
   font: 14px "Ubuntu", sans-serif;
-  background-color: #1B1B21;
+  /*background-color: #1B1B21;*/
+  background-color: inherit;
   margin: 0px 0px 0px 0px;
   height:100%;
 }
 
-header{
+/*Grouping labels*/
+
+.label-group>.label:first-child {
+	border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    margin-right: 0;
+}
+    
+.label-group>.label:nth-child(2) {
+	border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    margin-left: 0;
+    filter: alpha(opacity=90);
+    opacity: 0.9;
+}
+
+/*Changing the bootstraps's navbar height*/
+
+.navbar>.container-fluid{
+	min-height:40px;
+}
+
+.collapse {
+	min-height:40px;
+}
+
+.navbar-right>li>a{
+	padding-top: 9px;
+	padding-bottom: 9px;
+}
+
+.navbar {
+	min-height: 40px;
+}
+
+.navbar-brand{
+	padding-top:0px;
+	padding-left: 15px;
+}
+
+a.navbar-brand {
+	padding-top: 9px;
+	padding-bottom: 9px;
+	height: 40px;
+}
+.navbar-header>button {
+	padding-top:7px;
+	padding-bottom: 7px; 
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+/*Reducing panel's heading size*/
+.panel-heading>h5{
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+
+/*The following is a work around of a bug(?) in a select2 css. If I don't set a max-width value
+then in chrome and alike browsers (not in mozilla) in responsive mode the select2 input 
+creates a longer width (overflow) than all other elements in the page and the horizontal scrollbar is 
+shown...
+*/
+
+.select2-hidden-accessible {
+	max-width: 100px;
+}
+
+
+/*header{
 	margin: 0px;
 	padding: 0px;
-}
-
-a {
-  color: #00B7FF;
-}
-
-h1, p {
-	padding-left: 20px; 
-}
-
-h1>small {
-	color: #333;
 }
 
 #wrapper {
@@ -46,7 +110,4 @@ h1>small {
 	margin-left: 0px;
 }
 
-.row {
-	margin-right: 0px;
-	margin-left: 0px;
-}
+*/

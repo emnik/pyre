@@ -1,0 +1,112 @@
+1 Aug 18:43:59 - [33m[nodemon] v1.4.0[39m
+1 Aug 18:43:59 - [33m[nodemon] to restart at any time, enter `rs`[39m
+1 Aug 18:43:59 - [33m[nodemon] watching: *.*[39m
+1 Aug 18:43:59 - [32m[nodemon] starting `node bin/www`[39m
+Server up and running!
+[0mGET /stylesheets/bootstrap.min.css [36m304 [0m190.142 ms - -[0m
+[0mGET /stylesheets/bootstrap-theme.min.css [36m304 [0m118.687 ms - -[0m
+[0mGET /stylesheets/style.css [36m304 [0m95.252 ms - -[0m
+[0mGET /stylesheets/bootstrap-switch.min.css [36m304 [0m93.236 ms - -[0m
+logging buffer[0]: 126
+logging buffer[1]: 0
+logging buffer[2]: 9
+logging buffer[3]: 129
+logging buffer[4]: 0
+logging buffer[5]: 2
+logging buffer[6]: 38
+logging buffer[7]: 0
+-----------------------
+logging buffer[0]: 0
+logging buffer[1]: 0
+logging buffer[2]: 248
+logging buffer[3]: 65
+logging buffer[4]: 29
+-----------------------
+{ type: 129,
+  remote16: '0002',
+  rssi: 38,
+  receiveOptions: 0,
+  data: <Buffer 00 00 f8 41> }
+logging buffer[0]: 126
+logging buffer[1]: 0
+logging buffer[2]: 9
+logging buffer[3]: 129
+logging buffer[4]: 0
+logging buffer[5]: 2
+logging buffer[6]: 39
+logging buffer[7]: 0
+-----------------------
+logging buffer[0]: 0
+logging buffer[1]: 0
+logging buffer[2]: 248
+logging buffer[3]: 65
+logging buffer[4]: 28
+-----------------------
+{ type: 129,
+  remote16: '0002',
+  rssi: 39,
+  receiveOptions: 0,
+  data: <Buffer 00 00 f8 41> }
+{ status: 'Paused' }
+[0mPOST /relay/actions [32m200 [0m576.520 ms - 15[0m
+logging buffer[0]: 126
+logging buffer[1]: 0
+logging buffer[2]: 9
+logging buffer[3]: 129
+logging buffer[4]: 0
+logging buffer[5]: 2
+logging buffer[6]: 38
+logging buffer[7]: 0
+-----------------------
+logging buffer[0]: 0
+logging buffer[1]: 0
+logging buffer[2]: 248
+logging buffer[3]: 65
+logging buffer[4]: 29
+-----------------------
+{ type: 129,
+  remote16: '0002',
+  rssi: 38,
+  receiveOptions: 0,
+  data: <Buffer 00 00 f8 41> }
+logging buffer[0]: 126
+logging buffer[1]: 0
+logging buffer[2]: 9
+logging buffer[3]: 129
+logging buffer[4]: 0
+logging buffer[5]: 2
+logging buffer[6]: 38
+logging buffer[7]: 0
+-----------------------
+logging buffer[0]: 0
+logging buffer[1]: 0
+logging buffer[2]: 248
+logging buffer[3]: 65
+logging buffer[4]: 29
+-----------------------
+{ type: 129,
+  remote16: '0002',
+  rssi: 38,
+  receiveOptions: 0,
+  data: <Buffer 00 00 f8 41> }
+logging buffer[0]: 126
+logging buffer[1]: 0
+logging buffer[2]: 9
+logging buffer[3]: 129
+logging buffer[4]: 0
+logging buffer[5]: 2
+logging buffer[6]: 38
+logging buffer[7]: 0
+-----------------------
+logging buffer[0]: 0
+logging buffer[1]: 0
+logging buffer[2]: 248
+logging buffer[3]: 65
+logging buffer[4]: 29
+-----------------------
+{ type: 129,
+  remote16: '0002',
+  rssi: 38,
+  receiveOptions: 0,
+  data: <Buffer 00 00 f8 41> }
+Relay gpio pins have been closed!

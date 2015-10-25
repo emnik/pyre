@@ -1,0 +1,86 @@
+1 Aug 18:03:59 - [33m[nodemon] v1.4.0[39m
+1 Aug 18:03:59 - [33m[nodemon] to restart at any time, enter `rs`[39m
+1 Aug 18:03:59 - [33m[nodemon] watching: *.*[39m
+1 Aug 18:03:59 - [32m[nodemon] starting `node bin/www`[39m
+Server up and running!
+logging buffer[i]: 126
+logging buffer[i]: 0
+logging buffer[i]: 9
+logging buffer[i]: 129
+logging buffer[i]: 0
+logging buffer[i]: 2
+logging buffer[i]: 38
+logging buffer[i]: 0
+-----------------------
+logging buffer[i]: 0
+logging buffer[i]: 128
+logging buffer[i]: 239
+logging buffer[i]: 65
+logging buffer[i]: 166
+-----------------------
+{ type: 129,
+  remote16: '0002',
+  rssi: 38,
+  receiveOptions: 0,
+  data: <Buffer 00 80 ef 41> }
+logging buffer[i]: 126
+logging buffer[i]: 0
+logging buffer[i]: 9
+logging buffer[i]: 129
+logging buffer[i]: 0
+logging buffer[i]: 2
+logging buffer[i]: 38
+logging buffer[i]: 0
+-----------------------
+logging buffer[i]: 0
+logging buffer[i]: 0
+logging buffer[i]: 240
+logging buffer[i]: 65
+logging buffer[i]: 37
+-----------------------
+{ type: 129,
+  remote16: '0002',
+  rssi: 38,
+  receiveOptions: 0,
+  data: <Buffer 00 00 f0 41> }
+logging buffer[i]: 126
+logging buffer[i]: 0
+logging buffer[i]: 9
+logging buffer[i]: 129
+logging buffer[i]: 0
+logging buffer[i]: 2
+logging buffer[i]: 38
+logging buffer[i]: 0
+-----------------------
+logging buffer[i]: 0
+logging buffer[i]: 0
+logging buffer[i]: 240
+logging buffer[i]: 65
+logging buffer[i]: 37
+-----------------------
+{ type: 129,
+  remote16: '0002',
+  rssi: 38,
+  receiveOptions: 0,
+  data: <Buffer 00 00 f0 41> }
+logging buffer[i]: 126
+logging buffer[i]: 0
+logging buffer[i]: 9
+logging buffer[i]: 129
+logging buffer[i]: 0
+logging buffer[i]: 2
+logging buffer[i]: 38
+logging buffer[i]: 0
+-----------------------
+logging buffer[i]: 0
+logging buffer[i]: 0
+logging buffer[i]: 240
+logging buffer[i]: 65
+logging buffer[i]: 37
+-----------------------
+{ type: 129,
+  remote16: '0002',
+  rssi: 38,
+  receiveOptions: 0,
+  data: <Buffer 00 00 f0 41> }
+Relay gpio pins have been closed!
