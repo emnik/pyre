@@ -31,12 +31,29 @@ function update_profile (req, res, next){
     console.log("selected_profile= " + selected_profile);
     // var db = new sqlite3.Database('./sensor-data.sqlite');
     db.serialize(function(){
-      db.run("UPDATE profile SET status=0");
-      db.run("UPDATE profile SET status=1 WHERE id=?",selected_profile);
-      // db.close();
-      next();
-    });
-
+      db.run("UPDATE profile SET status=0", function(err){
+        if(err){
+          console.error(err);
+          return next(err); /*this will get to the default errorhandler and show a 500 error page
+          or maybe I should make my own error page [especially for LITESQL errors that are likely not persistant]
+          where a link to the home page will exist...
+          If it is a random SQL error then just the profile change failed... If otherwise the
+          user could still exit the app! If he is only shown the 500 page he cannot do anything
+          in either case...
+          */ 
+          }
+          else
+          {
+            db.run("UPDATE profile SET status=1 WHERE id=?",selected_profile, function(err){
+              if(err){
+                console.error(err);
+                return next(err);
+              };
+            });
+            next();
+          }
+        });
+      });
     }
     else
     {
@@ -51,8 +68,8 @@ function update_profile (req, res, next){
       // var db = new sqlite3.Database('./sensor-data.sqlite');
         db.all("SELECT * FROM profile", function(err, rows){
           if (err){
-            console.log("From get_profiles:");
-            console.log(err);
+            console.error(err);
+            return next(err);
           }
           req.profiles = rows;
           console.log(rows);
@@ -107,6 +124,10 @@ function update_profile (req, res, next){
 
         db.each('SELECT time_window.* FROM time_window JOIN timetable ON time_window.id = timetable.time_window_id WHERE timetable.schedule_id IN (SELECT schedule.id FROM schedule JOIN profile ON schedule.profile_id = profile.id WHERE profile.status=1 AND (schedule.daynum="*" OR schedule.daynum=?))',n,function(suberr,subrows){
               //the time must be set in 24 hour mode
+              if (suberr){
+                console.error(suberr);
+                return next(err);
+              };
               if (curtime>=subrows.on_time && curtime<subrows.off_time) { //Get the current time window data:
                 getdata.push({id:subrows.id, name:subrows.name, on_time:subrows.on_time, off_time:subrows.off_time, sensor_ids:subrows.sensor_ids, temp:subrows.temp});
               }
@@ -191,6 +212,10 @@ function update_profile (req, res, next){
            }
            // console.log(sensors);
            db.all("SELECT location FROM sensors WHERE id IN ("+sensors+")", function(err,rows){
+              if (err){
+                console.error(err);
+                return next(err);
+              };
               req.locations = rows;
               // console.log(rows);
               // db.close();
@@ -232,7 +257,6 @@ function update_profile (req, res, next){
     // in the following line the set_profile function
     // *I use router.use (instead of router.get()) to catch both GET and POST requests
     router.use('/', update_profile, get_profiles,get_time_window_data, set_status, get_sensors, get_therm_data,  render_therm);
-   
 
     //GET therm page with one sqlite query
     //router.get('/therm', function(req, res) {

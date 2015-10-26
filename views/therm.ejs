@@ -74,7 +74,7 @@
     			<h5><strong>Cur. Temp</strong></h5>
     			<h3 style="margin-top:5px">
     				<span>
-							...
+						... 
     				</span>&deg;C
     			</h3>
     		</div>
@@ -85,23 +85,22 @@
     			<!-- status can be either: Working / Paused / Overlap-->
     		</div>
 		</div>
-	</div>
-
-
-	<div class="row" style="margin:0px; color:white;">
-		<div class="col-xs-12">
-			<p>Target Temp: <strong><% if (state.err==="") {%><%=time_window_data[0].temp%><% } else {%> - <%}%> &deg C </strong></p>
-			<p>Sensors:
-				<span class="label-group">
-				<%var arr = Object.keys(sensor_location).map(function(k) { return sensor_location[k].location });%>
-				<!-- <%=arr.join(' / ');%> -->
-				<% arr.forEach(function(location){%>
-					<span class="label label-default">
-						<%=location;%>
-					</span>					
-				<%})%>
-				</span>
-			</p>
+	
+		<div class="row" style="color:white;">
+			<div class="col-xs-12">
+				<p>Target Temp: <strong><% if (state.err==="") {%><%=time_window_data[0].temp%><% } else {%> - <%}%> &deg C </strong></p>
+				<p>Sensors:
+					<span class="label-group">
+					<%var arr = Object.keys(sensor_location).map(function(k) { return sensor_location[k].location });%>
+					<!-- <%=arr.join(' / ');%> -->
+					<% arr.forEach(function(location){%>
+						<span class="label label-default">
+							<%=location;%>
+						</span>					
+					<%})%>
+					</span>
+				</p>
+			</div>
 		</div>
 	</div>
 </body>

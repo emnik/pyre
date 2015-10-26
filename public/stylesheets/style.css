@@ -57,11 +57,14 @@ body {
 	padding-left: 15px;
 }
 
+
 a.navbar-brand {
 	padding-top: 9px;
 	padding-bottom: 9px;
 	height: 40px;
 }
+
+
 .navbar-header>button {
 	padding-top:7px;
 	padding-bottom: 7px; 
@@ -74,6 +77,17 @@ a.navbar-brand {
 	margin-top: 0px;
 	margin-bottom: 0px;
 }
+
+/*.panel{
+	background-color: transparent;
+}
+
+.panel-body{
+	background-color: white;
+	opacity: 1;
+}*/
+
+
 
 /*The following is a work around of a bug(?) in a select2 css. If I don't set a max-width value
 then in chrome and alike browsers (not in mozilla) in responsive mode the select2 input 

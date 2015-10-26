@@ -42,10 +42,10 @@
 		<div class="row" style="padding-bottom:20px;">
 			<div class="col-xs-12 col-md-12 col-lg-12">
 				<button id="resetbtn" type="button" class="btn btn-danger pull-left">Reset</button>
-				<div class="btn-group pull-right" role="group" aria-label="...">
-					<button id="setbtn" type="button" class="btn btn-success">Set</button>
-					<button id="morebtn" type="button" class="btn btn-success"><span class="glyphicon glyphicon-tasks"</span></button>
-				</div>
+				<!-- <div class="btn-group pull-right" role="group" aria-label="..."> -->
+					<button id="setbtn" type="button" class="btn btn-success pull-right">Set</button>
+					<!-- <button id="morebtn" type="button" class="btn btn-success"><span class="glyphicon glyphicon-tasks"</span></button> -->
+				<!-- </div> -->
 			</div>
 		</div>
 	</div>
@@ -55,31 +55,33 @@
 <% include ../partials/javascript.ejs %>
 <script src="/javascripts/bootstrap.touchspin.js"></script>
 <script src="/javascripts/select2/select2.min.js"></script>
+<script src="/javascripts/custom.js"></script>
+
 <script>
 
 	$( document ).ready(function() {
 
 		$('#resetbtn').click(function(){
 			var curvalue = $("input[name='setTargetTemp']").val();
+			var curSensorIds = $("#sensors").val(); //array
+			var prevSensorArr='<%=curtemp.sensor_ids%>'.split(','); //string -> array
+
 			$("input[name='setTargetTemp']").val(<%=curtemp.temp%>);
-			if (curvalue!=<%=curtemp.temp%>){
-				setTemp(<%=curtemp.temp%>, '<%=curtemp.name%>');
-				console.log("The target temp has been resseted to "+<%=curtemp.temp%>+" deg C.");		
+			$("#sensors").val(prevSensorArr).trigger("change");
+
+			if (curvalue!=<%=curtemp.temp%> || !(curSensorIds.compare(prevSensorArr))){
+				setTemp(<%=curtemp.temp%>, '<%=curtemp.name%>', prevSensorArr);
 			}
 			else
 			{
-				console.log("the Temperature is the same. No need for action...");
+				console.log("No need for action...");
 			}
-			$("#setbtn").empty();
-			$("#setbtn").append('Set');
 		})
 
 		$('#setbtn').click(function(){
-			$("#setbtn").empty();
-			$("#setbtn").append('Set <span class="glyphicon glyphicon-ok"</span>');
 			var newtemp = $("input[name='setTargetTemp']").val();
-			setTemp(newtemp,'<%=curtemp.name%>');
-			console.log("the Temperature is updated to "+newtemp+ "deg C.");
+			var newSensorIds = $("#sensors").val();
+			setTemp(newtemp,'<%=curtemp.name%>', newSensorIds);
 		})
 
 		$('#sensors').select2({
@@ -89,19 +91,27 @@
 
 	}) //end of ( document ).ready(function()
 
-	function setTemp(t, name){
+	function setTemp(t, name, sensor_ids){
 		$.ajax({
 			type: "POST",
 			contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
 			url: "/edit/update_temp",
-			data: JSON.stringify({newtemp:t, name:name}),
+			data: JSON.stringify({newtemp:t, name:name, sensor_ids:sensor_ids}),
 			/*JavaScript Object Notation is a way to share data between applications in object format.
 			However, you cannot send an object over an HTTP request without first turning it into a string
 			and sending it as a single variable. The functions JSON.parse() and JSON.stringify() do this for us.*/
 			success: function(rdata) { //rdata = remote data that the server sends as feedback...
-				console.log(rdata.result);
+				// console.log(rdata.result);
 				if (rdata.result==="ok"){
 					console.log("success");
+					$("#setbtn").empty();
+					$("#setbtn").append('Set <span class="glyphicon glyphicon-ok"</span>');
+				}
+				else
+				{
+					console.log('error');
+					$("#setbtn").empty();
+					$("#setbtn").append('Error <span class="glyphicon glyphicon-alert"</span>');
 				}
 			},
 			dataType: "json" // dataType is what you're expecting back from the server: json, html, text,

@@ -68,10 +68,10 @@
 		<div class="row" style="padding-bottom:20px;">
 			<div class="col-xs-12 col-md-12 col-lg-12">
 				<button id="resetbtn" type="button" class="btn btn-danger pull-left">Reset</button>
-				<div class="btn-group pull-right" role="group" aria-label="...">
-					<button id="setbtn" type="button" class="btn btn-success">Set</button>
-					<button id="morebtn" type="button" class="btn btn-success"><span class="glyphicon glyphicon-tasks"</span></button>
-				</div>
+				<!-- <div class="btn-group pull-right" role="group" aria-label="..."> -->
+					<button id="setbtn" type="button" class="btn btn-success pull-right">Set</button>
+					<!-- <button id="morebtn" type="button" class="btn btn-success"><span class="glyphicon glyphicon-tasks"</span></button> -->
+				<!-- </div> -->
 			</div>
 		</div>
 	</div>
@@ -81,46 +81,56 @@
 <% include ../partials/javascript.ejs %>
 <script src="/javascripts/bootstrap.touchspin.js"></script>
 <script src="/javascripts/select2/select2.min.js"></script>
+<script src="/javascripts/custom.js"></script>
 
 <script>
 
 	$( document ).ready(function() {
 
 		$('#resetbtn').click(function(){
-			var curDayValue = $("input[name='setDayTargetTemp']").val();
-			var curNightValue = $("input[name='setNightTargetTemp']").val();
+			// the dayTemp.sensor_ids variable contains a string with value either 1 or 2 or 1,2.
+			// Summarizing: using the .split() function on the day/nightTemp.sensor_ids variable helps me to 
+			// send data to POST <as array> and update the select2 input value (which also needs an array!!! 
+			var curDayValue = $("input[name='setDayTargetTemp']").val(); //numeric
+			var curNightValue = $("input[name='setNightTargetTemp']").val(); //numeric
+			var curDaySensorIds = $("#daysensors").val(); //array
+			var curNightSensorIds = $("#nightsensors").val(); //array
+			var prevDaySensorArr='<%=dayTemp.sensor_ids%>'.split(','); //string -> array
+			var prevNightSensorArr='<%=nightTemp.sensor_ids%>'.split(','); //string ->array
+
 			$("input[name='setDayTargetTemp']").val(<%=dayTemp.temp%>);
 			$("input[name='setNightTargetTemp']").val(<%=nightTemp.temp%>);
-			if (curDayValue!=<%=dayTemp.temp%>){
-				setTemp(<%=dayTemp.temp%>, '<%=dayTemp.name%>');
-				console.log("The day target temp has been resseted to "+<%=dayTemp.temp%>+" deg C.");		
+
+			//programmatically set one ore more values to the select2 input:
+			$("#daysensors").val(prevDaySensorArr).trigger("change");
+			$("#nightsensors").val(prevNightSensorArr).trigger("change");
+
+
+			if (curDayValue!=<%=dayTemp.temp%> || !(curDaySensorIds.compare(prevDaySensorArr))){
+				setTemp(<%=dayTemp.temp%>, '<%=dayTemp.name%>', prevDaySensorArr);
 			}
 			else
 			{
-				console.log("the Day Temperature is the same. No need for action...");
+				console.log("No need for action...");
 			}
-			if (curNightValue!=<%=nightTemp.temp%>){
-				setTemp(<%=nightTemp.temp%>,'<%=nightTemp.name%>');
-				console.log("The night target temp has been resseted to "+<%=nightTemp.temp%>+" deg C.");		
+			if (curNightValue!=<%=nightTemp.temp%>|| !(curNightSensorIds.compare(prevNightSensorArr))){
+				setTemp(<%=nightTemp.temp%>,'<%=nightTemp.name%>', prevNightSensorArr);
 			}
 			else
 			{
-				console.log("the Night Temperature is the same. No need for action...");
+				console.log("No need for action...");
 			}
-			$("#setbtn").empty();
-			$("#setbtn").append('Set');
 			
 		})
 
 		$('#setbtn').click(function(){
 			var newDaytemp = $("input[name='setDayTargetTemp']").val();
-			setTemp(newDaytemp, '<%=dayTemp.name%>');
-			console.log("the Day Temperature is updated to "+newDaytemp+ "deg C.");
+			var newDaySensorIds = $("#daysensors").val();
+			setTemp(newDaytemp, '<%=dayTemp.name%>', newDaySensorIds);
+
 			var newNighttemp = $("input[name='setNightTargetTemp']").val();
-			setTemp(newNighttemp, '<%=nightTemp.name%>');
-			console.log("the Night Temperature is updated to "+newNighttemp+ "deg C.");
-			$("#setbtn").empty();
-			$("#setbtn").append('Set <span class="glyphicon glyphicon-ok"</span>');
+			var newNightSensorIds = $("#nightsensors").val();
+			setTemp(newNighttemp, '<%=nightTemp.name%>', newNightSensorIds);
 		})
 		
 		$('#daysensors').select2({
@@ -135,19 +145,27 @@
 
 	}) //end of ( document ).ready(function()
 
-	function setTemp(t, name){
+	function setTemp(t, name, sensor_ids){
 		$.ajax({
 			type: "POST",
 			contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
 			url: "/edit/update_temp",
-			data: JSON.stringify({newtemp:t, name:name}),
+			data: JSON.stringify({newtemp:t, name:name, sensor_ids:sensor_ids}),
 			/*JavaScript Object Notation is a way to share data between applications in object format.
 			However, you cannot send an object over an HTTP request without first turning it into a string
 			and sending it as a single variable. The functions JSON.parse() and JSON.stringify() do this for us.*/
 			success: function(rdata) { //rdata = remote data that the server sends as feedback...
-				console.log(rdata.result);
+				// console.log(rdata.result);
 				if (rdata.result==="ok"){
 					console.log("success");
+					$("#setbtn").empty();
+					$("#setbtn").append('Set <span class="glyphicon glyphicon-ok"</span>');
+				}
+				else
+				{
+					console.log('error');
+					$("#setbtn").empty();
+					$("#setbtn").append('Error <span class="glyphicon glyphicon-alert"</span>');
 				}
 			},
 			dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
