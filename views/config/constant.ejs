@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
 	<head>
-	<% include ../partials/head %>
+		<link rel="stylesheet" href="/stylesheets/select2.css" />
+		<% include ../partials/head %>
 	</head>
 
 <body>
 	<header>
 		<% include ../partials/header_edits %>
-		<link rel="stylesheet" href="/stylesheets/select2.css" />
 	</header>
 
 	<div class="container-fluid">
@@ -69,7 +69,7 @@
 			$("input[name='setTargetTemp']").val(<%=curtemp.temp%>);
 			$("#sensors").val(prevSensorArr).trigger("change");
 
-			if (curvalue!=<%=curtemp.temp%> || !(curSensorIds.compare(prevSensorArr))){
+			if (curSensorIds!=null && (curvalue!=<%=curtemp.temp%> || !(curSensorIds.compare(prevSensorArr)))){
 				setTemp(<%=curtemp.temp%>, '<%=curtemp.name%>', prevSensorArr);
 			}
 			else
@@ -92,30 +92,36 @@
 	}) //end of ( document ).ready(function()
 
 	function setTemp(t, name, sensor_ids){
-		$.ajax({
-			type: "POST",
-			contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
-			url: "/edit/update_temp",
-			data: JSON.stringify({newtemp:t, name:name, sensor_ids:sensor_ids}),
-			/*JavaScript Object Notation is a way to share data between applications in object format.
-			However, you cannot send an object over an HTTP request without first turning it into a string
-			and sending it as a single variable. The functions JSON.parse() and JSON.stringify() do this for us.*/
-			success: function(rdata) { //rdata = remote data that the server sends as feedback...
-				// console.log(rdata.result);
-				if (rdata.result==="ok"){
-					console.log("success");
-					$("#setbtn").empty();
-					$("#setbtn").append('Set <span class="glyphicon glyphicon-ok"</span>');
-				}
-				else
-				{
-					console.log('error');
-					$("#setbtn").empty();
-					$("#setbtn").append('Error <span class="glyphicon glyphicon-alert"</span>');
-				}
-			},
-			dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
-		});
+		if (sensor_ids!=null){
+			$.ajax({
+				type: "POST",
+				contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
+				url: "/edit/update_temp",
+				data: JSON.stringify({newtemp:t, name:name, sensor_ids:sensor_ids}),
+				/*JavaScript Object Notation is a way to share data between applications in object format.
+				However, you cannot send an object over an HTTP request without first turning it into a string
+				and sending it as a single variable. The functions JSON.parse() and JSON.stringify() do this for us.*/
+				success: function(rdata) { //rdata = remote data that the server sends as feedback...
+					// console.log(rdata.result);
+					if (rdata.result==="ok"){
+						console.log("success");
+						$("#setbtn").empty();
+						$("#setbtn").append('Set <span class="glyphicon glyphicon-ok"</span>');
+					}
+					else
+					{
+						console.log('error');
+						$("#setbtn").empty();
+						$("#setbtn").append('Error <span class="glyphicon glyphicon-alert"</span>');
+					}
+				},
+				dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
+			});
+		}
+		else
+		{
+			console.log('You should at least choose one sensor!');
+		}
 	}
 
 	$("input[name='setTargetTemp']").TouchSpin({

@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
 	<head>
-	<% include ./partials/head %>
 	<link rel="stylesheet" href="/stylesheets/select2.css" />
+	<link rel="stylesheet" href="/stylesheets/select2-frontpage-fix.css"
+	<% include ./partials/head %>
 	</head>
 
 <body>
@@ -49,6 +50,9 @@
 
 	<div class="container-fluid">
 		<div class="row">
+<!-- 			<div class="col-xs-12">
+				<hr>
+			</div> -->
 			<div class="col-xs-10 col-md-7">
 				<form id="mainform" method="post" action="/therm">
 					<select id="profiles" style="width: 100%" class="form-control" name="selected_profile">
@@ -62,7 +66,7 @@
 				</form>
 			</div>
 			<div class="col-xs-2 col-md-5">
-				<button type="button" class="btn btn-primary pull-right" onclick="editProfile()">
+				<button type="button" class="btn btn-front pull-right" onclick="editProfile()">
 					<span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
 				</button>
 			</div>
@@ -201,13 +205,13 @@
 	}
 
 	function changeBackground(curstate){
-		if (curstate=="Working"){			
-			$('html').css("background-image", "url(../images/flames_2.jpg)");
-		}
-		else if (curstate=="Paused")
-		{
-			$('html').css("background-image", "url(../images/blue_flames_2.jpg)");
-		}
+		// if (curstate=="Working"){			
+		// 	$('html').css("background-image", "url(../images/flames_2.jpg)");
+		// }
+		// else if (curstate=="Paused")
+		// {
+		// 	$('html').css("background-image", "url(../images/blue_flames_2.jpg)");
+		// }
 		
 	} 
 	

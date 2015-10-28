@@ -1,18 +1,22 @@
 @import url(http://fonts.googleapis.com/css?family=Ubuntu:400,500,700&subset=latin,greek);
 
 html {
-	height:100%;
+	/*If I decide to have a background image. On desktop & mobile looks good but on Rpi seems to
+	be heavy on rendering and doesn't look that good...
+	*/
+	
+	/*height:100%;
 	background: url(../images/flames_mono_2.jpg) no-repeat center center fixed; 
   	-webkit-background-size: cover;
   	-moz-background-size: cover;
   	-o-background-size: cover;
-  	background-size: cover;
+  	background-size: cover;*/
 }
 
 body {
   font: 14px "Ubuntu", sans-serif;
-  /*background-color: #1B1B21;*/
-  background-color: inherit;
+  background-color: #252830;
+  /*background-color: inherit; if I decide to have a background image...*/
   margin: 0px 0px 0px 0px;
   height:100%;
 }
@@ -33,7 +37,7 @@ body {
     opacity: 0.9;
 }
 
-/*Changing the bootstraps's navbar height*/
+/*Changing the bootstraps's navbar styling*/
 
 .navbar>.container-fluid{
 	min-height:40px;
@@ -50,6 +54,7 @@ body {
 
 .navbar {
 	min-height: 40px;
+	margin-bottom: 10px;
 }
 
 .navbar-brand{
@@ -59,21 +64,85 @@ body {
 
 
 a.navbar-brand {
-	padding-top: 9px;
-	padding-bottom: 9px;
-	height: 40px;
+	padding-top: 10px;
+	padding-bottom: 0px;
+	height: 43px;
 }
 
 
 .navbar-header>button {
 	padding-top:7px;
 	padding-bottom: 7px; 
-	margin-top: 5px;
+	margin-top: 7px;
 	margin-bottom: 5px;
 }
 
+.navbar-toggle>.icon-bar{
+	height:1px;
+}
+
+
+/*Changing navbar's color style*/
+
+.navbar-inverse{
+	background-image: none;
+	background-repeat: no-repeat;
+	background-color: #252830;
+	border-color: #252830;
+	/*opacity:0.8;*/
+}
+
+
+.navbar-inverse .navbar-brand {
+	color: #51586a;
+}
+
+.navbar-inverse .navbar-toggle{
+	border-color: #434857;
+}
+
+.navbar-inverse .navbar-toggle:focus, .navbar-inverse .navbar-toggle:hover{
+	background-color: #434857;
+	/*color: white;*/
+}
+
+.navbar-collapse{
+	box-shadow: none;
+	border-style: solid;
+	border-bottom: 1px;
+	border-color: white;
+}
+
+
+
+/*Changing the navbar's dropdown menu style*/
+
+ul.nav.navbar-nav.navbar-right{
+	margin-top: :10px;
+	margin-bottom: 0px;
+	margin-right: 0px;
+}
+
+.navbar-inverse .navbar-nav > li > a {
+	color: #cfd2da;
+}
+
+#bs-example-navbar-collapse-1.navbar-collapse{
+	border:0px;
+	margin-left:0px;
+	/*margin-right: 0px;*/
+}
+
+.navbar-inverse .navbar-nav > li > a:hover{
+	background-color: #434857;
+}
+
+
+/*Panels*/
+
 /*Reducing panel's heading size*/
-.panel-heading>h5{
+
+.panel-heading > h5{
 	margin-top: 0px;
 	margin-bottom: 0px;
 }
@@ -89,6 +158,37 @@ a.navbar-brand {
 
 
 
+/*horizontal line styling*/
+
+hr{
+    border-color: #434857; 
+    border-image: none;
+    border-style: solid none none;
+    border-width: 1px 0 0;
+}
+
+/*Buttons - more styles*/
+
+.btn-front{
+ 	background-color: #434857;
+ 	color: white;
+}
+
+.btn-front:hover{
+	border-color: gray;
+	color:white;
+}
+
+
+
+/*Select2 customization*/
+.select2-container--default .select2-selection--single .select2-selection__rendered{
+	color:white;
+}
+.select2-container--default .select2-results__option--highlighted[aria-selected]{
+	background-color: #434857!important;	
+}
+
 /*The following is a work around of a bug(?) in a select2 css. If I don't set a max-width value
 then in chrome and alike browsers (not in mozilla) in responsive mode the select2 input 
 creates a longer width (overflow) than all other elements in the page and the horizontal scrollbar is 
@@ -98,30 +198,3 @@ shown...
 .select2-hidden-accessible {
 	max-width: 100px;
 }
-
-
-/*header{
-	margin: 0px;
-	padding: 0px;
-}
-
-#wrapper {
-	min-height:100%;
-	position:relative;
-}
-
-#footer {
-	width:100%;
-	height:40px;
-	position:absolute;
-	bottom:0px;
-	left:0px;
-	color:#F6F4EC;
-}
-
-#footer > .row {
-	margin-right: 0px;
-	margin-left: 0px;
-}
-
-*/

@@ -1,0 +1,12 @@
+/*For some reason the select box in the main page has not a standard height. The following rules fix it*/
+
+.select2-container--default .select2-selection--single{
+    padding-top:3px;
+    height: 35px;
+    background-color: #434857;
+    color:white;
+    border:none;
+}
+.select2-selection__arrow{
+	margin-top: 3px;
+}
