@@ -73,18 +73,18 @@
 		</div>
 
 
-		<div class="row"> <!-- I had padding-top:10px for 320x280 -->
+		<div class="row" style="margin-bottom:10px;">
     		<div id="temp" class="col-xs-8 col-md-7" style="color:#F6F4EC;">
-    			<h5><strong>Cur. Temp</strong></h5>
-    			<h3 style="margin-top:5px">
+    			<!-- <h5><strong>Cur. Temp</strong></h5> -->
+    			<h1>
     				<span>
 						... 
     				</span>&deg;C
-    			</h3>
+    			</h1>
     		</div>
     		<div id="status" class="col-xs-4 col-md-5 text-right" style="color:#F6F4EC;">
-    			<h5><strong>Status:</strong></h5>
-    			<h4><span class="label label-default">...</span></h4>
+    			<!-- <h5><strong>Status:</strong></h5> -->
+    			<h4 style="margin-top:30px;"><span class="label label-default">...</span></h4>
     			<!-- <p style="font-size:20px;padding-left:0px;"><strong>...</strong></p>  -->
     			<!-- status can be either: Working / Paused / Overlap-->
     		</div>
@@ -123,7 +123,7 @@
 
 		if (<%=tempdata!=={}%>) //true if we have initial temperature data...
 		{
-			$('#temp>h3>span').text(<%=tempdata%>);
+			$('#temp>h1>span').text(<%=tempdata%>);
 			manage(<%=tempdata%>);			
 		}
 
@@ -131,7 +131,7 @@
 		socket.on('temperatures', function(data){
 			console.log(data);
 			if(Object.keys(data).length>0){
-				$('#temp>h3>span').text(data.mean_sensor_<%=sensors%>);
+				$('#temp>h1>span').text(data.mean_sensor_<%=sensors%>);
 				manage(data.mean_sensor_<%=sensors%>);
 			}
 		});
