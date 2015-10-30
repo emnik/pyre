@@ -165,7 +165,7 @@
 
 		if (<%=(state.err==="Overlap")%>) //true if there is an overlap
 		{
-			$("#status>h4>span").removeClass("label-success, label-info");
+			$("#status>h4>span").removeClass("label-default");
 			$("#status>h4>span").addClass("label-danger");
 			$("#status>h4>span").text("Overlap");
 			// $("#status>h4>span").css({"color":"#BB3D3D", "font-size":"100%"});
@@ -175,7 +175,7 @@
 		}
 		else if (<%=(state.err==="No_time_window")%>) //true if not in a time window
 		{
-			$("#status>h4>span").removeClass("label-success, label-danger");
+			$("#status>h4>span").removeClass("label-default");
 			$("#status>h4>span").addClass("label-info");
 			$("#status>h4>span").text("Paused");
 			// $("#status>h4>span").css({"color":"#666666", "font-size":"100%"});
@@ -185,7 +185,7 @@
 		else if (<%=tempdata==={}%>) //no error -we are in a time window... but no initial time data
 		{
 			// $("#status>h4>span").css({"color":"#F6F4EC", "font-size":"80%"});
-			$("#status>h4>span").removeClass("label-success, label-danger");
+			$("#status>h4>span").removeClass("label-default");
 			$("#status>h4>span").addClass("label-info");
 			$("#status>h4>span").text("Waiting data...");
 			curstate = "";
@@ -204,7 +204,7 @@
 		window.location.href = "/edit/"+curprofile;
 	}
 
-	function changeBackground(curstate){
+	// function changeBackground(curstate){
 		// if (curstate=="Working"){			
 		// 	$('html').css("background-image", "url(../images/flames_2.jpg)");
 		// }
@@ -213,7 +213,7 @@
 		// 	$('html').css("background-image", "url(../images/blue_flames_2.jpg)");
 		// }
 		
-	} 
+	// } 
 	
 	function getCurTime(){
 		var d = new Date();
@@ -228,7 +228,7 @@
 
 	function setRelay(){
 		if (curstate != prevstate){
-			changeBackground(curstate);
+			//changeBackground(curstate);
 			$.ajax({
 				type: "POST",
 				contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
@@ -256,7 +256,7 @@
 			if (cur.time >= '<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].on_time%><%};%>' && cur.time < '<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].off_time%><%};%>') {
 				if (curTemp < '<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].temp%><%};%>'){
 					//the status is: working
-					$("#status>h4>span").removeClass("label-info, label-danger");
+					$("#status>h4>span").removeClass("label-info label-danger label-default");
 					$("#status>h4>span").addClass("label-success");
 					$("#status>h4>span").text("Working");
 					// $("#status>h4>span").css({"color":"#F6F4EC", "font-size":"100%"});
@@ -266,7 +266,7 @@
 				}
 				else {
 					//the status is: paused
-					$("#status>h4>span").removeClass("label-success, label-danger");
+					$("#status>h4>span").removeClass("label-success label-danger label-default");
 					$("#status>h4>span").addClass("label-info");
 					$("#status>h4>span").text("Paused");
 					// $("#status>h4>span").css({"color":"#666666", "font-size":"100%"});
@@ -276,7 +276,7 @@
 				}
 			}
 			else {
-				//we just went off the timw window so we refresh to get new data
+				//we just went off the time window so we refresh to get new data
 				//console.log('refresh');
 				location.reload();
 			}
