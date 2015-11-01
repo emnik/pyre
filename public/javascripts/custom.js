@@ -22,3 +22,18 @@ Array.prototype.compare = function (array) {
     }
     return true;
 }
+
+
+
+/**
+* I convert a day string to an number.
+*
+* @method dayOfWeekAsInteger
+* @param {String} day
+* @return {Number} Returns day as number
+*/
+
+function dayOfWeekAsInteger(day) {
+  return ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][day];
+}
+

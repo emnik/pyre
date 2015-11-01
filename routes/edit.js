@@ -4,6 +4,20 @@ var router = express.Router();
 var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.Database('./sensor-data.sqlite');
 
+router.post('/get_timewindow_by_id', function(req,res){
+	var id = req.body.id;
+	db.all('SELECT * from time_window WHERE id =?', id, function(err, rows){
+		if (err){
+			console.error(err);
+			// return next(err);
+			res.contentType('json');
+    		res.send({result:'error'});
+		}
+		var timewindow = rows;
+		res.contentType('json');
+		res.send({result:'ok', timewindow:timewindow});
+	})
+})
 
 router.post('/update_temp',function(req, res){
   console.log("the method used is:"+ req.method);
@@ -39,19 +53,83 @@ router.post('/update_temp',function(req, res){
 })
 
 function get_sensors(req,res,next){
-	db.all("SELECT  id, location FROM sensors;", function(err,rows){
+	if (req.params.id!=4){
+			db.all("SELECT  id, location FROM sensors;", function(err,rows){
 				if(err){
 					console.error(err);
 					return next(err);
 				};
 				req.sensors = rows; //this is array
-				// console.log(req.sensors);
+				console.log(req.sensors);
 				next();
 				});
-	        };
+	}
+	else
+	{
+		next();
+	}
+
+}
+
+function get_timewindows(req, res,next){
+	if (req.params.id==3){
+		db.all("SELECT * from time_window WHERE id<>2 AND id<>1 order by time_window.on_time asc", function(err, rows){ //DAY and DAYNIGHT should not be used in WEEKLY... (or CUSTOM) One can setup other profiles
+			if (err){
+				console.error(err);
+				return next(err);
+			};
+			req.timewindows = rows;
+			console.log(req.timewindows);
+			next();
+		});
+	}
+	else {
+		next();
+	}
+}
+
+function get_schedule(req, res, next){
+	if (req.params.id==3){
+		db.all("SELECT id, daynum FROM schedule WHERE profile_id=3 ORDER BY daynum ASC;", function(err, rows){
+			if (err){
+				console.error(err);
+				return next(err);
+			};
+			req.schedule = rows;
+			// console.log(req.schedule);
+			next();
+		})
+
+	}
+	else
+	{
+		next();
+	}
+}
+
+function get_timewindows_perday(req, res, next){
+	if (req.params.id==3){
+		var timewindowsperday=[];
+		db.each("select time_window.*, schedule.daynum from time_window join timetable on time_window.id = timetable.time_window_id join schedule on timetable.schedule_id = schedule.id where schedule.profile_id=3 ORDER BY time_window.on_time ASC;", function(err, row){
+			if (err){
+				console.error(err);
+				return next(err);
+			}
+			timewindowsperday.push({day:row.daynum, id:row.id, name:row.name, on_time:row.on_time, off_time:row.off_time, temp:row.temp, sensor_ids:row.sensor_ids});
+		},function(){
+			req.timewindowsperday = timewindowsperday;
+			// console.log(req.timewindowsperday);
+			next();
+		})
+	}
+	else
+	{
+		next();
+	}
+}
 
 
-router.get('/:id', get_sensors, function(req, res) {
+router.get('/:id', get_sensors, get_timewindows, get_schedule, get_timewindows_perday, function(req, res) {
 	var id = req.params.id;
 	// console.log(req.sensors);
  	if (req.params.id==1){ //CONSTANT MODE
@@ -77,6 +155,9 @@ router.get('/:id', get_sensors, function(req, res) {
 				console.log(rows);
 				res.render('config/daynight', {dayTemp: req.dayTemp, nightTemp: req.nightTemp, sensors: req.sensors});
 	        });
+	 }
+	 else if (req.params.id==3){ //WEEKLY
+	 	res.render('config/weekly', {sensors: req.sensors, schedule: req.schedule, timewindow: req.timewindows, timewindowsperday:req.timewindowsperday});
 	 }
 })
 
