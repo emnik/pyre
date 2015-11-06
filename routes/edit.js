@@ -4,8 +4,31 @@ var router = express.Router();
 var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.Database('./sensor-data.sqlite');
 
-router.post('/get_timewindow_by_id', function(req,res){
+
+function get_sensors(req,res,next){
+	// used by both router.post('/get_timewindow_by_id',...) and router.get('/:id',...)
+	if (req.params.id!=4){
+			db.all("SELECT  id, location FROM sensors;", function(err,rows){
+				if(err){
+					console.error(err);
+					return next(err);
+				};
+				req.sensors = rows; //this is array
+				console.log(req.sensors);
+				next();
+				});
+	}
+	else
+	{
+		next();
+	}
+
+}
+
+
+router.post('/get_timewindow_by_id', get_sensors, function(req,res){
 	var id = req.body.id;
+	var sensors = req.sensors;
 	db.all('SELECT * from time_window WHERE id =?', id, function(err, rows){
 		if (err){
 			console.error(err);
@@ -15,7 +38,7 @@ router.post('/get_timewindow_by_id', function(req,res){
 		}
 		var timewindow = rows;
 		res.contentType('json');
-		res.send({result:'ok', timewindow:timewindow});
+		res.send({result:'ok', timewindow:timewindow, sensors:sensors});
 	})
 })
 
@@ -102,26 +125,6 @@ router.post('/update_timetable', get_weekly_schedule_data, function(req,res){
 });
 
 
-
-
-function get_sensors(req,res,next){
-	if (req.params.id!=4){
-			db.all("SELECT  id, location FROM sensors;", function(err,rows){
-				if(err){
-					console.error(err);
-					return next(err);
-				};
-				req.sensors = rows; //this is array
-				console.log(req.sensors);
-				next();
-				});
-	}
-	else
-	{
-		next();
-	}
-
-}
 
 function get_timewindows(req, res,next){
 	if (req.params.id==3){

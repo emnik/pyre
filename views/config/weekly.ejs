@@ -59,7 +59,7 @@
 							})%>
 							</span>
 							<span style="padding-left:10px;"><%=window.temp%> &degC</span>
-							<a href='#windowlist<%=day.daynum%>-window<%=window.id%>' onclick="windowremove('#windowlist<%=day.daynum%>-window<%=window.id%>')" style="color:black;"><span style="margin-top:-15px;" class="pull-right glyphicon glyphicon-remove"></span></a>
+							<a href='#' onclick="windowremove('#windowlist<%=day.daynum%>-window<%=window.id%>'); return false;" style="color:black;"><span style="margin-top:-15px;" class="pull-right glyphicon glyphicon-remove"></span></a>
 				  		</li>
 				  	<%}
 				  })%>
@@ -115,47 +115,95 @@
 					if (rdata.result==="ok"){
 						console.log("success");
 						var timewindow = rdata.timewindow[0];
+						var sensors = rdata.sensors;
 				  		var html = "<li id='"+listgroup_id+"-window"+timewindow.id+"'"+"class='list-group-item'>"+
 				  			"<h4 class='list-group-item-heading'>"+
 				  				timewindow.name +" : <small>"+timewindow.on_time+"-"+timewindow.off_time+"</small>"+
 				  			"</h4>"+
-				  			"<span class='label-group'>"+
-								"<span class='label label-default'>"+
-										timewindow.sensor_ids+
-								"</span>"+
-							"</span>"+
+				  			"<span class='label-group'>";
+				  		var arr=timewindow.sensor_ids.split(',');
+				  		arr.forEach(function(i){
+				  			sensors.forEach(function(j){
+				  				if(j.id == i){
+				  					html = html + "<span class='label label-default'>"+ j.location +"</span>";
+				  				}
+				  			})
+				  		});
+						html= html+"</span>"+
 							"<span style='padding-left:10px;'>"+timewindow.temp+"&degC</span>"+
-							"<a href='#"+listgroup_id+"-window"+timewindow.id+"' onclick=windowremove('#"+listgroup_id+"-window"+timewindow.id+"') style='color:black;'><span style='margin-top:-15px;' class='pull-right glyphicon glyphicon-remove'></span></a>"+
-				  		"</li>"
-						listgroup.append(html);
-						// $("#setbtn").empty();
-						// $("#setbtn").append('Set <span class="glyphicon glyphicon-ok"</span>');
+							"<a href='#' onclick="+'"'+"windowremove('#"+listgroup_id+"-window"+timewindow.id+"');return false;"+'"'+
+							"style='color:black;'><span style='margin-top:-15px;' class='pull-right glyphicon glyphicon-remove'>"+
+							"</span></a>"+
+				  		"</li>";
+
+						// listgroup.append(html);
+						//Add the new time window into the proper position based on start time!
+						var target=null;
+						listgroup.find('.list-group-item-heading').children().each(function(){
+							var start_hour = $(this).text().split('-')[0];
+							var new_hour = timewindow.on_time.split('-')[0];
+							if (new_hour>start_hour){
+								target = $(this).parent().parent();
+							}
+						});
+						if(target!=null)
+						{
+							target.after(html);
+						}
+						else
+						{
+							listgroup.prepend(html);
+						}
+						
 					}
 					else
 					{
 						console.log('error');
-						// $("#setbtn").empty();
-						// $("#setbtn").append('Error <span class="glyphicon glyphicon-alert"</span>');
 					}
 				},
 				dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
 			});
 			$(this).val(null).trigger('change.select2');
+			$("#setbtn").empty();
+			$("#setbtn").append('Set <span class="glyphicon glyphicon-transfer"</span>');			
 		})
 
 
 		$('#setbtn').click(function(){
 			var curtimewindows = get_current_timewindows();
-			console.log(curtimewindows);
-			updatetimetable(curtimewindows);
+			if (!curtimewindows.compare(prevtimewindows)){
+				// console.log(curtimewindows);
+				updatetimetable(curtimewindows,'set');				
+			} 
+			else{
+				console.log("no need to send to server. There are no changes!");
+				$("#setbtn").empty();
+				$("#setbtn").append('Set <span class="glyphicon glyphicon-ok"</span>');				
+			}
+
+
 		})
 
+
+		$('#resetbtn').click(function(){
+			var curtimewindows = get_current_timewindows();
+			if (!curtimewindows.compare(prevtimewindows)){
+				updatetimetable(prevtimewindows,'reset');
+			}
+			else{
+				console.log("no need to send to server. There are no changes!");
+				$("#setbtn").empty();
+				$("#setbtn").append('Set');				
+			}
+		})
 
 
 	}) //end of $(document).ready()
 
 	function windowremove(id){
 		$(id).remove();
+		$("#setbtn").empty();
+		$("#setbtn").append('Set <span class="glyphicon glyphicon-transfer"</span>');	
 	}
 
 	function get_current_timewindows(){
@@ -172,7 +220,7 @@
 		return timewindows;
 	}
 
-	function updatetimetable(arr){
+	function updatetimetable(arr, action){
 		$.ajax({
 			type: "POST",
 			contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
@@ -182,8 +230,13 @@
 				// console.log(rdata.result);
 				if (rdata.result==="ok"){
 					console.log("success");
-					$("#setbtn").empty();
-					$("#setbtn").append('Set <span class="glyphicon glyphicon-ok"</span>');
+					if (action=="set"){
+						$("#setbtn").empty();
+						$("#setbtn").append('Set <span class="glyphicon glyphicon-ok"</span>');
+					}
+					else if(action=="reset"){
+						location.reload(true); 
+					}
 				}
 				else
 				{
