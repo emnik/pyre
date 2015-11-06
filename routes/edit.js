@@ -26,9 +26,9 @@ router.post('/update_temp',function(req, res){
     var name = req.body.name; //string
     var sensor_ids = req.body.sensor_ids; //array
     var ids = sensor_ids.join(','); //array->string
-    
+
     var profile = {2:'ALLDAY',1:'DAY',3:'NIGHT'};//I could get this from a query...index = time_window_id
-    
+
     for (var index in profile) { //forEach is not working for js objects - only arrays!
     	if (name==profile[index]){
     		db.run("UPDATE time_window SET temp=?, sensor_ids=? WHERE id=?",targettemp,ids,index,function(err){
@@ -47,10 +47,62 @@ router.post('/update_temp',function(req, res){
     		})
     	}
     };
-	
+
 
   };
 })
+
+function get_weekly_schedule_data(req, res, next){
+	var schedule = [];
+	db.each("SELECT id, daynum FROM schedule WHERE profile_id=3;", function(err,row){
+			if (err){
+				console.error(err);
+				return next(err);
+			}
+			schedule[row.daynum] = row.id;
+	},function(){
+		req.schedule = schedule;
+		next();
+	})
+}
+
+router.post('/update_timetable', get_weekly_schedule_data, function(req,res){
+	var newtimewindows = req.body.data; //double array
+	var schedule = req.schedule;
+	console.log(schedule);
+	if (schedule!=undefined && schedule!=null){ //propably unneeded check...
+		db.serialize(function(){
+			db.run("DELETE FROM timetable WHERE schedule_id IN (SELECT id FROM schedule WHERE schedule.profile_id =3);", function(err){
+				if (err){
+					console.error(err);
+					return next(err);
+				}
+			});
+			for (var i=0; i<=6; i++){
+				for (var j in newtimewindows[i]){
+					db.run("INSERT INTO timetable (schedule_id, time_window_id) VALUES (?,?);",[schedule[i],newtimewindows[i][j]],function(err){
+						if(err){
+							console.error(err);
+							return next(err);
+							}
+						} //end of callback
+					) //end of db.run
+				} //end of inner for loop
+			} //end of outer for loop
+			//if no error until here it is safe to sent a successfull response!
+			res.contentType('json');
+			res.send({result:'ok'});
+		})//end of serialize``
+	}
+	else {
+		res.contentType('json');
+		res.send({result:'error'});
+	}
+
+});
+
+
+
 
 function get_sensors(req,res,next){
 	if (req.params.id!=4){

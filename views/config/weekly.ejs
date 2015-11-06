@@ -87,6 +87,7 @@
 
 <script>
 	$(document).ready(function(){
+		var prevtimewindows = get_current_timewindows();
 		
 		$('[name="timewindows"]').select2({
 			minimumResultsForSearch: Infinity,
@@ -142,10 +143,57 @@
 			$(this).val(null).trigger('change.select2');
 		})
 
+
+		$('#setbtn').click(function(){
+			var curtimewindows = get_current_timewindows();
+			console.log(curtimewindows);
+			updatetimetable(curtimewindows);
+		})
+
+
+
 	}) //end of $(document).ready()
 
 	function windowremove(id){
 		$(id).remove();
+	}
+
+	function get_current_timewindows(){
+		var timewindows=[0,1,2,3,4,5,6];
+			var window_id=[];
+			var myRe =  new RegExp('windowlist[0-9]-window([0-9]+)');
+			for (var day=0; day<=6; day++){
+				timewindows[day]=new Array();
+				$('#windowlist'+day).children('.list-group-item').each(function(){
+					window_id=myRe.exec($(this).attr('id'));
+					timewindows[day].push(window_id[1]);
+				});
+			}
+		return timewindows;
+	}
+
+	function updatetimetable(arr){
+		$.ajax({
+			type: "POST",
+			contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
+			url: "/edit/update_timetable",
+			data: JSON.stringify({data:arr}),
+			success: function(rdata) { //rdata = remote data that the server sends as feedback...
+				// console.log(rdata.result);
+				if (rdata.result==="ok"){
+					console.log("success");
+					$("#setbtn").empty();
+					$("#setbtn").append('Set <span class="glyphicon glyphicon-ok"</span>');
+				}
+				else
+				{
+					console.log('error');
+					$("#setbtn").empty();
+					$("#setbtn").append('Error <span class="glyphicon glyphicon-alert"</span>');
+				}
+			},
+			dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
+		});
 	}
 
 </script>
