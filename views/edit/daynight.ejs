@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<link rel="stylesheet" href="/stylesheets/select2.css" />
-		<link rel="stylesheet" href="/stylesheets/select2-width-fix.css"
+		<link rel="stylesheet" type="text/css" href="/stylesheets/select2.css">
+		<link rel="stylesheet" type="text/css" href="/stylesheets/select2-width-fix.css">
 		<% include ../partials/head %>
 	</head>
 
@@ -184,9 +184,9 @@
 		max: 100, // Maximum value.
 		decimals: 1,
 		boostat: 3, // Boost at every nth step.
-		maxboostedstep: 10, // Maximum step when boosted.
+		maxboostedstep: 2, // Maximum step when boosted.
 		postfix: '&deg C', // Text after the input.
-		prefix: 'TEMP :', // Text before the input.
+		prefix: '<span class="glyphicon glyphicon-fire"></span>', // Text before the input.
 		step: 0.1, // Incremental/decremental step on up/down change.
 		stepinterval: 100, // Refresh rate of the spinner in milliseconds.
 		stepintervaldelay: 500 // Time in milliseconds before the spinner starts to spin.
@@ -197,9 +197,9 @@
 		max: 100, // Maximum value.
 		decimals: 1,
 		boostat: 3, // Boost at every nth step.
-		maxboostedstep: 10, // Maximum step when boosted.
+		maxboostedstep: 2, // Maximum step when boosted.
 		postfix: '&deg C', // Text after the input.
-		 prefix: 'TEMP :', // Text before the input.
+		prefix: '<span class="glyphicon glyphicon-fire"></span>', // Text before the input.
 		step: 0.1, // Incremental/decremental step on up/down change.
 		stepinterval: 100, // Refresh rate of the spinner in milliseconds.
 		stepintervaldelay: 500 // Time in milliseconds before the spinner starts to spin.

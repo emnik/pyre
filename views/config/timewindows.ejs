@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="/stylesheets/select2.css" >
+		<link rel="stylesheet" type="text/css" href="/stylesheets/select2-width-fix.css">
+		<link rel="stylesheet" type="text/css" href="/stylesheets/pickatime/default.css">
+		<link rel="stylesheet" type="text/css" href="/stylesheets/pickatime/default.time.css">
+		<% include ../partials/head %>
+	</head>
+
+<body>
+	<header>
+		<% include ../partials/header_edits %>
+	</header>
+
+	<div class="container-fluid">
+		<%counter=0;%>
+		<%timetables.forEach(function(window){%>
+		<%if(counter%4 == 0){%> <!--Define a row before the first and the fourth panel -->
+		<div class="row"> 
+		<%}%>
+			<div class="col-xs-12 col-md-6 col-lg-3">
+				<div class="panel panel-default">
+				  <!-- Default panel contents -->
+				  <div class="panel-heading">
+				  	<span><%=window.name%><span>
+				  </div>
+				  <div class="panel-body">
+				  	<div class="row">
+					  	<div class="col-xs-12">
+							<div class="input-group">
+								<input id="setTargetTemp" type="text" value=<%=window.temp%> name="setTargetTemp">
+							</div>
+						</div>
+					</div>
+
+					<div class="row" style="padding-top:15px;padding-bottom:15px;">
+						<div class="col-xs-6" style="padding-right:5px;">
+							<input class="timepicker form-control" placeholder="ON time" type="text" value="<%=window.on_time%>">
+						</div>
+						<div class="col-xs-6" style="padding-left:5px;">
+							<input class="timepicker form-control" placeholder="OFF time" type="text" value="<%=window.off_time%>">
+						</div>	
+					</div>	
+
+					<div class="row">
+						<div class="col-xs-12">
+							<select class="form-control" style="width:100%;" name="sensors" multiple="multiple">
+								<optgroup label="Sensor location:">
+								<% sensors.forEach(function(item){ %>
+								  <option value="<%=item.id%>"
+								  <%var arr = window.sensor_ids.split(',');
+								  for (var i=0; i<arr.length; i++){
+								  	if (item.id==arr[i]) {%> selected="selected" <%}
+								  }%>><%= item.location %>
+								  </option>
+								 <%});%>
+								 </optgroup>
+							 </select>
+						</div>
+					</div>
+
+				  </div>
+				</div>
+			</div>	
+		<%counter++;%>
+		<%if(counter%4==0 || counter == timetables.length){%> <!--Close the first row after Wednesday and the second after Saturday! -->
+		</div>
+		<%}%>
+		<%})%>
+		<div class="row" style="padding-bottom:20px;">
+			<div class="col-xs-12 col-md-12 col-lg-12">
+				<button id="resetbtn" type="button" class="btn btn-danger pull-left">Reset</button>
+					<button id="savebtn" type="button" class="btn btn-success pull-right">Save</button>
+			</div>
+		</div>
+	</div>
+
+</body>
+
+<% include ../partials/javascript.ejs %>
+<script src="/javascripts/bootstrap.touchspin.js"></script>
+<script src="/javascripts/select2/select2.min.js"></script>
+<script src="/javascripts/pickatime/picker.js"></script>
+<script src="/javascripts/pickatime/picker.time.js"></script>
+<script src="/javascripts/custom.js"></script>
+
+<script>
+
+	$( document ).ready(function() {
+
+		$("[name='sensors']").select2({
+			minimumResultsForSearch: Infinity,
+			placeholder: "Select sensors"
+		});
+
+	}) //end of ( document ).ready(function()
+
+	$('.timepicker').pickatime({
+		format: 'HH:i',
+		formatSubmit: 'HH:i',
+		interval:30
+	});
+	 
+	$("input[name='setTargetTemp']").TouchSpin({
+	min: 0, // Minimum value.
+	max: 100, // Maximum value.
+	decimals: 1,
+	boostat: 3, // Boost at every nth step.
+	maxboostedstep: 2, // Maximum step when boosted.
+	postfix: '&deg C', // Text after the input.
+	// prefix: '<span class="glyphicon glyphicon-fire"></span>', // Text before the input.
+	step: 0.1, // Incremental/decremental step on up/down change.
+	stepinterval: 100, // Refresh rate of the spinner in milliseconds.
+	stepintervaldelay: 500 // Time in milliseconds before the spinner starts to spin.
+	});
+
+	$("input[name='setTargetTemp']").change(function(){
+		$("#savebtn").empty();
+		$("#savebtn").append('Set <span class="glyphicon glyphicon-transfer"</span>');
+	})
+
+
+</script>

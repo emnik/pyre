@@ -185,3 +185,6 @@ hr{
 	background-color: #434857!important;	
 }
 
+.popover .scroll-content{
+	overflow: visible!important;
+}

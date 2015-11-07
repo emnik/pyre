@@ -5,6 +5,7 @@ var router = express.Router();
 
 /* GET home page. */
 router.get('/', function(req, res) {
+  var base_url = req.headers.host;
 	/*I used a global variable (app.locals.startTemp) as with the following way
 	there was some delay on page refresh... probably due to asynchronous nature
 	of node.js?*/
@@ -14,7 +15,7 @@ router.get('/', function(req, res) {
   // 	});
   // var startTemp = req.param('temperature', firstTemp);
   // res.render('index', {startTemp: startTemp});
-  res.render('index');
+  res.render('index', {base_url:base_url});
 })
 
 

@@ -10,6 +10,7 @@ var routes = require('./routes/index');
 var relay = require('./routes/relay');
 var therm = require('./routes/therm');
 var edit = require('./routes/edit');
+var config = require('./routes/config');
 
 
 var app = express();
@@ -31,6 +32,7 @@ app.use('/', routes);
 app.use('/relay', relay);
 app.use('/edit', edit);
 app.use('/therm', therm);
+app.use('/config', config);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

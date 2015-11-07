@@ -14,7 +14,7 @@ function get_sensors(req,res,next){
 					return next(err);
 				};
 				req.sensors = rows; //this is array
-				console.log(req.sensors);
+				// console.log(req.sensors);
 				next();
 				});
 	}
@@ -43,7 +43,7 @@ router.post('/get_timewindow_by_id', get_sensors, function(req,res){
 })
 
 router.post('/update_temp',function(req, res){
-  console.log("the method used is:"+ req.method);
+  // console.log("the method used is:"+ req.method);
   if (req.method=='POST'){
     var targettemp = req.body.newtemp; //numeric
     var name = req.body.name; //string
@@ -92,7 +92,7 @@ function get_weekly_schedule_data(req, res, next){
 router.post('/update_timetable', get_weekly_schedule_data, function(req,res){
 	var newtimewindows = req.body.data; //double array
 	var schedule = req.schedule;
-	console.log(schedule);
+	// console.log(schedule);
 	if (schedule!=undefined && schedule!=null){ //propably unneeded check...
 		db.serialize(function(){
 			db.run("DELETE FROM timetable WHERE schedule_id IN (SELECT id FROM schedule WHERE schedule.profile_id =3);", function(err){
@@ -185,6 +185,7 @@ function get_timewindows_perday(req, res, next){
 
 
 router.get('/:id', get_sensors, get_timewindows, get_schedule, get_timewindows_perday, function(req, res) {
+	var base_url = req.headers.host;
 	var id = req.params.id;
 	// console.log(req.sensors);
  	if (req.params.id==1){ //CONSTANT MODE
@@ -194,8 +195,8 @@ router.get('/:id', get_sensors, get_timewindows, get_schedule, get_timewindows_p
 					return next(err);
 				};
 				req.temp = rows[0];
-				console.log(req.temp);
-				res.render('config/constant', {curtemp: req.temp, sensors: req.sensors});
+				// console.log(req.temp);
+				res.render('edit/constant', {curtemp: req.temp, sensors: req.sensors, base_url:base_url});
 	        });
 	 }
 	 else if (req.params.id==2){ //DAYNIGHT MODE
@@ -208,11 +209,11 @@ router.get('/:id', get_sensors, get_timewindows, get_schedule, get_timewindows_p
 				if (rows[0].name=="DAY"){req.dayTemp = rows[0]};
 				if (rows[1].name=="NIGHT"){req.nightTemp = rows[1]};
 				console.log(rows);
-				res.render('config/daynight', {dayTemp: req.dayTemp, nightTemp: req.nightTemp, sensors: req.sensors});
+				res.render('edit/daynight', {dayTemp: req.dayTemp, nightTemp: req.nightTemp, sensors: req.sensors, base_url:base_url});
 	        });
 	 }
 	 else if (req.params.id==3){ //WEEKLY
-	 	res.render('config/weekly', {sensors: req.sensors, schedule: req.schedule, timewindow: req.timewindows, timewindowsperday:req.timewindowsperday});
+	 	res.render('edit/weekly', {sensors: req.sensors, schedule: req.schedule, timewindow: req.timewindows, timewindowsperday:req.timewindowsperday, base_url:base_url});
 	 }
 })
 

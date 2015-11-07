@@ -248,7 +248,8 @@ function update_profile (req, res, next){
     }
 
     function render_therm(req,res){
-      res.render('therm', {tempdata: req.tempdata, profiles: req.profiles, sensors: req.sensors, sensor_location:req.locations, time_window_data: req.time_window_data, state:req.state, time_window_next:req.time_window_next});
+      var base_url = req.headers.host;
+      res.render('therm', {tempdata: req.tempdata, profiles: req.profiles, sensors: req.sensors, sensor_location:req.locations, time_window_data: req.time_window_data, state:req.state, time_window_next:req.time_window_next, base_url:base_url});
       }
 
 
