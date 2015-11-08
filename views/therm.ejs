@@ -49,61 +49,67 @@
 
 
 	<div class="container-fluid">
-		<div class="row">
-<!-- 			<div class="col-xs-12">
-				<hr>
-			</div> -->
-			<div class="col-xs-10 col-md-7">
-				<form id="mainform" method="post" action="/therm">
-					<select id="profiles" style="width: 100%" class="form-control" name="selected_profile">
-					<% profiles.forEach(function(item){ %>
-					  <option value="<%=item.id%>"
-					  <%if (item.status==1){ %> selected="selected" <% } %>>
-					  	<%= item.name %>
-					  </option>
-					 <%});%>
-					</select>
-				</form>
-			</div>
-			<div class="col-xs-2 col-md-5">
-				<button type="button" class="btn btn-front pull-right" onclick="editProfile()">
-					<span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
-				</button>
-			</div>
-		</div>
+		<div class="row"> 
+			<div class="col-xs-12 col-sm-12 col-md-6"> <!-- Main panel visible allways-->
+				<div class="row">
+					<div class="col-xs-10">
+						<form id="mainform" method="post" action="/therm">
+							<select id="profiles" style="width: 100%" class="form-control" name="selected_profile">
+							<% profiles.forEach(function(item){ %>
+							  <option value="<%=item.id%>"
+							  <%if (item.status==1){ %> selected="selected" <% } %>>
+							  	<%= item.name %>
+							  </option>
+							 <%});%>
+							</select>
+						</form>
+					</div>
+					<div class="col-xs-2">
+						<button type="button" class="btn btn-front pull-right" onclick="editProfile()">
+							<span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+						</button>
+					</div>
+				</div>
 
 
-		<div class="row" style="margin-bottom:10px;">
-    		<div id="temp" class="col-xs-8 col-md-7" style="color:#F6F4EC;">
-    			<!-- <h5><strong>Cur. Temp</strong></h5> -->
-    			<h1>
-    				<span>
-						... 
-    				</span>&deg;C
-    			</h1>
-    		</div>
-    		<div id="status" class="col-xs-4 col-md-5 text-right" style="color:#F6F4EC;">
-    			<!-- <h5><strong>Status:</strong></h5> -->
-    			<h4 style="margin-top:30px;"><span class="label label-default">...</span></h4>
-    			<!-- <p style="font-size:20px;padding-left:0px;"><strong>...</strong></p>  -->
-    			<!-- status can be either: Working / Paused / Overlap-->
-    		</div>
-		</div>
-	
-		<div class="row" style="color:white;">
-			<div class="col-xs-12">
-				<p>Target Temp: <strong><% if (state.err==="") {%><%=time_window_data[0].temp%><% } else {%> - <%}%> &deg C </strong></p>
-				<p>Sensors:
-					<span class="label-group">
-					<%var arr = Object.keys(sensor_location).map(function(k) { return sensor_location[k].location });%>
-					<!-- <%=arr.join(' / ');%> -->
-					<% arr.forEach(function(location){%>
-						<span class="label label-default">
-							<%=location;%>
-						</span>					
-					<%})%>
-					</span>
-				</p>
+				<div class="row" style="margin-bottom:10px;">
+		    		<div id="temp" class="col-xs-8" style="color:#F6F4EC;">
+		    			<!-- <h5><strong>Cur. Temp</strong></h5> -->
+		    			<h1>
+		    				<span>
+								... 
+		    				</span>&deg;C
+		    			</h1>
+		    		</div>
+		    		<div id="status" class="col-xs-4 text-right" style="color:#F6F4EC;">
+		    			<!-- <h5><strong>Status:</strong></h5> -->
+		    			<h4 style="margin-top:30px;"><span class="label label-default">...</span></h4>
+		    			<!-- <p style="font-size:20px;padding-left:0px;"><strong>...</strong></p>  -->
+		    			<!-- status can be either: Working / Paused / Overlap-->
+		    		</div>
+				</div>
+			
+				<div class="row" style="color:white;">
+					<div class="col-xs-12">
+						<p>Target Temp: <strong><% if (state.err==="") {%><%=time_window_data[0].temp%><% } else {%> - <%}%> &deg C </strong></p>
+						<p>Sensors:
+							<span class="label-group">
+							<%var arr = Object.keys(sensor_location).map(function(k) { return sensor_location[k].location });%>
+							<!-- <%=arr.join(' / ');%> -->
+							<% arr.forEach(function(location){%>
+								<span class="label label-default">
+									<%=location;%>
+								</span>					
+							<%})%>
+							</span>
+						</p>
+					</div>
+				</div>
+			</div>
+			<div class="hidden-xs col-sm-12 col-md-6" style="max-height:400;">
+			<div>
+				<canvas id="MyChart" width="500" height="inherit" ></canvas>
+			</div>
 			</div>
 		</div>
 	</div>
@@ -111,6 +117,7 @@
 
 <% include ./partials/javascript.ejs %>
 <script src="/socket.io/socket.io.js"></script>
+<script src="/javascripts/Chart.js"></script>
 <script src="/javascripts/select2/select2.min.js"></script>"
 
 <script>
@@ -194,6 +201,40 @@
 		$('#profiles').select2({
 			minimumResultsForSearch: Infinity
 		});
+
+		// console.log(<%=graph_data.times%>)
+		var ctx = $("#MyChart").get(0).getContext("2d");
+
+		var myLineChart = new Chart(ctx).Line({ //the first object is data
+		    labels: "<%=graph_data.times%>".split(','),
+		    datasets: [
+		        {
+		            label: "Sensor 1",
+		            fillColor: "rgba(220,220,220,0.2)",
+		            strokeColor: "rgba(220,220,220,1)",
+		            pointColor: "rgba(220,220,220,1)",
+		            pointStrokeColor: "#fff",
+		            pointHighlightFill: "#fff",
+		            pointHighlightStroke: "rgba(220,220,220,1)",
+		            data: "<%=graph_data.temps_sensor_1%>".split(',')
+		        }//,
+		        // {
+		        //     label: "Sensor 2",
+		        //     fillColor: "rgba(151,187,205,0.2)",
+		        //     strokeColor: "rgba(151,187,205,1)",
+		        //     pointColor: "rgba(151,187,205,1)",
+		        //     pointStrokeColor: "#fff",
+		        //     pointHighlightFill: "#fff",
+		        //     pointHighlightStroke: "rgba(151,187,205,1)",
+		        //     data: "<%=graph_data.temps_sensor_2%>".split(',')
+		        // }
+		    ]
+		}, //the next object is option
+		{
+			responsive: true,
+			scaleShowGridLines : false
+		});
+		document.getElementById("legendDiv").innerHTML = myLineChart.generateLegend();
 
 	}); //end of $(document).ready
 
