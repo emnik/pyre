@@ -247,43 +247,74 @@ function update_profile (req, res, next){
       next();
     }
 
+    function get_all_sensors(req, res, next){
+      db.all('SELECT * from sensors', function(err, rows){
+        if (err){
+          console.error(err);
+          return next(err);
+        }
+        req.all_sensors = rows;
+        next();
+      })
+    }
+
     function get_graph_data(req, res, next){
-      var times=[];
-      var temps_sensor_1=[];
+      //this function is used either at start, either when I need to update the graph data
+      
+      var labels=[];
+      var temps=[];
       req.graph_data={};
-      var selected_sensors = ["1"];//this will be dynamic from a param...
-      var sql = "SELECT datetime((timestamp/1000)/1200*1200, 'unixepoch', 'localtime') as localtime, "+ 
-      "date((timestamp/1000)/1200*1200, 'unixepoch', 'localtime') as date, "+
-      "strftime('%H:%M', (timestamp/1000)/1200*1200, 'unixepoch', 'localtime') as time, "+
+      
+      //when used at start it defaults to sensor 1 (local) and duration of 12 hours
+      //else it gets the sensor and the duration in hours from the post data...
+      var selected_sensors = ((req.body.sensor!='undefined' && req.body.sensor!=null)? req.body.sensor : "1");
+      var duration = ((req.body.duration!='undefined' && req.body.duration!=null)? req.body.duration : "12"); //in hours
+      
+      var sql = "SELECT datetime((timestamp/1000)/?*?, 'unixepoch', 'localtime') as localtime, "+ 
+      "date((timestamp/1000)/?*?, 'unixepoch', 'localtime') as date, "+
+      "strftime('%H:%M', (timestamp/1000)/?*?, 'unixepoch', 'localtime') as time, "+
       "ROUND(avg(value),2) as temp, "+
       "sensor_id "+
       "FROM sensor_data "+
-      "WHERE timestamp/1000 >= ((strftime('%s', 'now') - strftime('%S', 'now') + strftime('%f', 'now'))-3600*12) "+
-      "AND (sensor_id = ? ";
-      for (var i=1; i<selected_sensors.length; i++){
-        sql = sql + "OR sensor_id = ? ";
-      };
-      sql = sql + ") GROUP BY localtime "+
+      "WHERE timestamp/1000 >= ((strftime('%s', 'now') - strftime('%S', 'now') + strftime('%f', 'now'))-3600*?) "+
+      "AND sensor_id = ? " +
+      "GROUP BY localtime "+
       "ORDER BY localtime ASC;";
 
-      db.each(sql,selected_sensors, function(err, row){
+      var interval;
+      if(duration>24){interval = 24*3600;} else {interval = duration*75;}
+
+      var options=[];
+      for (var i=1;i<=6;i++){options.push(interval);}
+      options.push(duration);
+      options.push(selected_sensors);
+
+      db.each(sql,options, function(err, row){
         if(err){
           console.error(err);
           return next(err);
         }
-        times.push(row.time);
-        temps_sensor_1.push(row.temp);  
-      },function(){
-        req.graph_data.times=times;
-        req.graph_data.temps_sensor_1=temps_sensor_1;
-        next();
-      });
-    }
+
+        if(duration>24){labels.push(row.date);} else {labels.push(row.time);}
+        temps.push(row.temp);
+        },function(){
+          req.graph_data.labels=labels;
+          req.graph_data.temps=temps;
+          next();
+        });
+      }
+
+
+    router.post('/update_graph', get_graph_data, function(req, res){
+        res.contentType('json');
+        res.send({result:'ok', graph_data:req.graph_data});
+
+    })
 
     function render_therm(req,res){
       var base_url = req.headers.host;
       console.log(req.graph_data);
-      res.render('therm', {tempdata: req.tempdata, profiles: req.profiles, sensors: req.sensors, sensor_location:req.locations, time_window_data: req.time_window_data, state:req.state, time_window_next:req.time_window_next, graph_data:req.graph_data ,base_url:base_url});
+      res.render('therm', {tempdata: req.tempdata, profiles: req.profiles, sensors: req.sensors, sensor_location:req.locations, time_window_data: req.time_window_data, state:req.state, time_window_next:req.time_window_next, all_sensors:req.all_sensors, graph_data:req.graph_data ,base_url:base_url});
       }
 
 
@@ -291,7 +322,7 @@ function update_profile (req, res, next){
     // When I used the GET method to send the select box data to /therm I had as a first callback function
     // in the following line the set_profile function
     // *I use router.use (instead of router.get()) to catch both GET and POST requests
-    router.use('/', update_profile, get_profiles,get_time_window_data, set_status, get_sensors, get_therm_data, get_graph_data, render_therm);
+    router.use('/', update_profile, get_profiles,get_time_window_data, set_status, get_sensors, get_therm_data, get_all_sensors, get_graph_data, render_therm);
 
     //GET therm page with one sqlite query
     //router.get('/therm', function(req, res) {
