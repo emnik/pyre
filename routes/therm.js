@@ -265,10 +265,10 @@ function update_profile (req, res, next){
       var temps=[];
       req.graph_data={};
       
-      //when used at start it defaults to sensor 1 (local) and duration of 12 hours
+      //when used at start it defaults to sensor 1 (local) and duration of 1 hours (Live data)
       //else it gets the sensor and the duration in hours from the post data...
       var selected_sensors = ((req.body.sensor!='undefined' && req.body.sensor!=null)? req.body.sensor : "1");
-      var duration = ((req.body.duration!='undefined' && req.body.duration!=null)? req.body.duration : "12"); //in hours
+      var duration = ((req.body.duration!='undefined' && req.body.duration!=null)? req.body.duration : "1"); //in hours
       
       var sql = "SELECT datetime((timestamp/1000)/?*?, 'unixepoch', 'localtime') as localtime, "+ 
       "date((timestamp/1000)/?*?, 'unixepoch', 'localtime') as date, "+
@@ -282,7 +282,9 @@ function update_profile (req, res, next){
       "ORDER BY localtime ASC;";
 
       var interval;
-      if(duration>24){interval = 24*3600;} else {interval = duration*75;}
+      if(duration>24){interval = 24*3600;} 
+      else if(duration==1){interval=120;}
+      else {interval = duration*75;}
 
       var options=[];
       for (var i=1;i<=6;i++){options.push(interval);}

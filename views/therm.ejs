@@ -110,7 +110,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="hidden-xs col-sm-12 col-md-6" style="max-height:400;">
+			<div class="hidden-xs col-sm-12 col-md-6">
 				<div class="row">
 					<div class="col-xs-12" style="right: 15px;">
 						<canvas id="MyChart" width="500" height="inherit" ></canvas>
@@ -120,7 +120,8 @@
 					<div class="row">
 						<div class="col-xs-5">
 							<select id="graph_duration" name="graph_duration" class="form-control" style="width:100%">
-								<option value="12" selected="selected">Last 12 hours</option>
+								<option value="1" selected="selected">Live</option>
+								<option value="12">Last 12 hours</option>
 								<option value="24">Last day (24h)</option>
 								<option value="168">Last week</option>
 								<option value="672">Last month</option>
@@ -155,11 +156,18 @@
 	var curday = curdate.getDay();
 
 	$( document ).ready(function() {
-
+	
 		if (<%=tempdata!=={}%>) //true if we have initial temperature data...
 		{
 			$('#temp>h1>span').text(<%=tempdata%>);
-			manage(<%=tempdata%>);			
+
+			//update live graph if Live is selected...
+			// var duration=$('#graph_duration').val();
+			// if (duration=='1'){//Live data
+			// 	update_live_graph(<%=tempdata%>);
+			// }
+
+			manage(<%=tempdata%>);	
 		}
 
 		var socket = io.connect();
@@ -168,6 +176,15 @@
 			if(Object.keys(data).length>0){
 				$('#temp>h1>span').text(data.mean_sensor_<%=sensors%>);
 				manage(data.mean_sensor_<%=sensors%>);
+
+				//update live graph if Live is selected
+				var duration=$('#graph_duration').val();
+				if (duration=='1'){//Live data
+					var sensor=$('#graph_sensor').val();
+					if (sensor=="1"){update_live_graph(data.mean_sensor_1);}
+					else {update_live_graph(data.mean_sensor_2);}
+				}
+				
 			}
 		});
 
@@ -390,9 +407,9 @@
 	$('#graph_duration').change(function(){update_graph()});
 	$('#graph_refresh').click(function(){update_graph()});
 
-	$(window).resize(function(){
-	    chart.resize();
-	}); 
+	// $(window).resize(function(){
+	//     chart.resize();
+	// }); 
 
 	function update_graph(){
 		var duration=$('#graph_duration').val();
@@ -430,6 +447,14 @@
 				dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
 			});
 	}
+
+
+	function update_live_graph(temp){
+		var label=getCurTime().time;	
+		chart.removeData();
+		chart.addData([temp], label);
+	}
+
 
 
 </script>

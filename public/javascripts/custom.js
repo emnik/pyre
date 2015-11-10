@@ -36,4 +36,3 @@ Array.prototype.compare = function (array) {
 function dayOfWeekAsInteger(day) {
   return ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][day];
 }
-
