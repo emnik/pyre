@@ -850,7 +850,11 @@
 		resize : function(callback){
 			this.stop();
 			var canvas = this.chart.canvas,
-				newWidth = getMaximumWidth(this.chart.canvas),
+				newWidth = getMaximumWidth(this.chart.canvas)-25, 
+				//-25 is added by me (Nikiforakis Manos) as I wanted a minus 25px width so that there
+				//is a space on the right of the graph. It couldn't be done elsewhere as the width is 
+				//set programmatically here! If I find a way make this change without interfearing with
+				//the library's code I'll remove it! 
 				newHeight = this.options.maintainAspectRatio ? newWidth / this.chart.aspectRatio : getMaximumHeight(this.chart.canvas);
 
 			canvas.width = this.chart.width = newWidth;

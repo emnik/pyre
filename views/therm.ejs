@@ -89,7 +89,7 @@
 		    		</div>
 				</div>
 				<div class="row">
-					<div class="hidden-xs hidden-sm col-md-12" style="margin-top:20px;">
+					<div class="hidden-xs hidden-sm col-md-12" style="margin-top:50px;">
 						<!-- vertical whitespace when not in extra small screens!-->
 					</div>
 				</div>
@@ -112,8 +112,8 @@
 			</div>
 			<div class="hidden-xs col-sm-12 col-md-6">
 				<div class="row">
-					<div class="col-xs-12" style="right: 15px;">
-						<canvas id="MyChart" width="500" height="inherit" ></canvas>
+					<div class="col-xs-12" style="min-height: 250px">
+						<canvas id="MyChart"></canvas>
 					</div>
 				</div>
 
@@ -177,9 +177,9 @@
 				$('#temp>h1>span').text(data.mean_sensor_<%=sensors%>);
 				manage(data.mean_sensor_<%=sensors%>);
 
-				//update live graph if Live is selected
+				//update live graph with new data if <Live graph> is selected.
 				var duration=$('#graph_duration').val();
-				if (duration=='1'){//Live data
+				if (duration=='1'){ //Live graph
 					var sensor=$('#graph_sensor').val();
 					if (sensor=="1"){update_live_graph(data.mean_sensor_1);}
 					else {update_live_graph(data.mean_sensor_2);}
@@ -397,6 +397,7 @@
 	    ]
 	},
 	{
+		maintainAspectRatio: false,
 		responsive: true,
 		scaleShowGridLines : false
 	});
@@ -439,6 +440,7 @@
 							    ]
 							},
 							{
+								maintainAspectRatio: false,
 								responsive: true,
 								scaleShowGridLines : false
 							});						
@@ -450,11 +452,13 @@
 
 
 	function update_live_graph(temp){
-		var label=getCurTime().time;	
-		chart.removeData();
+		var label=getCurTime().time;
+		//remove datapoints only if there are more than 24 of them esle just add
+		if (chart.datasets[0].points.length>24){ 
+			chart.removeData();
+		}	
 		chart.addData([temp], label);
 	}
-
 
 
 </script>
