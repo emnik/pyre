@@ -152,4 +152,11 @@ io.sockets.on('connection', function(socket){
         // app.locals.startTemp = temperature.result; //holds the last values.
       }
     }, 60000); //we want data every 1 min
+    socket.on('profile', function(data){ //If a client sends the profile to the server
+      var current_profile = data.profile;
+      if(current_profile!='undefined' && current_profile!=null){
+        console.log("Server got update on the selected profile. It currently is: "+data.profile);
+        socket.broadcast.emit('current_profile', current_profile); //the server broadcasts it to all the other clients!
+      }
+    })
 });

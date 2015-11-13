@@ -30,6 +30,7 @@ function update_profile (req, res, next){
     var selected_profile = req.body.selected_profile;
     console.log("selected_profile= " + selected_profile);
     // var db = new sqlite3.Database('./sensor-data.sqlite');
+
     db.serialize(function(){
       db.run("UPDATE profile SET status=0", function(err){
         if(err){

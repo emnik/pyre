@@ -147,7 +147,7 @@
 <% include ./partials/javascript.ejs %>
 <script src="/socket.io/socket.io.js"></script>
 <script src="/javascripts/Chart.js"></script>
-<script src="/javascripts/select2/select2.min.js"></script>"
+<script src="/javascripts/select2/select2.min.js"></script>
 
 <script>
 	var prevstate = "";
@@ -187,6 +187,12 @@
 				
 			}
 		});
+		socket.on('current_profile', function(data){ //if the server sends the current profile, compare it with the one used and if it is different reload to get the updated data from the server. The change in the profile has been done from another client! 
+			var selected_profile=$('#profiles').val();
+			if (selected_profile!=data){
+				setTimeout(function() { location.href = location.href; },2000); //use 2 seconds delay to give time to the server to respond...
+			}
+		});
 
 		// $('#myModal').on('shown.bs.modal', function () {
 		//   $("[name='cancelbtn']").focus();
@@ -202,6 +208,8 @@
 		$("[name='okbtn']").click(function(){
 			console.log("user confirms to change profile");
 			$('#myModal').modal('hide');
+			var selected_profile=$('#profiles').val();
+			socket.emit('profile', {profile:selected_profile}); //send the new profile to server to inform the other connected clients!
 			$('form#mainform').submit();
 		});
 
