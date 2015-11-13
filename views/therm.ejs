@@ -379,6 +379,28 @@
 </script>
 
 <script>
+	
+	//Some calculations about the y-axis scale I should use:
+
+	temp_range = Math.max(<%=graph_data.temps%>)-Math.min(<%=graph_data.temps%>);
+	if (temp_range<=3){
+		//the scale should start at least 1 deg lower from the min temp and stop 1 deg upper the max temp while the scale divisions are per half a degree:
+		var scaleWidth = 0.5;
+		var scaleStart = Math.min(<%=graph_data.temps%>)-1;
+		var scaleStep = temp_range*2+4; 
+		//I want it to step the scale as many degrees is the range of the temperatures and 2 more steps (1 because I start from min-1 and 1 because I want to end to max+1). The *2 in the range and the +4 instaed of +2 are set because the scalestep is multiplied by the scaleWidth which I set to 0.5!
+	}
+	else // if (temp_range>3)...
+	{
+		//the scale should start at least 2 degs lower from the min temp and stop 2 degs upper the max temp while the scale divisions are per degree:
+		var scaleWidth = 1;
+		var scaleStart = Math.min(<%=graph_data.temps%>)-2
+		var scaleStep = temp_range+4; 
+		//I want it to step the scale as many degrees is the range of the temperatures and 4 more steps (2 because I start from min-2 and 2 because I want to end to max+2).
+	} 
+
+	//maybe when there are large temperature differences (> 10 degs) I should add another calculation but for now it is good enough...
+
 
 	var ctx = $("#MyChart").get(0).getContext("2d");
 
@@ -396,10 +418,16 @@
 	        }
 	    ]
 	},
-	{
+	{	
 		maintainAspectRatio: false,
 		responsive: true,
-		scaleShowGridLines : false
+		scaleShowGridLines : false,
+		pointDotRadius : 3,
+		pointHitDetectionRadius : 5,
+		scaleOverride : true,
+        scaleSteps : scaleStep,
+        scaleStepWidth : scaleWidth,
+        scaleStartValue : scaleStart
 	});
 
 
@@ -408,9 +436,6 @@
 	$('#graph_duration').change(function(){update_graph()});
 	$('#graph_refresh').click(function(){update_graph()});
 
-	// $(window).resize(function(){
-	//     chart.resize();
-	// }); 
 
 	function update_graph(){
 		var duration=$('#graph_duration').val();
@@ -424,6 +449,18 @@
 					console.log(rdata.result);
 					if (rdata.result==="ok"){
 						var data = rdata.graph_data;
+						var newtemp_range = Math.max.apply(null,data.temps)-Math.min.apply(null,data.temps);
+						if (newtemp_range<=3){
+							var newscaleWidth = 0.5;
+							var newscaleStart = Math.min.apply(null,data.temps)-1;
+							var newscaleStep = (newtemp_range)*2+4;
+						}
+						else // if (newtemp_range>3)...
+						{
+							var newscaleWidth = 1;
+							var newscaleStart = Math.min.apply(null,data.temps)-2
+							var scaleStep = newtemp_range+4; 
+						} 
 						chart.destroy();
 						myLineChart = new Chart(ctx);
 						chart = myLineChart.Line({ //the first object is data
@@ -442,7 +479,13 @@
 							{
 								maintainAspectRatio: false,
 								responsive: true,
-								scaleShowGridLines : false
+								scaleShowGridLines : false,
+								pointDotRadius : 3,
+								pointHitDetectionRadius : 5,
+								scaleOverride : true,
+						        scaleSteps : newscaleStep,
+						        scaleStepWidth : newscaleWidth,
+						        scaleStartValue : newscaleStart
 							});						
 					}
 				},
