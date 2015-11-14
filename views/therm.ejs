@@ -156,7 +156,26 @@
 	var curday = curdate.getDay();
 
 	$( document ).ready(function() {
-	
+		
+		var socket = io.connect();	
+		var selected_profile=$('#profiles').val();
+		
+		//send all the working profile data to server to inform the other connected clients!
+		data_info={profile:selected_profile, 
+			id:'<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].id%><%};%>',
+			on:'<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].on_time%><%};%>', 
+			off:'<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].off_time%><%};%>', 
+			sensors:'<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].sensor_ids%><%};%>',
+			temp: '<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].temp%><%};%>',
+			next_id:'<%if (Object.keys(time_window_next).length!==0)%><%=time_window_next.id%>', 
+			next_on:'<%if (Object.keys(time_window_next).length!==0)%><%=time_window_next.on_time%>', 
+			next_off:'<%if (Object.keys(time_window_next).length!==0)%><%=time_window_next.off_time%>', 
+			next_sensors:'<%if (Object.keys(time_window_next).length!==0)%><%=time_window_next.sensor_ids%>',
+			next_temp:'<%if (Object.keys(time_window_next).length!==0)%><%=time_window_next.temp%>'};
+		// console.log(data_info);
+		socket.emit('working_data', data_info); 
+		
+
 		if (<%=tempdata!=={}%>) //true if we have initial temperature data...
 		{
 			$('#temp>h1>span').text(<%=tempdata%>);
@@ -170,7 +189,7 @@
 			manage(<%=tempdata%>);	
 		}
 
-		var socket = io.connect();
+
 		socket.on('temperatures', function(data){
 			console.log(data);
 			if(Object.keys(data).length>0){
@@ -187,10 +206,21 @@
 				
 			}
 		});
-		socket.on('current_profile', function(data){ //if the server sends the current profile, compare it with the one used and if it is different reload to get the updated data from the server. The change in the profile has been done from another client! 
+		socket.on('check_data', function(data){ //when the server sends the current profile data, compare it with the ones used and if any of them is different reload to get the updated data from the server. The change in any of the data would have been done from another client! 
+			// console.log(data);
 			var selected_profile=$('#profiles').val();
-			if (selected_profile!=data){
-				setTimeout(function() { location.href = location.href; },2000); //use 2 seconds delay to give time to the server to respond...
+			if ((selected_profile!=data.profile) || 
+				("<%if (typeof time_window_data[0]!=='undefined'){%><%=time_window_data[0].id%><%};%>" != data.id) ||
+				("<%if (typeof time_window_data[0]!=='undefined'){%><%=time_window_data[0].on_time%><%};%>" != data.on) ||
+				("<%if (typeof time_window_data[0]!=='undefined'){%><%=time_window_data[0].off_time%><%};%>" != data.off) ||
+				("<%if (typeof time_window_data[0]!=='undefined'){%><%=time_window_data[0].sensor_ids%><%};%>" !== data.sensors) ||
+				("<%if (typeof time_window_data[0]!=='undefined'){%><%=time_window_data[0].temp%><%};%>"!=data.temp) ||
+				("<%if (Object.keys(time_window_next).length!==0)%><%=time_window_next.id%>" != data.next_id) ||
+				("<%if (Object.keys(time_window_next).length!==0)%><%=time_window_next.on_time%>" != data.next_on) ||
+				("<%if (Object.keys(time_window_next).length!==0)%><%=time_window_next.off_time%>" != data.next_off) ||
+				("<%if (Object.keys(time_window_next).length!==0)%><%=time_window_next.sensor_ids%>" != data.next_sensors) ||
+				("<%if (Object.keys(time_window_next).length!==0)%><%=time_window_next.temp%>" != data.next_temp)){
+					setTimeout(function() { location.href = location.href; },2000); //use 2 seconds delay to give time to the server to respond...
 			}
 		});
 
@@ -208,8 +238,8 @@
 		$("[name='okbtn']").click(function(){
 			console.log("user confirms to change profile");
 			$('#myModal').modal('hide');
-			var selected_profile=$('#profiles').val();
-			socket.emit('profile', {profile:selected_profile}); //send the new profile to server to inform the other connected clients!
+			// var selected_profile=$('#profiles').val();
+			// socket.emit('profile', {profile:selected_profile}); //send the new profile to server to inform the other connected clients!
 			$('form#mainform').submit();
 		});
 
@@ -457,18 +487,21 @@
 					console.log(rdata.result);
 					if (rdata.result==="ok"){
 						var data = rdata.graph_data;
+						// console.log(Math.max.apply(null,data.temps));
+						// console.log(Math.min.apply(null,data.temps));
 						var newtemp_range = Math.max.apply(null,data.temps)-Math.min.apply(null,data.temps);
 						if (newtemp_range<=3){
 							var newscaleWidth = 0.5;
 							var newscaleStart = Math.min.apply(null,data.temps)-1;
-							var newscaleStep = (newtemp_range)*2+4;
+							var newscaleStep = Math.round((newtemp_range)*2+4);
 						}
 						else // if (newtemp_range>3)...
 						{
 							var newscaleWidth = 1;
 							var newscaleStart = Math.min.apply(null,data.temps)-2
-							var scaleStep = newtemp_range+4; 
+							var newscaleStep = Math.round(newtemp_range+4); 
 						} 
+						// console.log({newscaleStart:newscaleStart, newscaleWidth:newscaleWidth, newscaleStep:newscaleStep});
 						chart.destroy();
 						myLineChart = new Chart(ctx);
 						chart = myLineChart.Line({ //the first object is data
