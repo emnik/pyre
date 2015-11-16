@@ -145,12 +145,12 @@ io.sockets.on('connection', function(socket){
     //send data to client
     setInterval(function(){
       var duration = 240; //the last x seconds of temperature data that we want to retrieve from the database
-      temperature.get_temp_data(duration);
-      //console.log(temperature.result);
-      if (temperature.result.mean_sensor_1!=0){
-        socket.emit('temperatures', temperature.result);
-        // app.locals.startTemp = temperature.result; //holds the last values.
-      }
+      temperature.get_temp_data(duration, function(result){
+        if (result.mean_sensor_1!=0){
+          socket.emit('temperatures', result);
+          // app.locals.startTemp = temperature.result; //holds the last values.
+        }
+      });
     }, 60000); //we want data every 1 min
     socket.on('working_data', function(data){ //If a client sends working data to the server
         console.log("Server got update on the working profile data. The current profile is: "+data.profile);

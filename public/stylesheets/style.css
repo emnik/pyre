@@ -188,3 +188,12 @@ hr{
 .popover .scroll-content{
 	overflow: visible!important;
 }
+
+.remove-timewindow{
+	cursor:pointer;
+	color:gray;
+}
+
+.remove-timewindow:hover{
+	color: black;
+}

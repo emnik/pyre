@@ -383,7 +383,7 @@ TimePicker.prototype.measure = function( type, value, options ) {
 
     // If it’s anything false-y, set it to the default.
     if ( !value ) {
-        value = type == 'min' ? [ 0, 0 ] : [ HOURS_IN_DAY - 1, MINUTES_IN_HOUR - 1 ]
+        value = type == 'min' ? [ 0, 0 ] : [ HOURS_IN_DAY-1, MINUTES_IN_HOUR - 1 ]
     }
 
     // If it’s a string, parse it.

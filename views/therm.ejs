@@ -176,7 +176,7 @@
 		socket.emit('working_data', data_info); 
 		
 
-		if (<%=tempdata!=={}%>) //true if we have initial temperature data...
+		if (<%=tempdata!==null%>) //true if we have initial temperature data...
 		{
 			$('#temp>h1>span').text(<%=tempdata%>);
 

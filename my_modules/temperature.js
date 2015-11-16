@@ -6,9 +6,9 @@
 var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.Database('./sensor-data.sqlite');
 db.configure("busyTimeout", 2000);
-var result = {};
+// var result = {};
 
-function get_temp_data(duration) {
+function get_temp_data(duration, callback) {
   // var db = new sqlite3.Database('./sensor-data.sqlite');
   // db.configure("busyTimeout", 2000);
   var mean_sensor_1, mean_sensor_2;
@@ -35,6 +35,7 @@ function get_temp_data(duration) {
       counter_sensor_2++;
     }
   },function(){
+    var result = {};
     if (counter_sensor_1!=0) {mean_sensor_1 = add_sensor_1 / counter_sensor_1} else {mean_sensor_1 = 0};
     if (counter_sensor_2!=0) {mean_sensor_2 = add_sensor_2 / counter_sensor_2} else {mean_sensor_2 = 0};
     //console.log(counter_sensor_1, counter_sensor_2);
@@ -57,10 +58,11 @@ function get_temp_data(duration) {
     }
 
     //console.log(result);
+    callback(result); //added a callback. Perhaps I should add an error parameter too...
 
   });
   //db.close();
 }
 
 module.exports.get_temp_data =  get_temp_data;
-module.exports.result = result;
+// module.exports.result = result;

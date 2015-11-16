@@ -226,26 +226,25 @@ function update_profile (req, res, next){
 
     function get_therm_data(req, res, next){
       /* Get the initial temperature data for the view*/
-      temperature.get_temp_data(240);
-      console.log(temperature.result);
-      if (temperature.result.mean_sensor_1!=0)
-      {
-        switch (req.sensors) {
-          case '1':
-            req.tempdata = temperature.result.mean_sensor_1;
-            break;
-          case '2':
-            req.tempdata = temperature.result.mean_sensor_2;
-            break;
-          case 'all':
-            req.tempdata = temperature.result.mean_sensor_all;
-            break;  
-          default:
-            req.tempdata = {};
+      req.tempdata = null;
+      temperature.get_temp_data(240, function(result){
+        console.log(result);
+        if (result.mean_sensor_1!=0)
+        {
+          switch (req.sensors) {
+            case '1':
+              req.tempdata = result.mean_sensor_1;
+              break;
+            case '2':
+              req.tempdata = result.mean_sensor_2;
+              break;
+            case 'all':
+              req.tempdata = result.mean_sensor_all;
+              break;  
+          }
         }
-      // console.log(req.tempdata);
-      }
-      next();
+        next();
+      })
     }
 
     function get_all_sensors(req, res, next){
