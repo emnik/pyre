@@ -25,7 +25,7 @@ function get_timetables(req, res, next){
 }
 
 function get_sensors(req,res,next){
-	if (req.params.section == 'timewindows'){
+	// if (req.params.section == 'timewindows'){
 			db.all("SELECT  id, location FROM sensors;", function(err,rows){
 				if(err){
 					console.error(err);
@@ -35,11 +35,11 @@ function get_sensors(req,res,next){
 				// console.log(req.sensors);
 				next();
 				});
-	}
-	else
-	{
-		next();
-	}
+	// }
+	// else
+	// {
+	// 	next();
+	// }
 
 }
 
@@ -90,12 +90,35 @@ router.post('/update_timewindows', function(req, res, next){
 				});
 			}
 		}, function(){
+			var newtws = false;
+			db.serialize(function(){
+				for (var i = data.length - 1; i >= 0; i--) {
+					if (data[i].id.substring(0,3)=="new"){
+						newtws = true;
+						console.log("Inserting new timewindow with name: "+data[i].name);
+						db.run("INSERT INTO time_window (name, on_time, off_time, temp, sensor_ids) VALUES (?, ?, ?, ?, ?)",[data[i].name, data[i].on, data[i].off,data[i].temp, data[i].sensors], function(err){
+							if(err){
+								console.error(err);
+								return next(err);
+							}
+						}); 
+					}
+				};
+			})
+			if(!newtws){
+				console.log("There were no new time windows to add.");
+			}
 			res.contentType('json');
 			res.send({result:'ok'});
 		})
 
 });
 
+
+router.post('/add_timewindow', get_sensors, function(req, res, next){
+	res.contentType('json');
+	res.send({result:'ok', sensors:req.sensors});
+})
 
 // end of timewindows configuration functions
 
