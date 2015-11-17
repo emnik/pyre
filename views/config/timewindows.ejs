@@ -21,7 +21,13 @@
 				  <!-- Default panel contents -->
 				  <div class="panel-heading">
 				  	<span><%=window.name%></span>
+				  	<%if(window.protected==0){%>
 				  	<span class="pull-right glyphicon glyphicon-remove remove-timewindow" onclick="remove_timewindow('<%=window.id%>');"></span>
+				  	<%}
+				  	else
+				  	{%>
+				  	<span class="pull-right glyphicon glyphicon-bookmark" style="color:gray;"></span>
+				  	<%}%>
 				  </div>
 				  <div class="panel-body">
 				  	<div class="row">
@@ -210,6 +216,8 @@
 
 	function remove_timewindow(id){
 		console.log("removing the timewindow: "+id);
+		$("#savebtn").empty();
+		$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 		$("#"+id).parent().remove();
 	}
 

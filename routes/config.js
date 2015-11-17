@@ -82,7 +82,7 @@ router.post('/update_timewindows', function(req, res, next){
 			};
 			if (deltw){
 				console.log("Deleting time window with name: "+row.name);
-				db.run("DELETE FROM time_window WHERE id=?", row.id, function(err){
+				db.run("DELETE FROM time_window WHERE id=? AND protected=0", row.id, function(err){
 					if(err){
 						console.error(err);
 						return next(err);
@@ -96,7 +96,7 @@ router.post('/update_timewindows', function(req, res, next){
 					if (data[i].id.substring(0,3)=="new"){
 						newtws = true;
 						console.log("Inserting new timewindow with name: "+data[i].name);
-						db.run("INSERT INTO time_window (name, on_time, off_time, temp, sensor_ids) VALUES (?, ?, ?, ?, ?)",[data[i].name, data[i].on, data[i].off,data[i].temp, data[i].sensors], function(err){
+						db.run("INSERT INTO time_window (name, on_time, off_time, temp, sensor_ids, protected) VALUES (?, ?, ?, ?, ?, ?)",[data[i].name, data[i].on, data[i].off,data[i].temp, data[i].sensors, 0], function(err){
 							if(err){
 								console.error(err);
 								return next(err);
