@@ -336,7 +336,7 @@ var latest_saved_data=[];
 	$("#resetbtn").click(function(){
 		var cur_data=get_form_data();
 		// console.log(compare_windows(cur_data, reset_data)?'same':'different');
-		if(!compare_windows(cur_data, reset_data)){
+		if(!compare_windows(cur_data, reset_data) || !compare_windows(cur_data, latest_saved_data)){
 			update_timewindows(reset_data, "reset");
 		}
 		else

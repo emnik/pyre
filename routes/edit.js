@@ -50,7 +50,7 @@ router.post('/update_temp',function(req, res){
     var sensor_ids = req.body.sensor_ids; //array
     var ids = sensor_ids.join(','); //array->string
 
-    var profile = {2:'ALLDAY',1:'DAY',3:'NIGHT'};//I could get this from a query...index = time_window_id
+    var profile = {2:'CONSTANT_PROFILE',1:'DAY_PROFILE',3:'NIGHT_PROFILE'};//I could get this from a query...index = time_window_id
 
     for (var index in profile) { //forEach is not working for js objects - only arrays!
     	if (name==profile[index]){
@@ -128,7 +128,7 @@ router.post('/update_timetable', get_weekly_schedule_data, function(req,res){
 
 function get_timewindows(req, res,next){
 	if (req.params.id==3){
-		db.all("SELECT * from time_window WHERE id<>2 AND id<>1 order by time_window.on_time asc", function(err, rows){ //DAY and DAYNIGHT should not be used in WEEKLY... (or CUSTOM) One can setup other profiles
+		db.all("SELECT * FROM time_window WHERE id NOT IN(1,2,3) ORDER BY time_window.on_time asc", function(err, rows){ //CONSTANT-DAY-NIGHT PROFILE timewindows should not be used in WEEKLY... (or CUSTOM) One can setup other profiles
 			if (err){
 				console.error(err);
 				return next(err);
@@ -206,8 +206,8 @@ router.get('/:id', get_sensors, get_timewindows, get_schedule, get_timewindows_p
 					return next(err);
 				};
 				req.data = rows;
-				if (rows[0].name=="DAY"){req.dayTemp = rows[0]};
-				if (rows[1].name=="NIGHT"){req.nightTemp = rows[1]};
+				if (rows[0].name=="DAY_PROFILE"){req.dayTemp = rows[0]};
+				if (rows[1].name=="NIGHT_PROFILE"){req.nightTemp = rows[1]};
 				console.log(rows);
 				res.render('edit/daynight', {dayTemp: req.dayTemp, nightTemp: req.nightTemp, sensors: req.sensors, base_url:base_url});
 	        });

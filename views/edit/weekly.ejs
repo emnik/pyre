@@ -89,11 +89,17 @@
 <script src="/javascripts/custom.js"></script>
 
 <script>
+
+var lastsavedwindows=[];
+var prevtimewindows=[];
+
 	$(document).ready(function(){
+
 		$("#resetbtn").prop('disabled', true);
 		$("#setbtn").prop('disabled', true);
 
-		var prevtimewindows = get_current_timewindows();
+		prevtimewindows = get_current_timewindows();
+		lastsavedwindows = get_current_timewindows();
 
 
 		$('[name="timewindows"]').select2({
@@ -109,7 +115,7 @@
 
 		$('[name="timewindows"]').on('change', function(){
 			var timewindows_id = this.value;
-			console.log($(this));
+			// console.log($(this));
 			var listgroup = $(this).parent().parent().next();
 			var listgroup_id = listgroup.attr('id');
 			$.ajax({
@@ -161,7 +167,15 @@
 						{
 							listgroup.prepend(html);
 						}
-						
+
+						curtimewindows = get_current_timewindows();
+						$("#setbtn").empty();
+						if (curtimewindows.compare(lastsavedwindows)){
+							$("#setbtn").append('Save');
+							$("#setbtn").prop('disabled',true);}
+						else {
+							$("#setbtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+							$("#setbtn").removeProp('disabled');}
 					}
 					else
 					{
@@ -170,51 +184,51 @@
 				},
 				dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
 			});
-			$(this).val(null).trigger('change.select2');
-			$("#setbtn").removeProp('disabled');
-			$("#setbtn").empty();
-			$("#setbtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');			
+			$(this).val(null).trigger('change.select2');	
 		})
 
 
 		$('#setbtn').click(function(){
-			var curtimewindows = get_current_timewindows();
+			curtimewindows = get_current_timewindows();
 			if (!curtimewindows.compare(prevtimewindows)){
 				// console.log(curtimewindows);
 				updatetimetable(curtimewindows,'set');				
 			} 
-			else{
+			else {
 				console.log("no need to send to server. There are no changes!");
 				$("#setbtn").empty();
 				$("#setbtn").append('Save <span class="glyphicon glyphicon-ok"</span>');	
 				$('#setbtn').prop('disabled', true);			
 			}
-
-
 		})
 
 
 		$('#resetbtn').click(function(){
-			var curtimewindows = get_current_timewindows();
-			if (!curtimewindows.compare(prevtimewindows)){
+			curtimewindows = get_current_timewindows();
+			if (!curtimewindows.compare(prevtimewindows) || !curtimewindows.compare(lastsavedwindows)){
 				updatetimetable(prevtimewindows,'reset');
 			}
 			else{
 				console.log("no need to send to server. There are no changes!");
 				$("#setbtn").empty();
 				$("#setbtn").append('Save');		
-				$("#setbtn").removeProp('disabled');		
+				$("#setbtn").prop('disabled',true);
+				$("#resetbtn").prop('disabled',true);
 			}
 		})
-
 
 	}) //end of $(document).ready()
 
 	function windowremove(id){
 		$(id).remove();
+		curtimewindows = get_current_timewindows();
 		$("#setbtn").empty();
-		$("#setbtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');	
-		$("#setbtn").removeProp('disabled');
+		if (curtimewindows.compare(lastsavedwindows)){
+			$("#setbtn").append('Save');
+			$("#setbtn").prop('disabled',true);}
+		else {
+			$("#setbtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+			$("#setbtn").removeProp('disabled');}
 	}
 
 	function get_current_timewindows(){
@@ -241,6 +255,7 @@
 				// console.log(rdata.result);
 				if (rdata.result==="ok"){
 					console.log("success");
+					lastsavedwindows = arr;
 					if (action=="set"){
 						$("#setbtn").empty();
 						$("#setbtn").append('Save <span class="glyphicon glyphicon-ok"</span>');

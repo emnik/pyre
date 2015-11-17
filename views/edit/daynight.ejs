@@ -68,11 +68,11 @@
 
 		<div class="row" style="padding-bottom:20px;">
 			<div class="col-xs-12 col-md-12 col-lg-12">
-				<button id="resetbtn" type="button" class="btn btn-danger pull-left">Reset</button>
-				<!-- <div class="btn-group pull-right" role="group" aria-label="..."> -->
-					<button id="setbtn" type="button" class="btn btn-success pull-right">Set</button>
-					<!-- <button id="morebtn" type="button" class="btn btn-success"><span class="glyphicon glyphicon-tasks"</span></button> -->
-				<!-- </div> -->
+				<div class="btn-group pull-left">
+					<button id="resetbtn" type="button" class="btn btn-danger pull-left">Reset</button>
+					<button id="refreshbtn" type="button" class="btn btn-danger" onclick="location.reload(true);"><span class="glyphicon glyphicon-refresh"></span></button>
+				</div>
+				<button id="setbtn" type="button" class="btn btn-success pull-right">Save</button>
 			</div>
 		</div>
 	</div>
@@ -87,6 +87,9 @@
 <script>
 
 	$( document ).ready(function() {
+
+		$('#resetbtn').prop('disabled', true);
+		$('#setbtn').prop('disabled', true);
 
 		$('#resetbtn').click(function(){
 			// the dayTemp.sensor_ids variable contains a string with value either 1 or 2 or 1,2.
@@ -108,14 +111,14 @@
 
 
 			if (curDaySensorIds!=null && (curDayValue!=<%=dayTemp.temp%> || !(curDaySensorIds.compare(prevDaySensorArr)))){
-				setTemp(<%=dayTemp.temp%>, '<%=dayTemp.name%>', prevDaySensorArr);
+				setTemp(<%=dayTemp.temp%>, '<%=dayTemp.name%>', prevDaySensorArr, 'reset');
 			}
 			else
 			{
 				console.log("No need for action...");
 			}
 			if (curNightSensorIds!=null && (curNightValue!=<%=nightTemp.temp%> || !(curNightSensorIds.compare(prevNightSensorArr)))){
-				setTemp(<%=nightTemp.temp%>,'<%=nightTemp.name%>', prevNightSensorArr);
+				setTemp(<%=nightTemp.temp%>,'<%=nightTemp.name%>', prevNightSensorArr, 'reset');
 			}
 			else
 			{
@@ -127,11 +130,11 @@
 		$('#setbtn').click(function(){
 			var newDaytemp = $("input[name='setDayTargetTemp']").val();
 			var newDaySensorIds = $("#daysensors").val();
-			setTemp(newDaytemp, '<%=dayTemp.name%>', newDaySensorIds);
+			setTemp(newDaytemp, '<%=dayTemp.name%>', newDaySensorIds, 'set');
 
 			var newNighttemp = $("input[name='setNightTargetTemp']").val();
 			var newNightSensorIds = $("#nightsensors").val();
-			setTemp(newNighttemp, '<%=nightTemp.name%>', newNightSensorIds);
+			setTemp(newNighttemp, '<%=nightTemp.name%>', newNightSensorIds, 'set');
 		})
 		
 		$('#daysensors').select2({
@@ -146,7 +149,7 @@
 
 	}) //end of ( document ).ready(function()
 
-	function setTemp(t, name, sensor_ids){
+	function setTemp(t, name, sensor_ids, action){
 		if (sensor_ids!=null){
 			$.ajax({
 				type: "POST",
@@ -160,8 +163,19 @@
 					// console.log(rdata.result);
 					if (rdata.result==="ok"){
 						console.log("success");
-						$("#setbtn").empty();
-						$("#setbtn").append('Set <span class="glyphicon glyphicon-ok"</span>');
+						if (action=='set'){
+							$("#setbtn").empty();
+							$("#setbtn").append('Save <span class="glyphicon glyphicon-ok"</span>');
+							$("#setbtn").prop('disabled', true);
+							$("#resetbtn").removeProp('disabled');
+						}
+						if (action=='reset'){
+							$("#setbtn").empty();
+							$("#setbtn").append('Save');
+							$("#setbtn").prop('disabled', true);
+							$("#resetbtn").prop('disabled', true);
+						}
+
 					}
 					else
 					{
@@ -207,12 +221,27 @@
 
 	$("input[name='setDayTargetTemp']").change(function(){
 		$("#setbtn").empty();
-		$("#setbtn").append('Set <span class="glyphicon glyphicon-transfer"</span>');
+		$("#setbtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		$("#setbtn").removeProp('disabled');
 	})
 
 	$("input[name='setNightTargetTemp']").change(function(){
 		$("#setbtn").empty();
-		$("#setbtn").append('Set <span class="glyphicon glyphicon-transfer"</span>');
+		$("#setbtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		$("#setbtn").removeProp('disabled');
 	})
+
+	$('#nightsensors').change(function(){
+		$("#setbtn").empty();
+		$("#setbtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		$("#setbtn").removeProp('disabled');
+	})
+
+	$('#daysensors').change(function(){
+		$("#setbtn").empty();
+		$("#setbtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		$("#setbtn").removeProp('disabled');
+	})
+
 
 </script>

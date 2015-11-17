@@ -16,7 +16,7 @@
 			<div class="col-xs-12 col-md-12 col-lg-12">
 				<div class="panel panel-default">
 					<div class="panel-heading">
-						<h5>Set ALLDAY target temp and sensors</h5>
+						<h5>Set target temp and sensors</h5>
 					</div>
 					<div class="panel-body">
 						<div class="input-group">
@@ -42,11 +42,11 @@
 
 		<div class="row" style="padding-bottom:20px;">
 			<div class="col-xs-12 col-md-12 col-lg-12">
-				<button id="resetbtn" type="button" class="btn btn-danger pull-left">Reset</button>
-				<!-- <div class="btn-group pull-right" role="group" aria-label="..."> -->
-					<button id="setbtn" type="button" class="btn btn-success pull-right">Set</button>
-					<!-- <button id="morebtn" type="button" class="btn btn-success"><span class="glyphicon glyphicon-tasks"</span></button> -->
-				<!-- </div> -->
+				<div class="btn-group pull-left">
+					<button id="resetbtn" type="button" class="btn btn-danger pull-left">Reset</button>
+					<button id="refreshbtn" type="button" class="btn btn-danger" onclick="location.reload(true);"><span class="glyphicon glyphicon-refresh"></span></button>
+				</div>
+				<button id="setbtn" type="button" class="btn btn-success pull-right">Save</button>
 			</div>
 		</div>
 	</div>
@@ -61,6 +61,8 @@
 <script>
 
 	$( document ).ready(function() {
+		$('#resetbtn').prop('disabled',true);
+		$('#setbtn').prop('disabled',true);
 
 		$('#resetbtn').click(function(){
 			var curvalue = $("input[name='setTargetTemp']").val();
@@ -71,7 +73,7 @@
 			$("#sensors").val(prevSensorArr).trigger("change");
 
 			if (curSensorIds!=null && (curvalue!=<%=curtemp.temp%> || !(curSensorIds.compare(prevSensorArr)))){
-				setTemp(<%=curtemp.temp%>, '<%=curtemp.name%>', prevSensorArr);
+				setTemp(<%=curtemp.temp%>, '<%=curtemp.name%>', prevSensorArr, "reset");
 			}
 			else
 			{
@@ -82,7 +84,7 @@
 		$('#setbtn').click(function(){
 			var newtemp = $("input[name='setTargetTemp']").val();
 			var newSensorIds = $("#sensors").val();
-			setTemp(newtemp,'<%=curtemp.name%>', newSensorIds);
+			setTemp(newtemp,'<%=curtemp.name%>', newSensorIds, "set");
 		})
 
 		$('#sensors').select2({
@@ -92,7 +94,7 @@
 
 	}) //end of ( document ).ready(function()
 
-	function setTemp(t, name, sensor_ids){
+	function setTemp(t, name, sensor_ids, action){
 		if (sensor_ids!=null){
 			$.ajax({
 				type: "POST",
@@ -106,8 +108,18 @@
 					// console.log(rdata.result);
 					if (rdata.result==="ok"){
 						console.log("success");
-						$("#setbtn").empty();
-						$("#setbtn").append('Set <span class="glyphicon glyphicon-ok"</span>');
+						if (action=="set"){
+							$("#setbtn").empty();
+							$("#setbtn").append('Save <span class="glyphicon glyphicon-ok"</span>');	
+							$("#setbtn").prop('disabled',true);
+							$("#resetbtn").removeProp('disabled');						
+						}
+						if (action=="reset"){
+							$("#setbtn").empty();
+							$("#setbtn").append('Save');	
+							$("#setbtn").prop('disabled',true);
+							$("#resetbtn").prop('disabled', true);									
+						}
 					}
 					else
 					{
@@ -140,7 +152,14 @@
 
 	$("input[name='setTargetTemp']").change(function(){
 		$("#setbtn").empty();
-		$("#setbtn").append('Set <span class="glyphicon glyphicon-transfer"</span>');
+		$("#setbtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		$("#setbtn").removeProp('disabled');
+	})
+	
+	$('#sensors').change(function(){
+		$("#setbtn").empty();
+		$("#setbtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		$("#setbtn").removeProp('disabled');		
 	})
 
 </script>

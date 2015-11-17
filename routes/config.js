@@ -9,7 +9,7 @@ var db = new sqlite3.Database('./sensor-data.sqlite');
 
 function get_timetables(req, res, next){
 	if (req.params.section=="timewindows"){
-		db.all("SELECT * FROM time_window WHERE id<>1 AND id<>2 ORDER BY on_time ASC;", function(err, rows){
+		db.all("SELECT * FROM time_window WHERE id NOT IN (1,2,3) ORDER BY on_time ASC;", function(err, rows){
 			if (err){
 				console.error(err);
 				return next(err);
@@ -56,7 +56,7 @@ router.get('/:section', get_timetables, get_sensors, function(req, res) {
 router.post('/update_timewindows', function(req, res, next){
 		var data = req.body.data;
 		console.log(data);
-		db.each("SELECT * from time_window WHERE id<>1 AND  id <>2;", function(err,row){
+		db.each("SELECT * from time_window WHERE id NOT IN (1,2,3);", function(err,row){
 			if(err){
 				console.error(err);
 				return next(err);
