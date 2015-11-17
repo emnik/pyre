@@ -72,8 +72,11 @@
 		<%})%>
 		<div class="row" style="padding-bottom:20px;">
 			<div class="col-xs-12 col-md-12 col-lg-12">
-				<button id="resetbtn" type="button" class="btn btn-danger pull-left">Reset</button>
-					<button id="setbtn" type="button" class="btn btn-success pull-right">Set</button>
+				<div class="btn-group pull-left">
+					<button id="resetbtn" type="button" class="btn btn-danger pull-left">Reset</button>
+					<button id="refreshbtn" type="button" class="btn btn-danger" onclick="location.reload(true);"><span class="glyphicon glyphicon-refresh"></span></button>
+				</div>
+				<button id="setbtn" type="button" class="btn btn-success pull-right">Save</button>
 			</div>
 		</div>
 	</div>
@@ -87,8 +90,12 @@
 
 <script>
 	$(document).ready(function(){
+		$("#resetbtn").prop('disabled', true);
+		$("#setbtn").prop('disabled', true);
+
 		var prevtimewindows = get_current_timewindows();
-		
+
+
 		$('[name="timewindows"]').select2({
 			minimumResultsForSearch: Infinity,
 			placeholder: "Select a time window to add"
@@ -164,8 +171,9 @@
 				dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
 			});
 			$(this).val(null).trigger('change.select2');
+			$("#setbtn").removeProp('disabled');
 			$("#setbtn").empty();
-			$("#setbtn").append('Set <span class="glyphicon glyphicon-transfer"</span>');			
+			$("#setbtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');			
 		})
 
 
@@ -178,7 +186,8 @@
 			else{
 				console.log("no need to send to server. There are no changes!");
 				$("#setbtn").empty();
-				$("#setbtn").append('Set <span class="glyphicon glyphicon-ok"</span>');				
+				$("#setbtn").append('Save <span class="glyphicon glyphicon-ok"</span>');	
+				$('#setbtn').prop('disabled', true);			
 			}
 
 
@@ -193,7 +202,8 @@
 			else{
 				console.log("no need to send to server. There are no changes!");
 				$("#setbtn").empty();
-				$("#setbtn").append('Set');				
+				$("#setbtn").append('Save');		
+				$("#setbtn").removeProp('disabled');		
 			}
 		})
 
@@ -203,7 +213,8 @@
 	function windowremove(id){
 		$(id).remove();
 		$("#setbtn").empty();
-		$("#setbtn").append('Set <span class="glyphicon glyphicon-transfer"</span>');	
+		$("#setbtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');	
+		$("#setbtn").removeProp('disabled');
 	}
 
 	function get_current_timewindows(){
@@ -232,7 +243,9 @@
 					console.log("success");
 					if (action=="set"){
 						$("#setbtn").empty();
-						$("#setbtn").append('Set <span class="glyphicon glyphicon-ok"</span>');
+						$("#setbtn").append('Save <span class="glyphicon glyphicon-ok"</span>');
+						$("#setbtn").prop("disabled", true);
+						$("#resetbtn").removeProp('disabled');
 					}
 					else if(action=="reset"){
 						location.reload(true); 

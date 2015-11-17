@@ -71,7 +71,10 @@
 		</div>
 		<div class="row" id="buttons" style="padding-bottom:20px;">
 			<div class="col-xs-12 col-md-12 col-lg-12">
-				<button id="resetbtn" type="button" class="btn btn-danger pull-left">Reset</button>
+				<div class="btn-group pull-left">
+					<button id="resetbtn" type="button" class="btn btn-danger">Reset</button>
+					<button id="refreshbtn" type="button" class="btn btn-danger" onclick="location.reload(true);"><span class="glyphicon glyphicon-refresh"></span></button>
+				</div>
 				<div class="btn-group pull-right">
 					<button id="savebtn" type="button" class="btn btn-success">Save</button>
 					<button id="addbtn" type="button" class="btn btn-success">Add</button>
@@ -90,104 +93,105 @@
 <script src="/javascripts/custom.js"></script>
 
 <script>
+var reset_data = [];
+var latest_saved_data=[];
 
 	$( document ).ready(function() {
+
+		reset_data=get_form_data();
+		latest_saved_data = get_form_data();
 
 		$("[name='sensors']").select2({
 			minimumResultsForSearch: Infinity,
 			placeholder: "Select sensors"
 		});
 
-
-		$('#savebtn').click(function(){
-			var arr=[];
-			var timeRangeError=false;
-			var emptyError=false;
-			$('.panel.panel-default').each(function(){
-				var tw = new Object();
-				tw.name=$(this).children('.panel-heading').find('span').text();
-				tw.id = $(this).attr('id');
-				tw.temp = $(this).find('[name="setTargetTemp"]').val();
-				tw.on = $(this).find('[name="on_time"]').val();
-				tw.off = $(this).find('[name="off_time"]').val();
-				if(tw.off=='00:00'){tw.off='24:00'};
-				if (tw.on>tw.off){
-					timeRangeError = true;
-				}
-				var sensor_ids = $(this).find('[name="sensors"]').val();
-				if (sensor_ids!=null){
-					tw.sensors = sensor_ids.join(',');	
-				}
-				else
-				{
-					tw.sensors=null;
-				}
-
-				for(var key in tw){
-					if (tw[key]==null){
-						emptyError = true;
-					}
-				}
-
-				arr.push(tw);
-
-			});
-
-			if (timeRangeError){
-				console.log("The ON time cannot be later than the OFF time! The only \"exception\" is 24:00 which is interpreted as 00:00.\nIf you want to set a time range from before 00:00 until after 00:00 you should break it in two timewindows. One until 00:00 and one from 00:00 until...");
-			}
-			
-			if(emptyError)
-			{
-				console.log("All fields are required.")
-			}
-			
-			if(!emptyError && !timeRangeError)
-			{
-				console.log(arr);
-				update_timewindows(arr);
-			}
+		$('.timepicker').pickatime({
+			format: 'HH:i',
+			formatSubmit: 'HH:i',
+			interval:30
 		});
+
+		$("input[name='setTargetTemp']").TouchSpin({
+		min: 0, // Minimum value.
+		max: 100, // Maximum value.
+		decimals: 1,
+		boostat: 3, // Boost at every nth step.
+		maxboostedstep: 2, // Maximum step when boosted.
+		postfix: '&deg C', // Text after the input.
+		// prefix: '<span class="glyphicon glyphicon-fire"></span>', // Text before the input.
+		step: 0.1, // Incremental/decremental step on up/down change.
+		stepinterval: 100, // Refresh rate of the spinner in milliseconds.
+		stepintervaldelay: 500 // Time in milliseconds before the spinner starts to spin.
+		});
+
+		$("input[name='setTargetTemp']").change(function(){
+			$("#savebtn").removeProp('disabled');
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		})
+
+		$('.timepicker').change(function(){
+			$("#savebtn").removeProp('disabled');			
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		})
+
+		$("[name='sensors']").change(function(){
+			$("#savebtn").removeProp('disabled');
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		})
+		
+		$("#resetbtn").prop('disabled', true);
+		$("#savebtn").prop('disabled', true);
 
 	}) //end of ( document ).ready(function()
 
-	$('.timepicker').pickatime({
-		format: 'HH:i',
-		formatSubmit: 'HH:i',
-		interval:30
-	});
-	
-	$("input[name='setTargetTemp']").TouchSpin({
-	min: 0, // Minimum value.
-	max: 100, // Maximum value.
-	decimals: 1,
-	boostat: 3, // Boost at every nth step.
-	maxboostedstep: 2, // Maximum step when boosted.
-	postfix: '&deg C', // Text after the input.
-	// prefix: '<span class="glyphicon glyphicon-fire"></span>', // Text before the input.
-	step: 0.1, // Incremental/decremental step on up/down change.
-	stepinterval: 100, // Refresh rate of the spinner in milliseconds.
-	stepintervaldelay: 500 // Time in milliseconds before the spinner starts to spin.
-	});
 
 
-	$("input[name='setTargetTemp']").change(function(){
-		$("#savebtn").empty();
-		$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+	$('#savebtn').click(function(){
+		var timeRangeError=false;
+		var emptyError=false;
+		var arr=get_form_data();
+		for (var i = arr.length - 1; i >= 0; i--) {
+			for(var key in arr[i]){
+				if (arr[i][key]==null){
+					emptyError = true;
+				}
+			}
+			if (arr[i].on>arr[i].off){
+				timeRangeError = true
+			}
+		}
+		
+		if (timeRangeError){
+			console.log("The ON time cannot be later than the OFF time! The only \"exception\" is 24:00 which is interpreted as 00:00.\nIf you want to set a time range from before 00:00 until after 00:00 you should break it in two timewindows. One until 00:00 and one from 00:00 until...");
+		}
+		
+		if(emptyError)
+		{
+			console.log("All fields are required.")
+		}
+		
+		if(!emptyError && !timeRangeError)
+		{
+			// console.log(arr);
+			var cur_data=get_form_data();
+			if(!compare_windows(cur_data, reset_data)){
+				update_timewindows(arr, "set");
+			}
+			else
+			{
+				console.log("No need to save. There are no changes.")
+				$("#savebtn").empty();
+				$("#savebtn").append('Save');
+			}
+		}
 	})
 
-	$('.timepicker').change(function(){
-		$("#savebtn").empty();
-		$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
-	})
 
-	$("[name='sensors']").change(function(){
-		$("#savebtn").empty();
-		$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
-	})
-
-
-	function update_timewindows(arr){
+	function update_timewindows(arr, action){
 		$.ajax({
 				type: "POST",
 				contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
@@ -200,8 +204,18 @@
 					// console.log(rdata.result);
 					if (rdata.result==="ok"){
 						console.log("success");
-						$("#savebtn").empty();
-						$("#savebtn").append('Save <span class="glyphicon glyphicon-ok"</span>');
+						if(action=="set")
+						{
+							// reset_data=get_form_data();
+							$("#savebtn").empty();
+							$("#savebtn").append('Save <span class="glyphicon glyphicon-ok"</span>');
+							$("#savebtn").prop('disabled', true);
+							$("#resetbtn").removeProp('disabled');
+							latest_saved_data = arr;
+						}
+						else if(action=="reset"){
+							location.reload(true); 
+						}
 					}
 					else
 					{
@@ -214,12 +228,26 @@
 		});
 	}
 
+
 	function remove_timewindow(id){
 		console.log("removing the timewindow: "+id);
 		$("#savebtn").empty();
 		$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 		$("#"+id).parent().remove();
+		var cur_data=get_form_data();
+		if(!compare_windows(cur_data, latest_saved_data)){
+			$("#savebtn").removeProp('disabled');
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		}
+		else
+		{
+			$("#savebtn").empty();
+			$("#savebtn").append('Save');
+			$("#savebtn").prop('disabled', true);
+		}
 	}
+
 
 	$('#addbtn').click(function(){
 		$.ajax({
@@ -296,7 +324,7 @@
 						minimumResultsForSearch: Infinity,
 						placeholder: "Select sensors"
 					});
-
+					$("#savebtn").removeProp('disabled');
 					$("#savebtn").empty();
 					$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 
@@ -306,10 +334,48 @@
 	})
 
 	$("#resetbtn").click(function(){
-		var num=setCustomNum();
-		console.log(num);
+		var cur_data=get_form_data();
+		// console.log(compare_windows(cur_data, reset_data)?'same':'different');
+		if(!compare_windows(cur_data, reset_data)){
+			update_timewindows(reset_data, "reset");
+		}
+		else
+		{
+			console.log("There is no change in the time windows!");
+			$("#savebtn").empty();
+			$("#savebtn").append('Save');
+		}
 	})
 
+	function compare_windows(arr1, arr2){
+		if(arr1.length!=arr2.length){
+			// console.log("not the same array length");
+			return false;
+		}
+		else {
+			var length=arr1.length;
+		}
+		//itterating the array:
+		for (var i = length - 1; i >= 0; i--) {
+			var window1 = arr1[i];
+			var window2 = arr2[i];
+			if(Object.keys(window1).length != Object.keys(window2).length){
+				console.log("the objects are not the same length");
+				return false;
+			}
+			for (var key in window1) {
+				if(window1[key]!=window2[key]){ //I know they have exactly the same keys. If there would be a difference then it wound be in the values
+					// console.log("Found a difference in: "+key);
+					// console.log(window1[key]);
+					// console.log(window2[key]);
+					return false;
+				}
+			};
+		}
+		//found no difference!
+		return true;
+	}
+	
 
 	function setCustomNum(){
 		var customNums=new Array();	
@@ -336,7 +402,30 @@
 		else {return 1;}
 	}
 	
-
+	function get_form_data(){
+		var arr=[];
+		$('.panel.panel-default').each(function(){
+			var tw = new Object();
+			tw.name=$(this).children('.panel-heading').find('span').text();
+			tw.id = $(this).attr('id');
+			tw.temp = $(this).find('[name="setTargetTemp"]').val()*10/10
+			tw.on = $(this).find('[name="on_time"]').val();
+			tw.off = $(this).find('[name="off_time"]').val();
+			if(tw.off=='00:00'){tw.off='24:00'};
+			var sensor_ids = $(this).find('[name="sensors"]').val();
+			if (sensor_ids!=null){
+				tw.sensors = sensor_ids.join(',');	
+			}
+			else
+			{
+				tw.sensors=null;
+			}
+			arr.push(tw);
+		});
+		
+		return arr;
+	}
 
 
 </script>
+
