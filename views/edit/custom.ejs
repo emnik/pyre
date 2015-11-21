@@ -12,15 +12,12 @@
 	</header>
 
 	<div class="container-fluid">
-		<%schedule.forEach(function(day){%>
-		<%if(day.daynum==0 || day.daynum==4){%> <!--Define a row before Sunday and a second row before Thursday -->
 		<div class="row"> 
-		<%}%>
-			<div class="col-xs-12 col-md-3 col-lg-3">
+			<div class="col-xs-12">
 				<div class="panel panel-default">
 				  <!-- Default panel contents -->
 				  <div class="panel-heading">
-				  	<span id="day<%=day.daynum%>"><span>
+				  	<span id="everyday"> Every Day Schedule<span>
 				  </div>
 				  <div class="panel-body">
 				    <p>
@@ -35,43 +32,37 @@
 							</optgroup>
 				    	</select>
 				    </p>
-				  </div>
 
 				  <!-- List group -->
-				  <ul id="windowlist<%=day.daynum%>" class="list-group">
-				  <% timewindowsperday.forEach(function (window){
-				  	if (window.day == day.daynum){%>
-				  		<li id="windowlist<%=day.daynum%>-window<%=window.id%>" class="list-group-item">
-				  			<h4 class="list-group-item-heading">
-				  				<%=window.name%> : <small><%=window.on_time+"-"+window.off_time%></small>
-
-				  			</h4>
-				  			<span class="label-group">
-				  			<%var arr=window.sensor_ids.split(',');
-							arr.forEach(function(i){
-								sensors.forEach(function(j){
-									if(j.id == i){%>
-										<span class="label label-default ">
-										<%=j.location%>
-										</span>	
-									<%}
-								})
-							})%>
-							</span>
-							<span style="padding-left:10px;"><%=window.temp%> &degC</span>
-							<a href='#' onclick="windowremove('#windowlist<%=day.daynum%>-window<%=window.id%>'); return false;" style="color:black;"><span style="margin-top:-15px;" class="pull-right glyphicon glyphicon-remove"></span></a>
-				  		</li>
-				  	<%}
-				  })%>
+				  <ul id="windowlist" class="list-group">
+				  <% timewindowsperday.forEach(function (window){%>
+			  		<li id="windowlist-window<%=window.id%>" class="list-group-item">
+			  			<h4 class="list-group-item-heading">
+			  				<%=window.name%> : <small><%=window.on_time+"-"+window.off_time%></small>
+			  			</h4>
+			  			<span class="label-group">
+			  			<%var arr=window.sensor_ids.split(',');
+						arr.forEach(function(i){
+							sensors.forEach(function(j){
+								if(j.id == i){%>
+									<span class="label label-default ">
+									<%=j.location%>
+									</span>	
+								<%}
+							})
+						})%>
+						</span>
+						<span style="padding-left:10px;"><%=window.temp%> &degC</span>
+						<a href='#' onclick="windowremove('#windowlist-window<%=window.id%>'); return false;" style="color:black;"><span style="margin-top:-15px;" class="pull-right glyphicon glyphicon-remove"></span></a>
+			  		</li>
+				  <%})%>
 				  </ul>
+				  </div>
 				</div>
 			</div>	
-		<%if(day.daynum==3 || day.daynum==6){%> <!--Close the first row after Wednesday and the second after Saturday! -->
 		</div>
-		<%}%>
-		<%})%>
 		<div class="row" style="padding-bottom:20px;">
-			<div class="col-xs-12 col-md-12 col-lg-12">
+			<div class="col-xs-12">
 				<div class="btn-group pull-left">
 					<button id="resetbtn" type="button" class="btn btn-danger pull-left">Reset</button>
 					<button id="refreshbtn" type="button" class="btn btn-danger" onclick="location.reload(true);"><span class="glyphicon glyphicon-refresh"></span></button>
@@ -89,7 +80,6 @@
 <script src="/javascripts/custom.js"></script>
 
 <script>
-
 var lastsavedwindows=[];
 var prevtimewindows=[];
 
@@ -108,16 +98,10 @@ var prevtimewindows=[];
 		});
 
 
-		<%schedule.forEach(function(item){%>
-			var day = dayOfWeekAsInteger(<%=item.daynum%>);
-			$('#day<%=item.daynum%>').text(day);
-		<%})%>
-
 		$('[name="timewindows"]').on('change', function(){
 			var timewindows_id = this.value;
 			// console.log($(this));
-			var listgroup = $(this).parent().parent().next();
-			var listgroup_id = listgroup.attr('id');
+			var listgroup = $(this).parent().next();
 			$.ajax({
 				type: "POST",
 				contentType: "application/json; charset=utf-8", 
@@ -129,7 +113,7 @@ var prevtimewindows=[];
 						console.log("success");
 						var timewindow = rdata.timewindow[0];
 						var sensors = rdata.sensors;
-				  		var html = "<li id='"+listgroup_id+"-window"+timewindow.id+"'"+"class='list-group-item'>"+
+				  		var html = "<li id='windowlist-window"+timewindow.id+"'"+"class='list-group-item'>"+
 				  			"<h4 class='list-group-item-heading'>"+
 				  				timewindow.name +" : <small>"+timewindow.on_time+"-"+timewindow.off_time+"</small>"+
 				  			"</h4>"+
@@ -144,12 +128,11 @@ var prevtimewindows=[];
 				  		});
 						html= html+"</span>"+
 							"<span style='padding-left:10px;'>"+timewindow.temp+"&degC</span>"+
-							"<a href='#' onclick="+'"'+"windowremove('#"+listgroup_id+"-window"+timewindow.id+"');return false;"+'"'+
+							"<a href='#' onclick="+'"'+"windowremove('#windowlist-window"+timewindow.id+"');return false;"+'"'+
 							"style='color:black;'><span style='margin-top:-15px;' class='pull-right glyphicon glyphicon-remove'>"+
 							"</span></a>"+
 				  		"</li>";
 
-						// listgroup.append(html);
 						//Add the new time window into the proper position based on start time!
 						var target=null;
 						listgroup.find('.list-group-item-heading').children().each(function(){
@@ -191,7 +174,6 @@ var prevtimewindows=[];
 		$('#setbtn').click(function(){
 			curtimewindows = get_current_timewindows();
 			if (!curtimewindows.compare(prevtimewindows)){
-				// console.log(curtimewindows);
 				updatetimetable(curtimewindows,'set');				
 			} 
 			else {
@@ -232,25 +214,23 @@ var prevtimewindows=[];
 	}
 
 	function get_current_timewindows(){
-		var timewindows=[0,1,2,3,4,5,6];
-			var window_id=[];
-			var myRe =  new RegExp('windowlist[0-9]-window([0-9]+)');
-			for (var day=0; day<=6; day++){
-				timewindows[day]=new Array();
-				$('#windowlist'+day).children('.list-group-item').each(function(){
-					window_id=myRe.exec($(this).attr('id'));
-					timewindows[day].push(window_id[1]);
-				});
-			}
+		var timewindows=[];
+		var window_id=[];
+		var myRe =  new RegExp('windowlist-window([0-9]+)');
+		$('#windowlist').children('.list-group-item').each(function(){
+			window_id=myRe.exec($(this).attr('id'));
+			timewindows.push(window_id[1]);
+		});
 		return timewindows;
 	}
 
 	function updatetimetable(arr, action){
+		console.log(arr);
 		$.ajax({
 			type: "POST",
 			contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
 			url: "/edit/update_timetable",
-			data: JSON.stringify({data:arr, profile:'WEEKLY'}),
+			data: JSON.stringify({data:arr, profile:'CUSTOM'}),
 			success: function(rdata) { //rdata = remote data that the server sends as feedback...
 				// console.log(rdata.result);
 				if (rdata.result==="ok"){
@@ -276,5 +256,6 @@ var prevtimewindows=[];
 			dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
 		});
 	}
+
 
 </script>
