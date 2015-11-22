@@ -81,6 +81,7 @@ function onError(error) {
   }
 }
 
+var fatal_errors={remote:null, local:null};
 
 /**
  * Event listener for HTTP server "listening" event.
@@ -95,55 +96,32 @@ function onListening() {
 
   // Start local temperature logging
   var msecs = (60 * 0.5) * 1000; // log interval duration in milliseconds - Now is set in 30000msec = 30sec = 1/2 min
-  ds1820.logLocalTemp(msecs);
+  ds1820.logLocalTemp(msecs, function(err){
+    if(err){
+      // console.log(err);   
+      fatal_errors.local=err; //Problem with the local temperature sensor
+    }
+  });
+
   // Start Remote temperature logging
-  
-  var d = require('domain').create();
-
-  d.on('error', function(err){
-      // handle the error safely
-      console.log('error caugth in domain...');
-      console.log(err);
-      ds1820_xbee.logRemoteTemp();
-  });
-
-
-  d.run(function(){
-    process.nextTick(function(){
-      ds1820_xbee.logRemoteTemp(); //the interval is defined by the sender XBee! When we get a value we store it!    
+  process.nextTick(function(){ //the interval is defined by the sender XBee! When we get a value we store it!    
+    ds1820_xbee.logRemoteTemp(function(err){
+      if(err){
+        fatal_errors.remote = err; //Problem with the remote temperature sensor
+      }
     })
-  });
-
-
-  
+  })
   // Send a message to console
   console.log('Server up and running!');
 }
 
-// app.locals.startTemp = "..."; //global variable
-// //use sockets.io to emit current temperature every 3sec to anyone who wants it!
-// io.sockets.on('connection', function(socket){
-//     //send data to client
-//     setInterval(function(){
-//         var temp;
-//         ds1820.readLocalTemp(function(data){
-//           temp = data.temperature_record[0].celsius;
-//           socket.emit('localtemp', {'localtemp': temp});
-//           app.locals.startTemp = temp; //holds the last value.
-//           /*It is needed as the live update takes some secs to be shown
-//           so when a page with the current temperature is shown it should
-//           show something!*/
-//           //console.log(temp);
-//         });
-//     }, 6000);
-// });
 
-
-// app.locals.startTemp = {mean_sensor_1 : "...", mean_sensor_2 : "...", mean_sensor_all : "..." }; //global variable
 //use sockets.io to emit current temperatures every 1min to anyone who wants it!
 io.sockets.on('connection', function(socket){
+    
     //send data to client
     setInterval(function(){
+      console.log(fatal_errors);
       var duration = 240; //the last x seconds of temperature data that we want to retrieve from the database
       temperature.get_temp_data(duration, function(result){
         if (result.mean_sensor_1!=0){
@@ -152,6 +130,7 @@ io.sockets.on('connection', function(socket){
         }
       });
     }, 60000); //we want data every 1 min
+    
     socket.on('working_data', function(data){ //If a client sends working data to the server
         console.log("Server got update on the working profile data. The current profile is: "+data.profile);
         console.log("Current window data: id="+data.id+" on_time="+data.on+" off_time="+data.off+" sensors="+data.sensors+" temp="+data.temp);
@@ -159,4 +138,5 @@ io.sockets.on('connection', function(socket){
         //the server broadcasts the data back to all other clients!
         socket.broadcast.emit('check_data', {profile:data.profile, id:data.id, on:data.on, off:data.off, sensors:data.sensors, temp:data.temp, next_id:data.next_id, next_on:data.next_on, next_off:data.next_off, next_sensors:data.next_sensors, next_temp:data.next_temp}); 
     })
+
 });
