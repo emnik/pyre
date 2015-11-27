@@ -1,0 +1,188 @@
+Server up and running!
+logging buffer[i]: 0
+logging buffer[i]: 0
+logging buffer[i]: 0
+logging buffer[i]: 0
+logging buffer[i]: 0
+logging buffer[i]: 0
+logging buffer[i]: 0
+logging buffer[i]: 0
+logging buffer[i]: 0
+logging buffer[i]: 0
+logging buffer[i]: 0
+logging buffer[i]: 0
+logging buffer[i]: 0
+logging buffer[i]: 0
+logging buffer[i]: 0
+logging buffer[i]: 0
+-----------------------
+logging buffer[i]: 126
+logging buffer[i]: 0
+logging buffer[i]: 0
+logging buffer[i]: 9
+logging buffer[i]: 129
+logging buffer[i]: 0
+logging buffer[i]: 2
+logging buffer[i]: 39
+logging buffer[i]: 0
+logging buffer[i]: 0
+logging buffer[i]: 0
+logging buffer[i]: 243
+logging buffer[i]: 65
+logging buffer[i]: 33
+-----------------------
+logging buffer[i]: 126
+logging buffer[i]: 0
+logging buffer[i]: 9
+logging buffer[i]: 129
+logging buffer[i]: 0
+logging buffer[i]: 2
+logging buffer[i]: 38
+logging buffer[i]: 0
+-----------------------
+logging buffer[i]: 0
+logging buffer[i]: 0
+logging buffer[i]: 243
+logging buffer[i]: 65
+logging buffer[i]: 34
+-----------------------
+logging buffer[i]: 126
+logging buffer[i]: 0
+logging buffer[i]: 9
+logging buffer[i]: 129
+logging buffer[i]: 0
+logging buffer[i]: 2
+logging buffer[i]: 38
+logging buffer[i]: 0
+-----------------------
+logging buffer[i]: 0
+logging buffer[i]: 0
+logging buffer[i]: 243
+logging buffer[i]: 65
+logging buffer[i]: 34
+-----------------------
+logging buffer[i]: 126
+logging buffer[i]: 0
+logging buffer[i]: 9
+logging buffer[i]: 129
+logging buffer[i]: 0
+logging buffer[i]: 2
+logging buffer[i]: 38
+logging buffer[i]: 0
+-----------------------
+logging buffer[i]: 0
+logging buffer[i]: 0
+logging buffer[i]: 243
+logging buffer[i]: 65
+logging buffer[i]: 34
+-----------------------
+logging buffer[i]: 126
+logging buffer[i]: 0
+logging buffer[i]: 9
+logging buffer[i]: 129
+logging buffer[i]: 0
+logging buffer[i]: 2
+logging buffer[i]: 38
+logging buffer[i]: 0
+-----------------------
+logging buffer[i]: 0
+logging buffer[i]: 0
+logging buffer[i]: 243
+logging buffer[i]: 65
+logging buffer[i]: 34
+-----------------------
+logging buffer[i]: 126
+logging buffer[i]: 0
+logging buffer[i]: 9
+logging buffer[i]: 129
+logging buffer[i]: 0
+logging buffer[i]: 2
+logging buffer[i]: 38
+logging buffer[i]: 0
+-----------------------
+logging buffer[i]: 0
+logging buffer[i]: 128
+logging buffer[i]: 243
+logging buffer[i]: 65
+logging buffer[i]: 162
+-----------------------
+logging buffer[i]: 126
+logging buffer[i]: 0
+logging buffer[i]: 9
+logging buffer[i]: 129
+logging buffer[i]: 0
+logging buffer[i]: 2
+logging buffer[i]: 38
+logging buffer[i]: 0
+-----------------------
+logging buffer[i]: 0
+logging buffer[i]: 128
+logging buffer[i]: 243
+logging buffer[i]: 65
+logging buffer[i]: 162
+-----------------------
+logging buffer[i]: 126
+logging buffer[i]: 0
+logging buffer[i]: 9
+logging buffer[i]: 129
+logging buffer[i]: 0
+logging buffer[i]: 2
+logging buffer[i]: 38
+logging buffer[i]: 0
+-----------------------
+logging buffer[i]: 0
+logging buffer[i]: 0
+logging buffer[i]: 244
+logging buffer[i]: 65
+logging buffer[i]: 33
+-----------------------
+logging buffer[i]: 126
+logging buffer[i]: 0
+logging buffer[i]: 9
+logging buffer[i]: 129
+logging buffer[i]: 0
+logging buffer[i]: 2
+logging buffer[i]: 38
+logging buffer[i]: 0
+-----------------------
+logging buffer[i]: 0
+logging buffer[i]: 128
+logging buffer[i]: 244
+logging buffer[i]: 65
+logging buffer[i]: 161
+-----------------------
+logging buffer[i]: 126
+logging buffer[i]: 0
+logging buffer[i]: 9
+logging buffer[i]: 129
+logging buffer[i]: 0
+logging buffer[i]: 2
+logging buffer[i]: 39
+logging buffer[i]: 0
+-----------------------
+logging buffer[i]: 0
+logging buffer[i]: 0
+logging buffer[i]: 245
+buffer.js:706
+    throw new RangeError('index out of range');
+          ^
+RangeError: index out of range
+    at checkInt (buffer.js:706:11)
+    at Buffer.writeUInt8 (buffer.js:748:5)
+    at XBeeAPI.parseRaw (/home/pi/apps/pyre/node_modules/xbee-api/lib/xbee-api.js:164:18)
+    at XBeeAPI.<anonymous> (/home/pi/apps/pyre/node_modules/xbee-api/lib/xbee-api.js:133:10)
+    at Object.SerialPort.opts.dataCallback (/home/pi/apps/pyre/node_modules/serialport/serialport.js:181:12)
+    at SerialPortFactory.SerialPort._emitData (/home/pi/apps/pyre/node_modules/serialport/serialport.js:396:20)
+    at afterRead (/home/pi/apps/pyre/node_modules/serialport/serialport.js:372:20)
+    at /home/pi/apps/pyre/node_modules/serialport/serialport.js:388:9
+    at FSReqWrap.wrapper [as oncomplete] (fs.js:529:17)
+error: Forever detected script exited with code: 1
+error: Script restart attempt #1
+Server up and running!
+Error when trying to open pin 40
+gpio-admin: could not flush data to /sys/class/gpio/export: Device or resource busy
+
+Error when trying to open pin 38
+gpio-admin: could not flush data to /sys/class/gpio/export: Device or resource busy
+
+error: Forever detected script was killed by signal: SIGKILL

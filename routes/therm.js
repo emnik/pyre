@@ -4,25 +4,7 @@ var router = express.Router();
 var temperature = require("../my_modules/temperature");
 var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.Database('./sensor-data.sqlite');
-// var ds1820 = require('../my_modules/ds1820');
 
-
-/*
-* Instead of sending the data from the select box via get, I preffered to send them via POST in the /therm/profile
-* location so that I can handle them and then redirect again to /therm. The user this way does never see the
-* /them/profile address in the location bar as there is no rendering there!!!
-*/
-// router.post('/profile', function(req, res, next){
-//   var selected_profile = req.body.selected_profile;
-//   console.log("selected_profile= " + selected_profile);
-//   var db = new sqlite3.Database('./sensor-data.sqlite');
-//   db.serialize(function(){
-//     db.run("UPDATE profile SET status=0");
-//     db.run("UPDATE profile SET status=1 WHERE id=?",selected_profile);
-//   })
-//   db.close();
-//   res.redirect('/therm');
-// })
 
 function update_profile (req, res, next){
   console.log("the method used is:"+ req.method);
@@ -93,35 +75,6 @@ function update_profile (req, res, next){
        console.log(curtime);
        var getdata=[]; //get the current time window data (if exists)
        var nextdata=[]; //get the next time window for the current day - if exists a next one!
-       //var getdays=[];
-       //db.serialize() isn't needed as it is only for updates and inserts
-       //I could use it without any harm but it wouldn't do anything
-       //When db.serialize() is used, the db.close() shouldn't be used!!!
-       // var c=0;
-       // db.each("SELECT schedule.id, daynum FROM schedule JOIN profile ON schedule.profile_id = profile.id WHERE profile.status=1", function(err, rows){
-       //    getdays.push({id:rows.id});
-       //    if (rows.daynum == "*" || rows.daynum == n) {
-       //      db.each("SELECT time_window.* FROM time_window JOIN timetable ON time_window.id = timetable.time_window_id WHERE timetable.schedule_id=" + rows.id+";", function(suberr, subrows){
-       //        c++;
-       //        //the time must be set in 24 hour mode
-       //        if (curtime>=subrows.on_time && curtime<subrows.off_time) {
-       //          getdata.push({id:subrows.id, name:subrows.name, on_time:subrows.on_time, off_time:subrows.off_time, sensor_ids:subrows.sensor_ids, temp:subrows.temp});
-       //        };
-       //      },function(){
-       //        /*this is the COMPLETE CALLBACK that gets called after the sub each query ends.
-       //        If I try to access getdata array elsewhere, it will be empty because of the asynchronous
-       //        nature of node.js*/
-       //        req.time_window_data = getdata;
-       //        // req.daysnum = getdays;
-       //        console.log(c, getdays.length);
-       //        if(c==getdays.length || c==0) {
-       //          console.log(getdata);
-       //          next(); //next should be called once! THIS WAS A BIG PROBLEM - THATs WHY I COMMENTED OUT!!!
-       //        }
-       //      });
-       //    };
-       //  })
-
 
         db.each('SELECT time_window.* FROM time_window JOIN timetable ON time_window.id = timetable.time_window_id WHERE timetable.schedule_id IN (SELECT schedule.id FROM schedule JOIN profile ON schedule.profile_id = profile.id WHERE profile.status=1 AND (schedule.daynum="*" OR schedule.daynum=?))',n,function(suberr,subrows){
               //the time must be set in 24 hour mode
@@ -199,19 +152,33 @@ function update_profile (req, res, next){
       next();
     }
 
+
+    function get_all_sensors(req, res, next){
+      db.all('SELECT * from sensors', function(err, rows){
+        if (err){
+          console.error(err);
+          return next(err);
+        }
+        req.all_sensors = rows;
+        next();
+      })
+    }
+
+
     function get_sensors(req, res, next){
       // var db = new sqlite3.Database('./sensor-data.sqlite');
            if (req.state.err===""){
                var sensors_arr=req.time_window_data[0].sensor_ids.split(',');
                var sensors = sensors_arr.map(function(p){ return '"' + p + '"'; }).join(',');
-               if (sensors_arr.length > 1) {req.sensors = "all"} else {req.sensors = sensors_arr[0]};
+               console.log("Lets see: "+sensors);
+               if (sensors_arr.length == req.all_sensors.length) {req.sensors = "all"} else {req.sensors = sensors_arr[0]};
              }
            else
            {
              var sensors="1";
              req.sensors = sensors;
            }
-           // console.log(sensors);
+           console.log(req.sensors);
            db.all("SELECT location FROM sensors WHERE id IN ("+sensors+")", function(err,rows){
               if (err){
                 console.error(err);
@@ -226,37 +193,33 @@ function update_profile (req, res, next){
 
     function get_therm_data(req, res, next){
       /* Get the initial temperature data for the view*/
-      req.tempdata = null;
-      temperature.get_temp_data(240, function(result){
-        console.log(result);
-        if (result.mean_sensor_1!=0)
-        {
-          switch (req.sensors) {
-            case '1':
-              req.tempdata = result.mean_sensor_1;
-              break;
-            case '2':
-              req.tempdata = result.mean_sensor_2;
-              break;
-            case 'all':
-              req.tempdata = result.mean_sensor_all;
-              break;  
-          }
+      // req.tempdata = null;
+      temperature.get_temp_data(240, function(err, result){
+        if(err){
+          console.error(err);
+          return next(err);
         }
+        console.log(result);
+        req.tempdata = result;
+        // if (result.mean_sensor_1!=0)
+        // {
+        //   switch (req.sensors) {
+        //     case '1':
+        //       req.tempdata = result.mean_sensor_1;
+        //       break;
+        //     case '2':
+        //       req.tempdata = result.mean_sensor_2;
+        //       break;
+        //     case 'all':
+        //       req.tempdata = result.mean_sensor_all;
+        //       break;  
+        //   }
+        // }
         next();
       })
     }
 
-    function get_all_sensors(req, res, next){
-      db.all('SELECT * from sensors', function(err, rows){
-        if (err){
-          console.error(err);
-          return next(err);
-        }
-        req.all_sensors = rows;
-        next();
-      })
-    }
+
 
     function get_graph_data(req, res, next){
       //this function is used either at start, either when I need to update the graph data
@@ -316,7 +279,7 @@ function update_profile (req, res, next){
     function render_therm(req,res){
         var base_url = req.headers.host;
         console.log(req.graph_data);
-        res.render('therm', {tempdata: req.tempdata, profiles: req.profiles, sensors: req.sensors, sensor_location:req.locations, time_window_data: req.time_window_data, state:req.state, time_window_next:req.time_window_next, all_sensors:req.all_sensors, graph_data:req.graph_data ,base_url:base_url});
+        res.render('therm', {tempdata: req.tempdata, profiles: req.profiles, all_sensors:req.all_sensors, sensors: req.sensors, sensor_location:req.locations, time_window_data: req.time_window_data, state:req.state, time_window_next:req.time_window_next, graph_data:req.graph_data ,base_url:base_url});
       }
 
 
@@ -324,7 +287,7 @@ function update_profile (req, res, next){
     // When I used the GET method to send the select box data to /therm I had as a first callback function
     // in the following line the set_profile function
     // *I use router.use (instead of router.get()) to catch both GET and POST requests
-    router.use('/', update_profile, get_profiles,get_time_window_data, set_status, get_sensors, get_therm_data, get_all_sensors, get_graph_data, render_therm);
+    router.use('/', update_profile, get_profiles,get_time_window_data, set_status, get_all_sensors, get_sensors, get_therm_data, get_graph_data, render_therm);
 
     //GET therm page with one sqlite query
     //router.get('/therm', function(req, res) {

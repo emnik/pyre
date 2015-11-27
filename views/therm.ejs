@@ -128,10 +128,11 @@
 							</select>
 						</div>
 						<div class="col-xs-5">
-							<select id="graph_sensor" name="graph_sensor" class="form-control" style="width:100%"> 
+							<select disabled id="graph_sensor" name="graph_sensor" class="form-control" style="width:100%"> 
 								<%all_sensors.forEach(function(sensor){%>
 									<option value=<%=sensor.id%>><%=sensor.location%></option>
 								<%})%>
+									<option value="all">All locations (average)</option>
 							</select>
 						</div>
 						<div class="col-xs-2">
@@ -176,32 +177,55 @@
 		socket.emit('working_data', data_info); 
 		
 
-		if (<%=tempdata!==null%>) //true if we have initial temperature data...
+		if (<%=tempdata!==null%>) //true if we have initial temperature data... This may not be needed anymore...
 		{
-			$('#temp>h1>span').text(<%=tempdata%>);
+			<%
+				var found=false;
+				for (var i = tempdata.length - 1; i >= 0; i--) {
+					if(tempdata[i].id==sensors){
+						found=true;
+						var avgtemp = tempdata[i].average; 
+					}
+					if(tempdata[i].id=='all'){
+						var backuptemp=tempdata[i].average;
+					}
+				};
+				if(!found){
+					var avgtemp = backuptemp;
+				};
+			%>
 
-			//update live graph if Live is selected...
-			// var duration=$('#graph_duration').val();
-			// if (duration=='1'){//Live data
-			// 	update_live_graph(<%=tempdata%>);
-			// }
-
-			manage(<%=tempdata%>);	
+			$('#temp>h1>span').text(<%=avgtemp%>);
+			manage(<%=avgtemp%>);	
 		}
 
 
 		socket.on('temperatures', function(data){
 			console.log(data);
+			<%
+				var found=false;
+				for (var i = tempdata.length - 1; i >= 0; i--) {
+					if(tempdata[i].id==sensors){
+						found=true;
+						var avgtemp = tempdata[i].average; 
+					}
+					if(tempdata[i].id=='all'){
+						var backuptemp=tempdata[i].average;
+					}
+				};
+				if(!found){
+					var avgtemp = backuptemp;
+				};
+			%>			
 			if(Object.keys(data).length>0){
-				$('#temp>h1>span').text(data.mean_sensor_<%=sensors%>);
-				manage(data.mean_sensor_<%=sensors%>);
+				$('#temp>h1>span').text(<%=avgtemp%>);
+				manage(<%=avgtemp%>);
 
 				//update live graph with new data if <Live graph> is selected.
 				var duration=$('#graph_duration').val();
 				if (duration=='1'){ //Live graph
-					var sensor=$('#graph_sensor').val();
-					if (sensor=="1"){update_live_graph(data.mean_sensor_1);}
-					else {update_live_graph(data.mean_sensor_2);}
+					// var sensor=$('#graph_sensor').val();
+					update_live_graph(<%=avgtemp%>);
 				}
 				
 			}
@@ -471,7 +495,17 @@
 
 	//Update graph selections
 	$('#graph_sensor').change(function(){update_graph()});
-	$('#graph_duration').change(function(){update_graph()});
+	$('#graph_duration').change(function(){
+		if($(this).val()!=1){ //if not LIVE the user can choose the sensor
+			$('#graph_sensor').select2('enable', true);		
+		}
+		else //if LIVE the sensor defaults to the one used!
+		{
+			$('#graph_sensor').val(<%=sensors%>).trigger('change.select2');
+			$('#graph_sensor').select2('enable', false);
+		}
+		update_graph();	
+	});
 	$('#graph_refresh').click(function(){update_graph()});
 
 

@@ -123,11 +123,11 @@ io.sockets.on('connection', function(socket){
     setInterval(function(){
       console.log(fatal_errors);
       var duration = 240; //the last x seconds of temperature data that we want to retrieve from the database
-      temperature.get_temp_data(duration, function(result){
-        if (result.mean_sensor_1!=0){
-          socket.emit('temperatures', result);
-          // app.locals.startTemp = temperature.result; //holds the last values.
-        }
+      temperature.get_temp_data(duration, function(err,result){
+        if(err){
+          console.error(err);
+        };
+        socket.emit('temperatures', result);
       });
     }, 60000); //we want data every 1 min
     
