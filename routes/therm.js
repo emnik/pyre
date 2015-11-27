@@ -201,20 +201,6 @@ function update_profile (req, res, next){
         }
         console.log(result);
         req.tempdata = result;
-        // if (result.mean_sensor_1!=0)
-        // {
-        //   switch (req.sensors) {
-        //     case '1':
-        //       req.tempdata = result.mean_sensor_1;
-        //       break;
-        //     case '2':
-        //       req.tempdata = result.mean_sensor_2;
-        //       break;
-        //     case 'all':
-        //       req.tempdata = result.mean_sensor_all;
-        //       break;  
-        //   }
-        // }
         next();
       })
     }
@@ -228,20 +214,20 @@ function update_profile (req, res, next){
       var temps=[];
       req.graph_data={};
       
-      //when used at start it defaults to sensor 1 (local) and duration of 1 hours (Live data)
-      //else it gets the sensor and the duration in hours from the post data...
-      var selected_sensors = ((req.body.sensor!='undefined' && req.body.sensor!=null)? req.body.sensor : "1");
+      var selected_sensors = ((req.body.sensor!='undefined' && req.body.sensor!=null)? req.body.sensor : req.sensors);
       var duration = ((req.body.duration!='undefined' && req.body.duration!=null)? req.body.duration : "1"); //in hours
       
       var sql = "SELECT datetime((timestamp/1000)/?*?, 'unixepoch', 'localtime') as localtime, "+ 
       "date((timestamp/1000)/?*?, 'unixepoch', 'localtime') as date, "+
       "strftime('%H:%M', (timestamp/1000)/?*?, 'unixepoch', 'localtime') as time, "+
-      "ROUND(avg(value),2) as temp, "+
-      "sensor_id "+
+      "ROUND(avg(value),2) as temp "+
+      // "sensor_id "+
       "FROM sensor_data "+
-      "WHERE timestamp/1000 >= ((strftime('%s', 'now') - strftime('%S', 'now') + strftime('%f', 'now'))-3600*?) "+
-      "AND sensor_id = ? " +
-      "GROUP BY localtime "+
+      "WHERE timestamp/1000 >= ((strftime('%s', 'now') - strftime('%S', 'now') + strftime('%f', 'now'))-3600*?) ";
+      if (selected_sensors!='all'){
+        sql = sql + "AND sensor_id = ? ";
+      };
+      sql = sql + "GROUP BY localtime "+
       "ORDER BY localtime ASC;";
 
       var interval;
@@ -252,7 +238,7 @@ function update_profile (req, res, next){
       var options=[];
       for (var i=1;i<=6;i++){options.push(interval);}
       options.push(duration);
-      options.push(selected_sensors);
+      if(selected_sensors!='all'){options.push(selected_sensors);}
 
       db.each(sql,options, function(err, row){
         if(err){

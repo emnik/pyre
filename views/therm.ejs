@@ -97,7 +97,7 @@
 					<div class="col-xs-12">
 						<p>Target Temp: <strong><% if (state.err==="") {%><%=time_window_data[0].temp%><% } else {%> - <%}%> &deg C </strong></p>
 						<p>Sensors:
-							<span class="label-group">
+							<span id="sensorslist" class="label-group">
 							<%var arr = Object.keys(sensor_location).map(function(k) { return sensor_location[k].location });%>
 							<!-- <%=arr.join(' / ');%> -->
 							<% arr.forEach(function(location){%>
@@ -130,9 +130,9 @@
 						<div class="col-xs-5">
 							<select disabled id="graph_sensor" name="graph_sensor" class="form-control" style="width:100%"> 
 								<%all_sensors.forEach(function(sensor){%>
-									<option value=<%=sensor.id%>><%=sensor.location%></option>
+									<option value=<%=sensor.id%> <%if(sensor.id==sensors){%>selected='selected'<%}%> ><%=sensor.location%></option>
 								<%})%>
-									<option value="all">All locations (average)</option>
+									<option value="all"<%if(sensors=='all'){%>selected='selected'<%}%>>All locations (average)</option>
 							</select>
 						</div>
 						<div class="col-xs-2">
@@ -191,41 +191,48 @@
 					}
 				};
 				if(!found){
-					var avgtemp = backuptemp;
-				};
-			%>
+					var avgtemp = backuptemp;%>
+					$('#sensorslist').append('<span id="backupsensor" class="label label-default"><span class="glyphicon glyphicon-warning-sign"></span></span>');
+				<%}else{%>
+					$('#backupsensor').remove();
+				<%};%>
 
-			$('#temp>h1>span').text(<%=avgtemp%>);
+			$('#temp>h1>span').text(<%=avgtemp%>); //if the backup is used I have to inform somehow the user...
 			manage(<%=avgtemp%>);	
 		}
 
 
 		socket.on('temperatures', function(data){
 			console.log(data);
-			<%
-				var found=false;
-				for (var i = tempdata.length - 1; i >= 0; i--) {
-					if(tempdata[i].id==sensors){
-						found=true;
-						var avgtemp = tempdata[i].average; 
-					}
-					if(tempdata[i].id=='all'){
-						var backuptemp=tempdata[i].average;
-					}
-				};
-				if(!found){
-					var avgtemp = backuptemp;
-				};
-			%>			
+			var found=false;
+			for (var i = data.length - 1; i >= 0; i--) {
+				if(data[i].id=="<%=sensors%>"){
+					found=true;
+					var avgtemp = data[i].average; 
+				}
+				if(data[i].id=="all"){
+					var backuptemp=data[i].average;
+				}
+			};
+			if(!found){
+				var avgtemp = backuptemp;
+				if (document.getElementById('#backupsensor')===null) {
+					$('#sensorslist').append('<span id="backupsensor" class="label label-default"><span class="glyphicon glyphicon-warning-sign"></span></span>');
+				}
+			}
+			else
+			{
+				$('#backupsensor').remove();
+			};
+
 			if(Object.keys(data).length>0){
-				$('#temp>h1>span').text(<%=avgtemp%>);
-				manage(<%=avgtemp%>);
+				$('#temp>h1>span').text(avgtemp); //if the backup is used I have to inform somehow the user...
+				manage(avgtemp);
 
 				//update live graph with new data if <Live graph> is selected.
 				var duration=$('#graph_duration').val();
 				if (duration=='1'){ //Live graph
-					// var sensor=$('#graph_sensor').val();
-					update_live_graph(<%=avgtemp%>);
+					update_live_graph(avgtemp);
 				}
 				
 			}
@@ -262,8 +269,6 @@
 		$("[name='okbtn']").click(function(){
 			console.log("user confirms to change profile");
 			$('#myModal').modal('hide');
-			// var selected_profile=$('#profiles').val();
-			// socket.emit('profile', {profile:selected_profile}); //send the new profile to server to inform the other connected clients!
 			$('form#mainform').submit();
 		});
 
@@ -296,7 +301,7 @@
 			curstate = "Paused";
 			setRelay();
 		}
-		else if (<%=tempdata==={}%>) //no error -we are in a time window... but no initial time data
+		else if (<%=tempdata==={}%>) //no error -we are in a time window... but no initial temp data - this should not happen...
 		{
 			// $("#status>h4>span").css({"color":"#F6F4EC", "font-size":"80%"});
 			$("#status>h4>span").removeClass("label-default");

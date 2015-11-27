@@ -4,7 +4,6 @@ db.configure("busyTimeout", 2000);
 
 
 function get_temp_data(duration, callback) {
-	var tmp=[];
 	var sensors=[];
 
 	db.each("SELECT sensor_id AS id, AVG(value) as average FROM sensor_data WHERE timestamp >= ? GROUP BY sensor_id;", (Date.now()-duration*1000), function (err, row) {
@@ -12,10 +11,8 @@ function get_temp_data(duration, callback) {
 	      console.error(err);
 	      return callback(err, null);
 	    };
-	    // console.log(rows);
 	    sensors.push({id:row.id,average:(Math.round(row.average*10)/10)});
 	   }, function(){
-	   		// console.log(sensors);
 	   		try {
 			    var sum=0;
 			    for (var i = sensors.length - 1; i >= 0; i--) {
@@ -31,11 +28,6 @@ function get_temp_data(duration, callback) {
 	   		}
 	   }) 
 	};
-
-
-
-
-
 
 module.exports.get_temp_data =  get_temp_data;
  
