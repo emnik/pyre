@@ -24,17 +24,32 @@ body {
 /*Grouping labels*/
 
 .label-group>.label:first-child {
-	border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-    margin-right: 0;
+	border-top-left-radius: 0.25em
+	border-bottom-left-radius: 0.25em
+	margin-right:0;
+	border-top-right-radius:0; 
+	border-bottom-right-radius:0; 
 }
-    
+
 .label-group>.label:nth-child(2) {
 	border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    margin-left: 0;
+	border-bottom-left-radius: 0;	
+	border-top-right-radius:0; 
+	border-bottom-right-radius:0; 
     filter: alpha(opacity=90);
     opacity: 0.9;
+}
+    
+.label-group>.label:last-child {
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+    margin-left: 0;	
+	border-top-right-radius: 0.25em;
+	border-bottom-right-radius: 0.25em;
+}
+
+.label-group>.label:only-child {
+	border-radius: 0.25em
 }
 
 /*Changing the bootstraps's navbar styling*/

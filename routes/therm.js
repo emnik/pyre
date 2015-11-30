@@ -159,6 +159,11 @@ function update_profile (req, res, next){
           console.error(err);
           return next(err);
         }
+        for (var i = rows.length - 1; i >= 0; i--) {
+          if(rows[i].protected==1){
+            req.default_sensor = rows[i].id;  //get the default sensor (the protected one)
+          }
+        };
         req.all_sensors = rows;
         next();
       })
@@ -168,18 +173,19 @@ function update_profile (req, res, next){
     function get_sensors(req, res, next){
       // var db = new sqlite3.Database('./sensor-data.sqlite');
            if (req.state.err===""){
-               var sensors_arr=req.time_window_data[0].sensor_ids.split(',');
-               var sensors = sensors_arr.map(function(p){ return '"' + p + '"'; }).join(',');
-               console.log("Lets see: "+sensors);
-               if (sensors_arr.length == req.all_sensors.length) {req.sensors = "all"} else {req.sensors = sensors_arr[0]};
-             }
-           else
-           {
-             var sensors="1";
-             req.sensors = sensors;
+               var sensors_arr=req.time_window_data[0].sensor_ids.split(',');               
            }
-           console.log(req.sensors);
-           db.all("SELECT location FROM sensors WHERE id IN ("+sensors+")", function(err,rows){
+           else //in overlap or no timewindow the default sensor is used to show the temperature.
+           {
+             var sensors_arr=[];
+             sensors_arr.push(req.default_sensor);
+           }
+           req.sensors = sensors_arr;
+
+           // console.log(req.sensors);
+
+           var sensors = sensors_arr.map(function(p){ return '"' + p + '"'; }).join(','); // needed to put it inside the IN(...) in the sql           
+           db.all("SELECT id, location FROM sensors WHERE id IN ("+sensors+")", function(err,rows){
               if (err){
                 console.error(err);
                 return next(err);
@@ -213,8 +219,17 @@ function update_profile (req, res, next){
       var labels=[];
       var temps=[];
       req.graph_data={};
-      
-      var selected_sensors = ((req.body.sensor!='undefined' && req.body.sensor!=null)? req.body.sensor : req.sensors);
+
+      if (req.body.sensor!='undefined' && req.body.sensor!=null){
+        var selected_sensors=req.body.sensor;
+      }
+      else
+      {
+        var sensors = req.sensors.map(function(p){ return '"' + p + '"'; }).join(',');
+        var selected_sensors = sensors;
+      }
+      console.log(selected_sensors);
+      // var selected_sensors = ((req.body.sensor!='undefined' && req.body.sensor!=null)? req.body.sensor : req.sensors);
       var duration = ((req.body.duration!='undefined' && req.body.duration!=null)? req.body.duration : "1"); //in hours
       
       var sql = "SELECT datetime((timestamp/1000)/?*?, 'unixepoch', 'localtime') as localtime, "+ 
@@ -223,11 +238,9 @@ function update_profile (req, res, next){
       "ROUND(avg(value),2) as temp "+
       // "sensor_id "+
       "FROM sensor_data "+
-      "WHERE timestamp/1000 >= ((strftime('%s', 'now') - strftime('%S', 'now') + strftime('%f', 'now'))-3600*?) ";
-      if (selected_sensors!='all'){
-        sql = sql + "AND sensor_id = ? ";
-      };
-      sql = sql + "GROUP BY localtime "+
+      "WHERE timestamp/1000 >= ((strftime('%s', 'now') - strftime('%S', 'now') + strftime('%f', 'now'))-3600*?) "+
+      "AND sensor_id IN ("+selected_sensors+") "+
+      "GROUP BY localtime "+
       "ORDER BY localtime ASC;";
 
       var interval;
@@ -238,7 +251,6 @@ function update_profile (req, res, next){
       var options=[];
       for (var i=1;i<=6;i++){options.push(interval);}
       options.push(duration);
-      if(selected_sensors!='all'){options.push(selected_sensors);}
 
       db.each(sql,options, function(err, row){
         if(err){
@@ -265,7 +277,7 @@ function update_profile (req, res, next){
     function render_therm(req,res){
         var base_url = req.headers.host;
         console.log(req.graph_data);
-        res.render('therm', {tempdata: req.tempdata, profiles: req.profiles, all_sensors:req.all_sensors, sensors: req.sensors, sensor_location:req.locations, time_window_data: req.time_window_data, state:req.state, time_window_next:req.time_window_next, graph_data:req.graph_data ,base_url:base_url});
+        res.render('therm', {tempdata: req.tempdata, profiles: req.profiles, all_sensors:req.all_sensors, sensors: req.sensors, sensor_location:req.locations, default_sensor:req.default_sensor, time_window_data: req.time_window_data, state:req.state, time_window_next:req.time_window_next, graph_data:req.graph_data ,base_url:base_url});
       }
 
 

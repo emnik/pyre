@@ -44,7 +44,7 @@ function readRemoteTemp(insertfunc, callback)
 
   // Write a single temperature record in JSON format to database table.
   function insertRemoteTemp(data, callback){
-    db.all('SELECT id FROM sensors WHERE xbee_id=? LIMIT 1', data.temperature_record[0].xbee_id, function(err,row){
+    db.all('SELECT id, status FROM sensors WHERE xbee_id=? LIMIT 1', data.temperature_record[0].xbee_id, function(err,row){
       if(err){
         return callback(err);
       }
@@ -58,12 +58,15 @@ function readRemoteTemp(insertfunc, callback)
       }
       else //existing sensor
       {
-        var sensor_id=row[0].id;
-        db.run("INSERT INTO sensor_data (timestamp, sensor_id, value) VALUES (?, ?, ?)",[data.temperature_record[0].unix_time, sensor_id, data.temperature_record[0].celsius], function(err){
-         if (err){
-           callback(err);
-         } 
-       })         
+        if (row[0].status==1){ // if the existing sensor is enabled (status=1), then we store the data. else we ignore them!!!
+          var sensor_id=row[0].id;
+          db.run("INSERT INTO sensor_data (timestamp, sensor_id, value) VALUES (?, ?, ?)",[data.temperature_record[0].unix_time, sensor_id, data.temperature_record[0].celsius], function(err){
+           if (err){
+             callback(err);
+           }           
+        })
+       } 
+
       }
     })
   }

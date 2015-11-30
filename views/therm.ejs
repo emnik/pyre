@@ -98,11 +98,9 @@
 						<p>Target Temp: <strong><% if (state.err==="") {%><%=time_window_data[0].temp%><% } else {%> - <%}%> &deg C </strong></p>
 						<p>Sensors:
 							<span id="sensorslist" class="label-group">
-							<%var arr = Object.keys(sensor_location).map(function(k) { return sensor_location[k].location });%>
-							<!-- <%=arr.join(' / ');%> -->
-							<% arr.forEach(function(location){%>
-								<span class="label label-default">
-									<%=location;%>
+							<% sensor_location.forEach(function(i){%>
+								<span id="sensor<%=i.id%>"class="label label-default">
+									<%=i.location;%>
 								</span>					
 							<%})%>
 							</span>
@@ -129,10 +127,12 @@
 						</div>
 						<div class="col-xs-5">
 							<select disabled id="graph_sensor" name="graph_sensor" class="form-control" style="width:100%"> 
-								<%all_sensors.forEach(function(sensor){%>
-									<option value=<%=sensor.id%> <%if(sensor.id==sensors){%>selected='selected'<%}%> ><%=sensor.location%></option>
-								<%})%>
-									<option value="all"<%if(sensors=='all'){%>selected='selected'<%}%>>All locations (average)</option>
+							<% sensor_location.forEach(function(i){%>
+								<option value="<%=i.id%>"><%=i.location%></option>					
+							<%})%>
+							<%if(sensors.length>1){%>
+									<option value="<%=sensors%>" selected="selected">All locations (average)</option>
+							<%}%>
 							</select>
 						</div>
 						<div class="col-xs-2">
@@ -156,7 +156,7 @@
 	var curdate = new Date();
 	var curday = curdate.getDay();
 
-	$( document ).ready(function() {
+	$( document ).ready(function(){
 		
 		var socket = io.connect();	
 		var selected_profile=$('#profiles').val();
@@ -177,66 +177,112 @@
 		socket.emit('working_data', data_info); 
 		
 
-		if (<%=tempdata!==null%>) //true if we have initial temperature data... This may not be needed anymore...
-		{
-			<%
-				var found=false;
-				for (var i = tempdata.length - 1; i >= 0; i--) {
-					if(tempdata[i].id==sensors){
-						found=true;
-						var avgtemp = tempdata[i].average; 
-					}
-					if(tempdata[i].id=='all'){
-						var backuptemp=tempdata[i].average;
-					}
-				};
-				if(!found){
-					var avgtemp = backuptemp;%>
-					$('#sensorslist').append('<span id="backupsensor" class="label label-default"><span class="glyphicon glyphicon-warning-sign"></span></span>');
-				<%}else{%>
-					$('#backupsensor').remove();
-				<%};%>
-
-			$('#temp>h1>span').text(<%=avgtemp%>); //if the backup is used I have to inform somehow the user...
-			manage(<%=avgtemp%>);	
+	//Get the initial data and get started...
+		<%
+		var found=0;
+		var sumtemp=0;
+		for (var i = tempdata.length - 1; i >= 0; i--) {
+			for (var j = sensors.length - 1; j >= 0; j--) {
+				if(sensors[j] == tempdata[i].id){
+					found=found+1;
+					sumtemp = sumtemp + tempdata[i].average;
+				}
+			} 
 		}
+
+		if(found!=sensors.length){%>
+			if (document.getElementById('backupsensor')===null) {
+				$('#sensorslist').append('<span id="backupsensor" class="label label-default"><span class="glyphicon glyphicon-warning-sign"></span></span>');
+			}
+		<%}
+		else
+		{%>
+			$('#backupsensor').remove();
+		<%};	
+
+		if(sumtemp!=0){
+			var avgtemp = Math.round(sumtemp / found * 10)/10;
+		}
+
+		if(found==0){var noData=true;} else {var noData=false;}
+		%>
+		
+		if(<%=noData%>){ //true if no therm data comes for the selected sensors...
+			curstate = "Paused";
+			console.log(curstate);
+			console.log("No therm data from any off the sensors!!! Either Offline, or disabled!");
+			$("#status>h4>span").removeClass("label-default");
+			$("#status>h4>span").addClass("label-info");
+			$("#status>h4>span").text("Paused");
+			setRelay();
+			$('#temp>h1>span').text("... "); //this is the first attempt... If the sensors are all remote, we might get data in a while...
+		}
+		else
+		{
+			manage(<%=avgtemp%>);
+			$('#temp>h1>span').text(<%=avgtemp%>);
+		}
+
+
 
 
 		socket.on('temperatures', function(data){
 			console.log(data);
-			var found=false;
+			var found=0;
+			var sumtemp=0;
+			var sensors = "<%=sensors%>".split(',');
 			for (var i = data.length - 1; i >= 0; i--) {
-				if(data[i].id=="<%=sensors%>"){
-					found=true;
-					var avgtemp = data[i].average; 
+				for (var j = sensors.length - 1; j >= 0; j--) {
+					if(sensors[j]==data[i].id){
+						found=found+1;
+						sumtemp = sumtemp + data[i].average; 						
+					}
 				}
-				if(data[i].id=="all"){
-					var backuptemp=data[i].average;
-				}
-			};
-			if(!found){
-				var avgtemp = backuptemp;
-				if (document.getElementById('#backupsensor')===null) {
+			}
+			if(found!=sensors.length){
+				if (document.getElementById('backupsensor')===null) {
 					$('#sensorslist').append('<span id="backupsensor" class="label label-default"><span class="glyphicon glyphicon-warning-sign"></span></span>');
 				}
 			}
 			else
 			{
 				$('#backupsensor').remove();
-			};
+			};				
+			
+			if(sumtemp!=0){
+				var avgtemp = Math.round(sumtemp/found*10)/10;
+			}
 
-			if(Object.keys(data).length>0){
-				$('#temp>h1>span').text(avgtemp); //if the backup is used I have to inform somehow the user...
+			if(found==0){ //true if no therm data comes for the selected sensors...
+				curstate = "Paused";
+				console.log(curstate);
+				console.log("No therm data from any off the sensors!!! Either Offline, or disabled!");
+				$("#status>h4>span").removeClass("label-default");
+				$("#status>h4>span").addClass("label-info");
+				$("#status>h4>span").text("Paused");
+				setRelay();
+				$('#temp>h1>span').text("... "); //If the sensors are all remote, we might get data when available... Maybe we should inform the user about what is happening...
+			}
+			else
+			{
 				manage(avgtemp);
-
+				$('#temp>h1>span').text(avgtemp);
+	
 				//update live graph with new data if <Live graph> is selected.
 				var duration=$('#graph_duration').val();
 				if (duration=='1'){ //Live graph
 					update_live_graph(avgtemp);
 				}
-				
+
 			}
+
 		});
+
+
+
+
+
+
 		socket.on('check_data', function(data){ //when the server sends the current profile data, compare it with the ones used and if any of them is different reload to get the updated data from the server. The change in any of the data would have been done from another client! 
 			// console.log(data);
 			var selected_profile=$('#profiles').val();
@@ -506,7 +552,7 @@
 		}
 		else //if LIVE the sensor defaults to the one used!
 		{
-			$('#graph_sensor').val(<%=sensors%>).trigger('change.select2');
+			$('#graph_sensor').val("<%=sensors%>").trigger('change.select2');
 			$('#graph_sensor').select2('enable', false);
 		}
 		update_graph();	
