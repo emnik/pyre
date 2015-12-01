@@ -26,7 +26,7 @@ function get_timetables(req, res, next){
 
 function get_sensors(req,res,next){
 	// if (req.params.section == 'timewindows'){
-			db.all("SELECT  id, location FROM sensors;", function(err,rows){
+			db.all("SELECT  * FROM sensors;", function(err,rows){
 				if(err){
 					console.error(err);
 					return next(err);
@@ -49,6 +49,9 @@ router.get('/:section', get_timetables, get_sensors, function(req, res) {
   var base_url = req.headers.host;
   if (req.params.section == 'timewindows'){
   	res.render('config/'+req.params.section, {timetables:req.timetables, sensors:req.sensors, base_url:base_url});
+  }
+  else if(req.params.section == 'sensors'){
+  	res.render('config/'+req.params.section, {sensors:req.sensors, base_url:base_url});	
   }
 })
 

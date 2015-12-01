@@ -160,8 +160,8 @@ function update_profile (req, res, next){
           return next(err);
         }
         for (var i = rows.length - 1; i >= 0; i--) {
-          if(rows[i].protected==1){
-            req.default_sensor = rows[i].id;  //get the default sensor (the protected one)
+          if(rows[i].default==1){
+            req.default_sensor = rows[i].id;  //get the default sensor
           }
         };
         req.all_sensors = rows;
