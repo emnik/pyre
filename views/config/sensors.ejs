@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="/stylesheets/select2.css" >
+		<link rel="stylesheet" type="text/css" href="/stylesheets/select2-width-fix.css">
+		<link rel="stylesheet" type="text/css" href="/stylesheets/pickatime/default.css">
+		<link rel="stylesheet" type="text/css" href="/stylesheets/pickatime/default.time.css">
+		<link rel="stylesheet" type="text/css" href="/stylesheets/bootstrap-switch.min.css">
+		<% include ../partials/head %>
+	</head>
+
+<body>
+	<header>
+		<% include ../partials/header_edits %>
+	</header>
+
+	<div class="container-fluid">
+		<div class="row">
+			<%sensors.forEach(function(sensor){%>
+			<div class="col-xs-12 col-md-6 col-lg-4">
+				<div class="panel panel-default" id='<%=sensor.id%>'>
+				  <!-- Default panel contents -->
+				  <div class="panel-heading">
+				  	<span><%=sensor.name%></span>
+				  	<%if(sensor.default==0){%>
+				  	<span class="pull-right glyphicon glyphicon-star" style="color:gray;cursor:pointer;" onclick="change_default('<%=sensor.id%>');"></span>
+				  	<%}
+				  	else
+				  	{%>
+				  	<span class="pull-right glyphicon glyphicon-star-empty" style="color:gray;cursor:pointer;" onclick="change_default('<%=sensor.id%>');"></span>
+				  	<%}%>
+				  </div>
+				  <div class="panel-body">
+					<form class="form-horizontal">
+						<div class="form-group">
+							<label class="col-sm-2 control-label" for="sensortype<%=sensor.id%>">Type</label>
+							<div class="col-sm-10">
+						      <select class="form-control" id="sensortype<%=sensor.id%>" value="<%=sensor.type%>" placeholder="Type">
+						      	<option value="TEMPERATURE" selected="selected">TEMPERATURE</option>
+						      </select>
+						    </div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-2 control-label" for="sensorlocation<%=sensor.id%>">Location</label>
+						    <div class="col-sm-10">
+						    	<input type="text" class="form-control" id="sensorlocation<%=sensor.id%>" value="<%=sensor.location%>" placeholder="Location">
+						    </div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-2 control-label" for="sensorname<%=sensor.id%>">Name</label>
+						    <div class="col-sm-10">
+						    	<input type="text" class="form-control" id="sensorname<%=sensor.id%>" value="<%=sensor.name%>" placeholder="Name">
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-2 control-label" for="sensorxbee<%=sensor.id%>">xbeeID</label>
+						    <div class="col-sm-4">
+						    	<input type="text" class="form-control" id="sensorxbee<%=sensor.id%>" value="<%=sensor.xbee_id%>" placeholder="Xbee ID">
+							</div>
+							<label class="col-sm-2 control-label" for="sensorstatus<%=sensor.id%>">Status</label>
+						    <div class="col-sm-4">
+						    	<input type="checkbox" class="form-control"  id="sensorstatus<%=sensor.id%>" data-size="medium" name="status-checkbox">
+							</div>							
+						</div>						
+					</form>
+				  </div>
+				</div>
+			</div>
+			<%})%>
+		</div>
+		<div class="row" id="buttons" style="padding-bottom:20px;">
+			<div class="col-xs-12 col-md-12 col-lg-12">
+				<div class="btn-group pull-left">
+					<button id="resetbtn" type="button" class="btn btn-danger">Reset</button>
+					<button id="refreshbtn" type="button" class="btn btn-danger" onclick="location.reload(true);"><span class="glyphicon glyphicon-refresh"></span></button>
+				</div>
+				<div class="btn-group pull-right">
+					<button id="savebtn" type="button" class="btn btn-success">Save</button>
+					<button id="addbtn" type="button" class="btn btn-success">Add</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</body>
+
+<% include ../partials/javascript.ejs %>
+<script src="/javascripts/select2/select2.min.js"></script>
+<script src="/javascripts/bootstrap-switch.min.js"></script>
+
+<script>
+	$( document ).ready(function() {
+		$("[name='status-checkbox']").bootstrapSwitch();
+	}) //end of ( document ).ready(function()
+
+</script>
+
