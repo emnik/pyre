@@ -3,10 +3,21 @@
 	<head>
 		<link rel="stylesheet" type="text/css" href="/stylesheets/select2.css" >
 		<link rel="stylesheet" type="text/css" href="/stylesheets/select2-width-fix.css">
-		<link rel="stylesheet" type="text/css" href="/stylesheets/pickatime/default.css">
-		<link rel="stylesheet" type="text/css" href="/stylesheets/pickatime/default.time.css">
-		<link rel="stylesheet" type="text/css" href="/stylesheets/bootstrap-switch.min.css">
+		<link rel="stylesheet" type="text/css" href="/stylesheets/bootstrap-toggle.min.css">
 		<% include ../partials/head %>
+		<style type="text/css">
+			.select2-container .select2-selection--single{
+				height:34px;
+			}
+			.select2-selection__arrow{
+				margin-top: 3px;
+			}
+			.select2-container .select2-selection--single .select2-selection__rendered{
+				padding-top: 3px;
+				padding-left: 15px;
+			}
+
+		</style>
 	</head>
 
 <body>
@@ -23,19 +34,19 @@
 				  <div class="panel-heading">
 				  	<span><%=sensor.name%></span>
 				  	<%if(sensor.default==0){%>
-				  	<span class="pull-right glyphicon glyphicon-star" style="color:gray;cursor:pointer;" onclick="change_default('<%=sensor.id%>');"></span>
+				  	<span name="sensordefault" class="pull-right glyphicon glyphicon-star" style="color:green;cursor:pointer;" onclick="change_default('#<%=sensor.id%>');"></span>
 				  	<%}
 				  	else
 				  	{%>
-				  	<span class="pull-right glyphicon glyphicon-star-empty" style="color:gray;cursor:pointer;" onclick="change_default('<%=sensor.id%>');"></span>
+				  	<span name="sensordefault" class="pull-right glyphicon glyphicon-star-empty" style="color:gray;cursor:pointer;" onclick="change_default('#<%=sensor.id%>');"></span>
 				  	<%}%>
 				  </div>
-				  <div class="panel-body">
+				  <div class="panel-body" id="<%=sensor.id%>">
 					<form class="form-horizontal">
 						<div class="form-group">
 							<label class="col-sm-2 control-label" for="sensortype<%=sensor.id%>">Type</label>
 							<div class="col-sm-10">
-						      <select class="form-control" id="sensortype<%=sensor.id%>" value="<%=sensor.type%>" placeholder="Type">
+						      <select class="form-control" style="width:100%;" id="sensortype<%=sensor.id%>" name="sensortype">
 						      	<option value="TEMPERATURE" selected="selected">TEMPERATURE</option>
 						      </select>
 						    </div>
@@ -43,23 +54,32 @@
 						<div class="form-group">
 							<label class="col-sm-2 control-label" for="sensorlocation<%=sensor.id%>">Location</label>
 						    <div class="col-sm-10">
-						    	<input type="text" class="form-control" id="sensorlocation<%=sensor.id%>" value="<%=sensor.location%>" placeholder="Location">
+						    	<select class="form-control" style="width:100%;" id="sensorlocation<%=sensor.id%>" name="sensorlocation">
+						    		<option value="LivingRoom">Living Room</option>
+						    		<option value="KidsRoom">Kids Room</option>
+						    		<option value="Bedroom">Bedroom</option>
+						    		<option value="Hall">Hall</option>
+						    		<option value="Kitchen">Kitchen</option>
+						    		<option value="Office">Office</option>
+						    		<option value="Bathroom">Bathroom</option>
+						    		<option value="Room" >Room</option>
+						    	</select>
 						    </div>
 						</div>
 						<div class="form-group">
 							<label class="col-sm-2 control-label" for="sensorname<%=sensor.id%>">Name</label>
 						    <div class="col-sm-10">
-						    	<input type="text" class="form-control" id="sensorname<%=sensor.id%>" value="<%=sensor.name%>" placeholder="Name">
+						    	<input type="text" class="form-control" id="sensorname<%=sensor.id%>" value="<%=sensor.name%>" name="sensorname">
 							</div>
 						</div>
 						<div class="form-group">
 							<label class="col-sm-2 control-label" for="sensorxbee<%=sensor.id%>">xbeeID</label>
 						    <div class="col-sm-4">
-						    	<input type="text" class="form-control" id="sensorxbee<%=sensor.id%>" value="<%=sensor.xbee_id%>" placeholder="Xbee ID">
+						    	<input type="text" class="form-control" name="sensorxbeeid" id="sensorxbee<%=sensor.id%>" value="<%=sensor.xbee_id%>">
 							</div>
 							<label class="col-sm-2 control-label" for="sensorstatus<%=sensor.id%>">Status</label>
 						    <div class="col-sm-4">
-						    	<input type="checkbox" class="form-control"  id="sensorstatus<%=sensor.id%>" data-size="medium" name="status-checkbox">
+						    	<input type="checkbox"  data-onstyle="success" data-on="Enabled" data-off="Disabled" class="form-control"  id="sensorstatus<%=sensor.id%>"  name="sensorstatus">
 							</div>							
 						</div>						
 					</form>
@@ -76,7 +96,6 @@
 				</div>
 				<div class="btn-group pull-right">
 					<button id="savebtn" type="button" class="btn btn-success">Save</button>
-					<button id="addbtn" type="button" class="btn btn-success">Add</button>
 				</div>
 			</div>
 		</div>
@@ -86,12 +105,63 @@
 
 <% include ../partials/javascript.ejs %>
 <script src="/javascripts/select2/select2.min.js"></script>
-<script src="/javascripts/bootstrap-switch.min.js"></script>
+<script src="/javascripts/bootstrap-toggle.min.js"></script>
 
 <script>
+var reset_data = [];
+var latest_saved_data=[];
+
 	$( document ).ready(function() {
-		$("[name='status-checkbox']").bootstrapSwitch();
+
+		reset_data=get_form_data();
+		latest_saved_data = get_form_data();
+
+		<%for (var i = sensors.length - 1; i >= 0; i--) {%>
+			$("#sensorstatus<%=sensors[i].id%>").bootstrapToggle(<%=sensors[i].status%>==1?'on':'off');
+
+			$('#sensorlocation<%=sensors[i].id%>').select2({
+				placeholder: "Select location",
+				tags: true
+			}).val("<%=sensors[i].location%>").trigger('change');
+		<%}%>
+
+		$("[name='sensortype']").select2({
+			minimumResultsForSearch: Infinity,
+			placeholder: "Select type"
+		})
+
 	}) //end of ( document ).ready(function()
+
+
+	$('#savebtn').click(function(){
+			var arr=get_form_data();
+			console.log(arr);
+		})
+
+	function get_form_data(){
+		var arr=[];
+		$('.panel.panel-default').each(function(){
+			var sn = new Object();
+			sn.type=$(this).find("[name='sensortype']").val();
+			sn.location=$(this).find("[name='sensorlocation']").val();
+			sn.name=$(this).find("[name='sensorname']").val();
+			sn.xbee=$(this).find("[name='sensorxbeeid']").val();
+			sn.status=($(this).find("[name='sensorstatus']").prop('checked') ? "1" : "0");
+			sn.id = $(this).attr('id');
+			sn.default = $(this).find("[name='sensordefault']").hasClass("glyphicon-star")?"1":"0";
+			arr.push(sn);
+		});
+		return arr;
+	}
+
+	function change_default(id){
+		if($(id).find("[name='sensordefault']").hasClass("glyphicon-star-empty")){
+			$("[name='sensordefault']").removeClass("glyphicon-star");
+			$("[name='sensordefault']").addClass("glyphicon-star-empty").css("color","gray");
+			$(id).find("[name='sensordefault']").removeClass("glyphicon-star-empty");
+			$(id).find("[name='sensordefault']").addClass("glyphicon-star").css("color","green");
+			}
+		}
 
 </script>
 
