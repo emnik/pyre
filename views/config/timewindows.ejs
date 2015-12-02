@@ -178,7 +178,7 @@ var latest_saved_data=[];
 		{
 			// console.log(arr);
 			var cur_data=get_form_data();
-			if(!compare_arrays_of_obj(cur_data, reset_data)){
+			if(!compare_arrays_of_obj(cur_data, latest_saved_data)){
 				update_timewindows(arr, "set");
 			}
 			else
@@ -218,12 +218,12 @@ var latest_saved_data=[];
 							location.reload(true); 
 						}
 					}
-					else
-					{
-						console.log('error');
-						$("#savebtn").empty();
-						$("#savebtn").append('Error <span class="glyphicon glyphicon-alert"</span>');
-					}
+					// else
+					// {
+					// 	console.log('error');
+					// 	$("#savebtn").empty();
+					// 	$("#savebtn").append('Error <span class="glyphicon glyphicon-alert"</span>');
+					// }
 				},
 				dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
 		});
@@ -336,7 +336,6 @@ var latest_saved_data=[];
 
 	$("#resetbtn").click(function(){
 		var cur_data=get_form_data();
-		// console.log(compare_arrays_of_obj(cur_data, reset_data)?'same':'different');
 		if(!compare_arrays_of_obj(cur_data, reset_data) || !compare_arrays_of_obj(cur_data, latest_saved_data)){
 			update_timewindows(reset_data, "reset");
 		}
@@ -345,6 +344,7 @@ var latest_saved_data=[];
 			console.log("There is no change in the time windows!");
 			$("#savebtn").empty();
 			$("#savebtn").append('Save');
+			$("#resetbtn").prop('disabled', true);
 		}
 	})
 

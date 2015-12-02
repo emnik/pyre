@@ -160,7 +160,7 @@ function update_profile (req, res, next){
           return next(err);
         }
         for (var i = rows.length - 1; i >= 0; i--) {
-          if(rows[i].default==1){
+          if(rows[i].preset==1){
             req.default_sensor = rows[i].id;  //get the default sensor
           }
         };

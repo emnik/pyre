@@ -129,7 +129,7 @@ router.post('/update_sensors', function(req, res, next){
 		// console.log(data);
 		for (var i = data.length - 1; i >= 0; i--) {
 			db.serialize(function(){
-				db.run("UPDATE sensors SET type=?, location=?, name=?, xbee_id=?, status=?, default=? WHERE id=?",[data[i].type, data[i].location, data[i].name, data[i].xbee, data[i].status, data[i].default, data[i].id], function(err){
+				db.run("UPDATE sensors SET type=?, location=?, name=?, xbee_id=?, status=?, preset=? WHERE id=?",[data[i].type, data[i].location, data[i].name, data[i].xbee, data[i].status, data[i].preset, data[i].id], function(err){
 					if(err){
 						console.error(err);
 						return next(err);

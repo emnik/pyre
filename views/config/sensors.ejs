@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 	<head>
+
+		<link rel="stylesheet" type="text/css" href="/stylesheets/bootstrap-toggle.min.css">
 		<link rel="stylesheet" type="text/css" href="/stylesheets/select2.css" >
 		<link rel="stylesheet" type="text/css" href="/stylesheets/select2-width-fix.css">
-		<link rel="stylesheet" type="text/css" href="/stylesheets/bootstrap-toggle.min.css">
-		<% include ../partials/head %>
 		<style type="text/css">
 			.select2-container .select2-selection--single{
 				height:34px;
@@ -18,6 +18,7 @@
 			}
 
 		</style>
+		<% include ../partials/head %>
 	</head>
 
 <body>
@@ -33,12 +34,12 @@
 				  <!-- Default panel contents -->
 				  <div class="panel-heading">
 				  	<span><%=sensor.name%></span>
-				  	<%if(sensor.default==0){%>
-				  	<span name="sensordefault" class="pull-right glyphicon glyphicon-star" style="color:green;cursor:pointer;" onclick="change_default('#<%=sensor.id%>');"></span>
+				  	<%if(sensor.preset=='1'){%>
+				  	<span name="sensorpreset" class="pull-right glyphicon glyphicon-star" style="color:green;cursor:pointer;" onclick="change_default('#<%=sensor.id%>');"></span>
 				  	<%}
 				  	else
 				  	{%>
-				  	<span name="sensordefault" class="pull-right glyphicon glyphicon-star-empty" style="color:gray;cursor:pointer;" onclick="change_default('#<%=sensor.id%>');"></span>
+				  	<span name="sensorpreset" class="pull-right glyphicon glyphicon-star-empty" style="color:gray;cursor:pointer;" onclick="change_default('#<%=sensor.id%>');"></span>
 				  	<%}%>
 				  </div>
 				  <div class="panel-body" id="<%=sensor.id%>">
@@ -180,14 +181,12 @@ var latest_saved_data=[];
 				}
 			};
 
-			console.log(arr);
-			console.log(reset_data);
 			if(emptyError){
 				console.log("All fields except xbeeID and Name are required!");
 			}
 			else
 			{
-				if(!compare_arrays_of_obj(arr, reset_data)){
+				if(!compare_arrays_of_obj(arr, latest_saved_data)){
 					update_sensors(arr, "update");	
 				}
 				else
@@ -211,18 +210,18 @@ var latest_saved_data=[];
 			sn.xbee=$(this).find("[name='sensorxbeeid']").val();
 			sn.status=($(this).find("[name='sensorstatus']").prop('checked') ? "1" : "0");
 			sn.id = $(this).attr('id');
-			sn.default = ($(this).find("[name='sensordefault']").hasClass("glyphicon-star") ? "1" : "0");
+			sn.preset = ($(this).find("[name='sensorpreset']").hasClass("glyphicon-star") ? "1" : "0");
 			arr.push(sn);
 		});
 		return arr;
 	}
 
 	function change_default(id){
-		if($(id).find("[name='sensordefault']").hasClass("glyphicon-star-empty")){
-			$("[name='sensordefault']").removeClass("glyphicon-star");
-			$("[name='sensordefault']").addClass("glyphicon-star-empty").css("color","gray");
-			$(id).find("[name='sensordefault']").removeClass("glyphicon-star-empty");
-			$(id).find("[name='sensordefault']").addClass("glyphicon-star").css("color","green");
+		if($(id).find("[name='sensorpreset']").hasClass("glyphicon-star-empty")){
+			$("[name='sensorpreset']").removeClass("glyphicon-star");
+			$("[name='sensorpreset']").addClass("glyphicon-star-empty").css("color","gray");
+			$(id).find("[name='sensorpreset']").removeClass("glyphicon-star-empty");
+			$(id).find("[name='sensorpreset']").addClass("glyphicon-star").css("color","green");
 
 			$("#savebtn").removeProp('disabled');			
 			$("#savebtn").empty();
@@ -254,17 +253,30 @@ var latest_saved_data=[];
 							location.reload(true); 
 						}
 					}
-					else
-					{
-						console.log('error');
-						$("#savebtn").empty();
-						$("#savebtn").append('Error <span class="glyphicon glyphicon-alert"</span>');
-					}
+					// else
+					// {
+					// 	console.log('error');
+					// 	$("#savebtn").empty();
+					// 	$("#savebtn").append('Error <span class="glyphicon glyphicon-alert"</span>');
+					// }
 				},
 				dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
 		});
 	}
 
+	$("#resetbtn").click(function(){
+		var cur_data=get_form_data();
+		if(!compare_arrays_of_obj(cur_data, reset_data) || !compare_arrays_of_obj(cur_data, latest_saved_data)){
+			update_sensors(reset_data, "reset");
+		}
+		else
+		{
+			console.log("There is no change in the sensors configuration!");
+			$("#savebtn").empty();
+			$("#savebtn").append('Save');
+			$("#resetbtn").prop('disabled', true);
+		}
+	})
 
 
 </script>
