@@ -25,22 +25,16 @@ function get_timetables(req, res, next){
 }
 
 function get_sensors(req,res,next){
-	// if (req.params.section == 'timewindows'){
-			db.all("SELECT  * FROM sensors;", function(err,rows){
-				if(err){
-					console.error(err);
-					return next(err);
-				};
-				req.sensors = rows; //this is array
-				// console.log(req.sensors);
-				next();
-				});
-	// }
-	// else
-	// {
-	// 	next();
-	// }
 
+	db.all("SELECT  * FROM sensors;", function(err,rows){
+		if(err){
+			console.error(err);
+			return next(err);
+		};
+		req.sensors = rows; //this is array
+		// console.log(req.sensors);
+		next();
+		});
 }
 
 
@@ -55,6 +49,8 @@ router.get('/:section', get_timetables, get_sensors, function(req, res) {
   }
 })
 
+
+// timewindows configuration functions
 
 router.post('/update_timewindows', function(req, res, next){
 		var data = req.body.data;
@@ -124,6 +120,28 @@ router.post('/add_timewindow', get_sensors, function(req, res, next){
 })
 
 // end of timewindows configuration functions
+
+
+
+// sensors configuration functions
+router.post('/update_sensors', function(req, res, next){
+		var data = req.body.data;
+		// console.log(data);
+		for (var i = data.length - 1; i >= 0; i--) {
+			db.serialize(function(){
+				db.run("UPDATE sensors SET type=?, location=?, name=?, xbee_id=?, status=?, default=? WHERE id=?",[data[i].type, data[i].location, data[i].name, data[i].xbee, data[i].status, data[i].default, data[i].id], function(err){
+					if(err){
+						console.error(err);
+						return next(err);
+					}
+				})
+			})
+		}
+		res.contentType('json');
+		res.send({result:'ok'});
+})
+
+// end of sensors configuration functions
 
 
 module.exports = router;

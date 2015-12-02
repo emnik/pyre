@@ -98,9 +98,6 @@ var latest_saved_data=[];
 
 	$( document ).ready(function() {
 
-		reset_data=get_form_data();
-		latest_saved_data = get_form_data();
-
 		$("[name='sensors']").select2({
 			minimumResultsForSearch: Infinity,
 			placeholder: "Select sensors"
@@ -146,6 +143,9 @@ var latest_saved_data=[];
 		$("#resetbtn").prop('disabled', true);
 		$("#savebtn").prop('disabled', true);
 
+		reset_data=get_form_data();
+		latest_saved_data = get_form_data();
+
 	}) //end of ( document ).ready(function()
 
 
@@ -171,14 +171,14 @@ var latest_saved_data=[];
 		
 		if(emptyError)
 		{
-			console.log("All fields are required.")
+			console.log("All fields are required.");
 		}
 		
 		if(!emptyError && !timeRangeError)
 		{
 			// console.log(arr);
 			var cur_data=get_form_data();
-			if(!compare_windows(cur_data, reset_data)){
+			if(!compare_arrays_of_obj(cur_data, reset_data)){
 				update_timewindows(arr, "set");
 			}
 			else
@@ -186,6 +186,7 @@ var latest_saved_data=[];
 				console.log("No need to save. There are no changes.")
 				$("#savebtn").empty();
 				$("#savebtn").append('Save');
+				$("#savebtn").prop('disabled', true);
 			}
 		}
 	})
@@ -235,7 +236,7 @@ var latest_saved_data=[];
 		$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 		$("#"+id).parent().remove();
 		var cur_data=get_form_data();
-		if(!compare_windows(cur_data, latest_saved_data)){
+		if(!compare_arrays_of_obj(cur_data, latest_saved_data)){
 			$("#savebtn").removeProp('disabled');
 			$("#savebtn").empty();
 			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
@@ -335,8 +336,8 @@ var latest_saved_data=[];
 
 	$("#resetbtn").click(function(){
 		var cur_data=get_form_data();
-		// console.log(compare_windows(cur_data, reset_data)?'same':'different');
-		if(!compare_windows(cur_data, reset_data) || !compare_windows(cur_data, latest_saved_data)){
+		// console.log(compare_arrays_of_obj(cur_data, reset_data)?'same':'different');
+		if(!compare_arrays_of_obj(cur_data, reset_data) || !compare_arrays_of_obj(cur_data, latest_saved_data)){
 			update_timewindows(reset_data, "reset");
 		}
 		else
@@ -347,34 +348,7 @@ var latest_saved_data=[];
 		}
 	})
 
-	function compare_windows(arr1, arr2){
-		if(arr1.length!=arr2.length){
-			// console.log("not the same array length");
-			return false;
-		}
-		else {
-			var length=arr1.length;
-		}
-		//itterating the array:
-		for (var i = length - 1; i >= 0; i--) {
-			var window1 = arr1[i];
-			var window2 = arr2[i];
-			if(Object.keys(window1).length != Object.keys(window2).length){
-				console.log("the objects are not the same length");
-				return false;
-			}
-			for (var key in window1) {
-				if(window1[key]!=window2[key]){ //I know they have exactly the same keys. If there would be a difference then it wound be in the values
-					// console.log("Found a difference in: "+key);
-					// console.log(window1[key]);
-					// console.log(window2[key]);
-					return false;
-				}
-			};
-		}
-		//found no difference!
-		return true;
-	}
+
 	
 
 	function setCustomNum(){

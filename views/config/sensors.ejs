@@ -106,15 +106,14 @@
 <% include ../partials/javascript.ejs %>
 <script src="/javascripts/select2/select2.min.js"></script>
 <script src="/javascripts/bootstrap-toggle.min.js"></script>
+<script src="/javascripts/custom.js"></script>
 
 <script>
 var reset_data = [];
 var latest_saved_data=[];
 
-	$( document ).ready(function() {
 
-		reset_data=get_form_data();
-		latest_saved_data = get_form_data();
+	$( document ).ready(function() {
 
 		<%for (var i = sensors.length - 1; i >= 0; i--) {%>
 			$("#sensorstatus<%=sensors[i].id%>").bootstrapToggle(<%=sensors[i].status%>==1?'on':'off');
@@ -130,25 +129,89 @@ var latest_saved_data=[];
 			placeholder: "Select type"
 		})
 
+		$("[name='sensortype']").change(function(){
+			$("#savebtn").removeProp('disabled');			
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		})
+
+		$("[name='sensorlocation']").change(function(){
+			$("#savebtn").removeProp('disabled');			
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		})
+
+		$("[name='sensorname']").change(function(){
+			$("#savebtn").removeProp('disabled');			
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		})
+
+		$("[name='sensorxbeeid']").change(function(){
+			$("#savebtn").removeProp('disabled');			
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		})
+
+		$("[name='sensorstatus']").change(function(){
+			$("#savebtn").removeProp('disabled');			
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		})
+
+		$("#resetbtn").prop('disabled', true);
+		$("#savebtn").prop('disabled', true);
+
+		reset_data=get_form_data();
+		latest_saved_data = get_form_data();
+
 	}) //end of ( document ).ready(function()
 
 
 	$('#savebtn').click(function(){
 			var arr=get_form_data();
+			var emptyError = false;
+			for (var i = arr.length - 1; i >= 0; i--) {
+				for (var key in arr[i]){
+					if(key!='xbee' && key!='name' && arr[i][key]===""){
+						emptyError = true;
+						console.log(key+" field is empty!");
+					}
+				}
+			};
+
 			console.log(arr);
+			console.log(reset_data);
+			if(emptyError){
+				console.log("All fields except xbeeID and Name are required!");
+			}
+			else
+			{
+				if(!compare_arrays_of_obj(arr, reset_data)){
+					update_sensors(arr, "update");	
+				}
+				else
+				{
+					console.log("No need to save. There are no changes.")
+					$("#savebtn").empty();
+					$("#savebtn").append('Save');
+					$("#savebtn").prop('disabled', true);
+				}
+				
+			}
 		})
 
 	function get_form_data(){
 		var arr=[];
 		$('.panel.panel-default').each(function(){
 			var sn = new Object();
-			sn.type=$(this).find("[name='sensortype']").val();
-			sn.location=$(this).find("[name='sensorlocation']").val();
+			sn.type=$(this).find("[name='sensortype']").select2().val();
+			sn.location=$(this).find("[name='sensorlocation']").select2().val();
 			sn.name=$(this).find("[name='sensorname']").val();
 			sn.xbee=$(this).find("[name='sensorxbeeid']").val();
 			sn.status=($(this).find("[name='sensorstatus']").prop('checked') ? "1" : "0");
 			sn.id = $(this).attr('id');
-			sn.default = $(this).find("[name='sensordefault']").hasClass("glyphicon-star")?"1":"0";
+			sn.default = ($(this).find("[name='sensordefault']").hasClass("glyphicon-star") ? "1" : "0");
 			arr.push(sn);
 		});
 		return arr;
@@ -160,8 +223,49 @@ var latest_saved_data=[];
 			$("[name='sensordefault']").addClass("glyphicon-star-empty").css("color","gray");
 			$(id).find("[name='sensordefault']").removeClass("glyphicon-star-empty");
 			$(id).find("[name='sensordefault']").addClass("glyphicon-star").css("color","green");
+
+			$("#savebtn").removeProp('disabled');			
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+
 			}
 		}
+
+	function update_sensors(arr, action){
+		$.ajax({
+				type: "POST",
+				contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
+				url: '/config/update_sensors',
+				data: JSON.stringify({data:arr}),
+				success: function(rdata) { //rdata = remote data that the server sends as feedback...
+					// console.log(rdata.result);
+					if (rdata.result==="ok"){
+						console.log("success");
+						if(action=="update")
+						{
+							// reset_data=get_form_data();
+							$("#savebtn").empty();
+							$("#savebtn").append('Save <span class="glyphicon glyphicon-ok"</span>');
+							$("#savebtn").prop('disabled', true);
+							$("#resetbtn").removeProp('disabled');
+							latest_saved_data = arr;
+						}
+						else if(action=="reset"){
+							location.reload(true); 
+						}
+					}
+					else
+					{
+						console.log('error');
+						$("#savebtn").empty();
+						$("#savebtn").append('Error <span class="glyphicon glyphicon-alert"</span>');
+					}
+				},
+				dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
+		});
+	}
+
+
 
 </script>
 
