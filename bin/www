@@ -10,6 +10,10 @@ var http = require('http');
 var ds1820 = require('../my_modules/ds1820'); //load module ds1820
 var ds1820_xbee = require('../my_modules/ds1820_xbee'); //load module ds1820_xbee
 var temperature = require('../my_modules/temperature');
+var async = require('async');
+var exit_handlers = require("../my_modules/exit_handlers");
+
+
 
 /**
  * Get port from environment and store in Express.
@@ -81,7 +85,6 @@ function onError(error) {
   }
 }
 
-var fatal_errors={remote:null, local:null};
 
 /**
  * Event listener for HTTP server "listening" event.
@@ -98,8 +101,7 @@ function onListening() {
   var msecs = (60 * 0.5) * 1000; // log interval duration in milliseconds - Now is set in 30000msec = 30sec = 1/2 min
   ds1820.logLocalTemp(msecs, function(err){
     if(err){
-      // console.log(err);   
-      fatal_errors.local=err; //Problem with the local temperature sensor
+      console.error(err);
     }
   });
 
@@ -107,7 +109,7 @@ function onListening() {
   process.nextTick(function(){ //the interval is defined by the sender XBee! When we get a value we store it!    
     ds1820_xbee.logRemoteTemp(function(err){
       if(err){
-        fatal_errors.remote = err; //Problem with the remote temperature sensor
+        console.error(err);
       }
     })
   })
@@ -121,7 +123,6 @@ io.sockets.on('connection', function(socket){
     
     //send data to client
     setInterval(function(){
-      console.log(fatal_errors);
       var duration = 240; //the last x seconds of temperature data that we want to retrieve from the database
       temperature.get_temp_data(duration, function(err,result){
         if(err){
@@ -140,3 +141,59 @@ io.sockets.on('connection', function(socket){
     })
 
 });
+
+
+process.on('SIGINT', gracefulExit).on('SIGTERM', gracefulExit);
+
+// process.on('error', function(err){
+//   console.error(err);
+//   gracefulExit();
+// })
+
+// process.on('uncaughtException', function(err){
+//   console.error(err);
+//   gracefulExit();
+// })) 
+
+
+function gracefulExit(){
+  //When I close node (CTRL+C) I should close the pins and database!
+  async.series([
+    function(callback){
+        exit_handlers.close_pins(function(err){
+        if(err){
+          callback(err,null);
+        }
+        else
+        {
+          callback(null, "gpios are closed!");    
+        }
+      }) 
+    },
+    function(callback){
+        exit_handlers.close_database(function(err){
+        if(err){
+          console.error(err);
+          callback(err,null);
+        }
+        else
+        {
+          callback(null, "Database is closed!");
+        }
+      })
+    }
+  ],function(error,result){
+      if(error){
+        for (var i = error.length - 1; i >= 0; i--) {
+          console.error(error[i])
+        };
+      }
+      else
+      {
+        for (var i = result.length - 1; i >= 0; i--) {
+          console.log(result[i]);
+        }
+      };
+      process.exit();  
+    })  
+}

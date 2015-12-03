@@ -13,19 +13,7 @@ function get_temp_data(duration, callback) {
 	    };
 	    sensors.push({id:row.id,average:(Math.round(row.average*10)/10)});
 	   }, function(){
-	   		// try {
-			   //  var sum=0;
-			   //  for (var i = sensors.length - 1; i >= 0; i--) {
-			   //  	sum = sum +sensors[i].average;
-			   //  };
-			   //  var allavg = sum/sensors.length;
-			   //  sensors.push({id:'all', average:(Math.round(allavg*10)/10)});
-
-				callback(null, sensors);	   			
-	   		// }
-	   		// catch(err){
-	   		// 	callback(err, null);
-	   		// }
+			callback(null, sensors);	   			
 	   }) 
 	};
 

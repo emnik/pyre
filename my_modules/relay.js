@@ -37,51 +37,57 @@ gpio.open(pin.power, "output",function(err){
 //     })
 // }
 
-function on(pin){
-	gpio.write(pin, 1,function(err){
-    console.error(err);
+function on(pin, callback){
+	gpio.write(pin, 1, function(err){
+    if(err){
+      callback(err);
+    }
   });
 }
 
-function off(pin){
-	gpio.write(pin, 0,function(err){
-    console.log(err);
+function off(pin, callback){
+	gpio.write(pin, 0, function(err){
+    if(err){
+      callback(err);
+    }
   });
 }
 
-function toggle(pin){
+function toggle(pin, callback){
   gpio.read(pin, function(err, value) {
       if(err)
       {
-          console.error(err);
-          process.exit(1); //or handle otherway? I'll decide when testing...
-          //maybe I'll use next(new Error("something with the gpio.."))
-          //and write an errorhandler instead of SIGINT where I'll do 
-          //the same things I do now below...
+          return callback(err);
       }
-      if (value==0) {on(pin)} else {off(pin)};
+      if (value==0) {
+        on(pin, function(err){
+          if(err){
+            callback(err);
+          }
+        })
+      } else {
+        off(pin, function(err){
+          if(err){
+            callback(err);
+          }
+        })
+      };
     })
 }
 
-function act(pin, state){
+function act(pin, state, callback){
   gpio.read(pin, function(err, value) {
       if(err)
       {
-          console.error(err);
-          process.exit(1); //or handle otherway? I'll decide when testing...
+          return callback(err);
       }
-      if (value!=state) {toggle(pin)};
+      if (value!=state) {
+        toggle(pin, function(err){
+          callback(err);
+        })
+      }
     })
 }
-
-
-process.on('SIGINT', function(){
-//When I close node (CTRL+C) I close the pins too!
-  gpio.close(pin.thermostat);
-  gpio.close(pin.power);
-  console.log("Relay gpio pins have been closed!");
-  process.exit();
-})
 
 
 // module.exports.get = get;

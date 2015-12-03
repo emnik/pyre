@@ -6,19 +6,29 @@ var relay = require('../my_modules/relay');
 
 var pin = config.pin;
 
-router.post('/actions', function(req, res){
+router.post('/actions', function(req, res, next){
   //console.log(JSON.stringify(req.body.status));
   console.log(req.body);
   if (req.body.status=="Paused")
   {
-    relay.act(pin.thermostat, 0); //0=OFF
+    relay.act(pin.thermostat, 0, function(err){ //0=OFF
+      if(err){
+        console.error(err);
+        return next(err);
+      }
+    }); 
   }
   else if (req.body.status=="Working")
   {
-    relay.act(pin.thermostat, 1); //1=ON
+    relay.act(pin.thermostat, 1, function(err){ //1=ON
+      if(err){
+        console.error(err);
+        return next(err);
+      }
+    }); 
   }
   res.contentType('json');
-  res.send({result:'ok'})
+  res.send({result:'ok'});
 });
 
 // router.get('/:pin/state', function(req, res) {
