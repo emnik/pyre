@@ -215,9 +215,10 @@ function update_profile (req, res, next){
 
     function get_graph_data(req, res, next){
       //this function is used either at start, either when I need to update the graph data
-      
+      var interval;
       var labels=[];
       var temps=[];
+      var options=[];
       req.graph_data={};
 
       if (req.body.sensor!='undefined' && req.body.sensor!=null){
@@ -228,29 +229,47 @@ function update_profile (req, res, next){
         var sensors = req.sensors.map(function(p){ return '"' + p + '"'; }).join(',');
         var selected_sensors = sensors;
       }
-      console.log(selected_sensors);
+      // console.log(selected_sensors);
       // var selected_sensors = ((req.body.sensor!='undefined' && req.body.sensor!=null)? req.body.sensor : req.sensors);
       var duration = ((req.body.duration!='undefined' && req.body.duration!=null)? req.body.duration : "1"); //in hours
       
-      var sql = "SELECT datetime((timestamp/1000)/?*?, 'unixepoch', 'localtime') as localtime, "+ 
-      "date((timestamp/1000)/?*?, 'unixepoch', 'localtime') as date, "+
-      "strftime('%H:%M', (timestamp/1000)/?*?, 'unixepoch', 'localtime') as time, "+
-      "ROUND(avg(value),2) as temp "+
-      // "sensor_id "+
-      "FROM sensor_data "+
-      "WHERE timestamp/1000 >= ((strftime('%s', 'now') - strftime('%S', 'now') + strftime('%f', 'now'))-3600*?) "+
-      "AND sensor_id IN ("+selected_sensors+") "+
-      "GROUP BY localtime "+
-      "ORDER BY localtime ASC;";
+      if (duration<=24){
+        var sql = "SELECT datetime((timestamp/1000)/?*?, 'unixepoch', 'localtime') as localtime, "+ 
+        "date((timestamp/1000)/?*?, 'unixepoch', 'localtime') as date, "+
+        "strftime('%H:%M', (timestamp/1000)/?*?, 'unixepoch', 'localtime') as time, "+
+        "ROUND(avg(value),2) as temp "+
+        // "sensor_id "+
+        "FROM sensor_data "+
+        "WHERE timestamp/1000 >= ((strftime('%s', 'now') - strftime('%S', 'now') + strftime('%f', 'now'))-3600*?) "+
+        "AND sensor_id IN ("+selected_sensors+") "+
+        "GROUP BY localtime "+
+        "ORDER BY localtime ASC;";
 
-      var interval;
-      if(duration>24){interval = 24*3600;} 
-      else if(duration==1){interval=120;}
-      else {interval = duration*75;}
+        if(duration==1){
+          interval=120;
+        } else {
+          interval = duration*150;
+        }
 
-      var options=[];
-      for (var i=1;i<=6;i++){options.push(interval);}
-      options.push(duration);
+        for (var i=1;i<=6;i++){options.push(interval);}
+        options.push(duration);
+      }
+      else
+      {
+        interval = 24*3600;
+
+        var sql = "SELECT date, "+
+        "ROUND(avg(value),2) as temp "+
+        "FROM sensor_history "+
+        "WHERE date >= date('now',?) "+
+        "AND sensor_id IN ("+selected_sensors+") "+
+        "GROUP BY date "+
+        "ORDER BY date ASC;";  
+
+        options.push("-"+duration/24+" day");
+      }
+
+
 
       db.each(sql,options, function(err, row){
         if(err){

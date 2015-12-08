@@ -1,8 +1,23 @@
 var express = require('express');
 var router = express.Router();
-
+var archive_db = require('../my_modules/archive_db');
 var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.cached.Database('./sensor-data.sqlite');
+
+
+
+function get_sensors(req,res,next){
+
+	db.all("SELECT  * FROM sensors;", function(err,rows){
+		if(err){
+			console.error(err);
+			return next(err);
+		};
+		req.sensors = rows; //this is array
+		// console.log(req.sensors);
+		next();
+		});
+}
 
 
 // the timewindows configuration functions
@@ -24,33 +39,6 @@ function get_timetables(req, res, next){
 	}
 }
 
-function get_sensors(req,res,next){
-
-	db.all("SELECT  * FROM sensors;", function(err,rows){
-		if(err){
-			console.error(err);
-			return next(err);
-		};
-		req.sensors = rows; //this is array
-		// console.log(req.sensors);
-		next();
-		});
-}
-
-
-/* GET home page. */
-router.get('/:section', get_timetables, get_sensors, function(req, res) {
-  var base_url = req.headers.host;
-  if (req.params.section == 'timewindows'){
-  	res.render('config/'+req.params.section, {timetables:req.timetables, sensors:req.sensors, base_url:base_url});
-  }
-  else if(req.params.section == 'sensors'){
-  	res.render('config/'+req.params.section, {sensors:req.sensors, base_url:base_url});	
-  }
-})
-
-
-// timewindows configuration functions
 
 router.post('/update_timewindows', function(req, res, next){
 		var data = req.body.data;
@@ -142,6 +130,59 @@ router.post('/update_sensors', function(req, res, next){
 })
 
 // end of sensors configuration functions
+
+// database functions
+
+function get_data_to_archive(req, res, next){
+	var sql = 	"SELECT sensor_id, "+
+				"datetime((timestamp/1000)/86400*86400, 'unixepoch', 'localtime') as localtime, "+ 
+				"strftime('%Y-%m-%d',(timestamp/1000)/86400*86400, 'unixepoch', 'localtime') as date, "+
+				"ROUND(avg(value),2) as temp "+ //this will be value in the sensor_history table
+				"FROM sensor_data "+
+				"WHERE timestamp/1000 < ((strftime('%s', 'now') - strftime('%S', 'now') + strftime('%f', 'now'))-3600*24) "+
+				"GROUP BY sensor_id, localtime, sensor_id "+
+				"ORDER BY localtime ASC;";
+
+	db.all(sql, function(err, rows){
+		if(err){
+			console.log(err);
+			return next(err);
+		}
+		req.data_to_archive = rows;
+		next();
+	})
+}
+
+router.post('/archive_database', get_data_to_archive, function(req, res, next){
+	res.contentType('json');
+	archive_db.archive_database(function(err){
+		if(err){
+			console.error(err);
+			res.send({result:'error'});
+		}
+		else
+		{
+			res.send({result:'ok'});
+		}
+	})
+})
+//end of database functions
+
+
+/* GET home page. */
+router.get('/:section', get_timetables, get_sensors, function(req, res) {
+  var base_url = req.headers.host;
+  if (req.params.section == 'timewindows'){
+  	res.render('config/'+req.params.section, {timetables:req.timetables, sensors:req.sensors, base_url:base_url});
+  }
+  else if(req.params.section == 'sensors'){
+  	res.render('config/'+req.params.section, {sensors:req.sensors, base_url:base_url});	
+  }
+    else if(req.params.section == 'database'){
+  	res.render('config/'+req.params.section, {base_url:base_url});	
+  }
+})
+
 
 
 module.exports = router;

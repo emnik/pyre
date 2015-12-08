@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+	<head>
+
+		<link rel="stylesheet" type="text/css" href="/stylesheets/bootstrap-toggle.min.css">
+		<link rel="stylesheet" type="text/css" href="/stylesheets/select2.css" >
+		<link rel="stylesheet" type="text/css" href="/stylesheets/select2-width-fix.css">
+		<% include ../partials/head %>
+	</head>
+
+<body>
+	<header>
+		<% include ../partials/header_edits %>
+	</header>
+
+	<div id="myModal" class="modal fade">
+	  <div class="modal-dialog">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h4 class="modal-title">Sensors data archive</h4>
+	      </div>
+	      <div class="modal-body">
+	        <p>The operation succeded!</p>
+	      </div>
+	      <div class="modal-footer">
+	        <button name="okbtn" type="button" class="btn btn-primary">OK</button>
+	      </div>
+	    </div><!-- /.modal-content -->
+	  </div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
+
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-xs-12">
+				<h4 style="margin-top:0px;margin-bottom:15px;color:white;">Database functions</h4>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-xs-2 col-sm-1">
+				<button id="archive" type="button" class="btn btn-front" onclick="archive();">
+					<span class="glyphicon glyphicon-compressed"></span>
+				</button>
+			</div>
+			<div class="col-xs-10 col-sm-11">
+				<p style="color:white;padding-top:8px;">Archive sensor data to history</p>
+			</div>
+		</div>
+		<div class="row" style="margin-top:15px;">		
+			<div class="col-xs-2 col-sm-1">
+				<button id="export" type="button" class="btn btn-front">
+					<span class="glyphicon glyphicon-download-alt"></span>
+				</button>
+			</div>
+			<div class="col-xs-10 col-sm-11">
+				<p style="color:white;padding-top:8px;">Export sensor data to a csv file</p>
+			</div>
+		</div>
+	</div>
+
+</body>
+
+<% include ../partials/javascript.ejs %>
+<script src="/javascripts/custom.js"></script>
+
+<script>
+
+	$( document ).ready(function() {
+	}) //end of ( document ).ready(function()
+
+	function archive(){
+			$.ajax({
+				type: "POST",
+				contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
+				url: "/config/archive_database",
+				// data: JSON.stringify(),
+				success: function(rdata) { //rdata = remote data that the server sends as feedback...
+					console.log(rdata.result);
+					if (rdata.result==="ok"){
+						console.log("success");
+						$('.modal-body>p').text('All sensor prior the last 24 hours are archived successfully!');
+						$('#myModal').modal('show');
+					}
+					else if (rdata.result==="error"){
+						console.log("failed");
+						$('.modal-body>p').text('The archiving of sensor data failed!');
+						$('#myModal').modal('show');
+					}
+				},
+				dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
+			});
+		}
+
+
+		$("[name='okbtn']").click(function(){
+			$('#myModal').modal('hide');
+		});
+</script>
+
