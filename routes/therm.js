@@ -3,7 +3,7 @@ var router = express.Router();
 
 var temperature = require("../my_modules/temperature");
 var sqlite3 = require('sqlite3').verbose();
-var db = new sqlite3.Database('./sensor-data.sqlite');
+var db = new sqlite3.cached.Database('./sensor-data.sqlite');
 
 
 function update_profile (req, res, next){

@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 
 var sqlite3 = require('sqlite3').verbose();
-var db = new sqlite3.Database('./sensor-data.sqlite');
+var db = new sqlite3.cached.Database('./sensor-data.sqlite');
 
 
 // the timewindows configuration functions

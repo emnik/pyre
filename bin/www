@@ -166,7 +166,7 @@ function gracefulExit(){
         }
         else
         {
-          callback(null, "gpios are closed!");    
+          callback(null,null); //@params: err,result   
         }
       }) 
     },
@@ -178,7 +178,7 @@ function gracefulExit(){
         }
         else
         {
-          callback(null, "Database is closed!");
+          callback(null,null); //@params: err,result
         }
       })
     }
@@ -190,10 +190,16 @@ function gracefulExit(){
       }
       else
       {
-        for (var i = result.length - 1; i >= 0; i--) {
-          console.log(result[i]);
-        }
+        // for (var i = result.length - 1; i >= 0; i--) {
+        //   console.log(result[i]);
+        // }
+        console.log('Done!');
+
       };
-      process.exit();  
+      process.exit();  //We exit anyway!
     })  
 }
+
+// process.on('exit', function(err){
+//   console.log("test"); //this will run jaust before exit and then it will exit!
+// })
