@@ -27,7 +27,6 @@ function get_data_to_archive(callback){
 }
 
 function archive_database(callback){
-	
 	get_data_to_archive(function(err,data){
 		if (err){
 			// console.error(err);

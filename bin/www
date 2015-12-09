@@ -10,6 +10,8 @@ var http = require('http');
 var ds1820 = require('../my_modules/ds1820'); //load module ds1820
 var ds1820_xbee = require('../my_modules/ds1820_xbee'); //load module ds1820_xbee
 var temperature = require('../my_modules/temperature');
+var archive_db = require('../my_modules/archive_db');
+var later = require('later');
 var async = require('async');
 var exit_handlers = require("../my_modules/exit_handlers");
 
@@ -118,7 +120,10 @@ function onListening() {
 }
 
 
-//use sockets.io to emit current temperatures every 1min to anyone who wants it!
+/**
+ * use sockets.io to emit current temperatures every 1min to anyone who wants it! 
+ */
+
 io.sockets.on('connection', function(socket){
     
     //send data to client
@@ -143,7 +148,37 @@ io.sockets.on('connection', function(socket){
 });
 
 
+/**
+ * schedule sensor data archive every day at the time (24 hour) that is specified here
+ * using later.js 
+ */
+
+// set later to use local time
+later.date.localTime();
+var sched=later.parse.recur().on('11:38:00').time(); 
+
+later.setInterval(function(){
+  archive_db.archive_database(function(err){
+    if(err){
+      console.error(err);
+    }
+    else
+    {
+      console.log('sensor data are archived successfully!');
+    }
+  })
+}, sched)
+
+
+/**
+ * Exit functions 
+ */
+
 process.on('SIGINT', gracefulExit).on('SIGTERM', gracefulExit);
+
+
+ // * The following 2 functions are not used as some errors are not of that importance to exit the app
+ // * I'll decide about them while testing 
 
 // process.on('error', function(err){
 //   console.error(err);
@@ -187,6 +222,7 @@ function gracefulExit(){
         for (var i = error.length - 1; i >= 0; i--) {
           console.error(error[i])
         };
+        process.exit(1);  //exit code 1 = error but we exit anyway!
       }
       else
       {
@@ -194,12 +230,12 @@ function gracefulExit(){
         //   console.log(result[i]);
         // }
         console.log('Done!');
-
+        process.exit(0);  //exit code 0 = success
       };
-      process.exit();  //We exit anyway!
+
     })  
 }
 
 // process.on('exit', function(err){
-//   console.log("test"); //this will run jaust before exit and then it will exit!
+//   console.log("test"); //this will run just before exit and then it will exit! For the time being I don't need it
 // })

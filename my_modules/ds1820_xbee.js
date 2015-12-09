@@ -19,7 +19,7 @@ function readRemoteTemp(insertfunc, callback)
 
 
   xbeeAPI.on("frame_object", function(frame) {
-  	console.log(frame);
+  	// console.log(frame);
     var xbee_id = frame.remote16;
     var buf = frame.data;
     var value = buf.readFloatLE(0);

@@ -134,27 +134,29 @@ router.post('/update_sensors', function(req, res, next){
 // database functions
 
 function get_data_to_archive(req, res, next){
-	var sql = 	"SELECT sensor_id, "+
-				"datetime((timestamp/1000)/86400*86400, 'unixepoch', 'localtime') as localtime, "+ 
-				"strftime('%Y-%m-%d',(timestamp/1000)/86400*86400, 'unixepoch', 'localtime') as date, "+
-				"ROUND(avg(value),2) as temp "+ //this will be value in the sensor_history table
+	var sql = 	"SELECT COUNT(id) as records "+
 				"FROM sensor_data "+
-				"WHERE timestamp/1000 < ((strftime('%s', 'now') - strftime('%S', 'now') + strftime('%f', 'now'))-3600*24) "+
-				"GROUP BY sensor_id, localtime, sensor_id "+
-				"ORDER BY localtime ASC;";
+				"WHERE timestamp/1000 < ((strftime('%s', 'now') - strftime('%S', 'now') + strftime('%f', 'now'))-3600*24)";
 
 	db.all(sql, function(err, rows){
 		if(err){
 			console.log(err);
 			return next(err);
 		}
-		req.data_to_archive = rows;
+		req.need_to_archive = rows[0].records;
 		next();
 	})
 }
 
 router.post('/archive_database', get_data_to_archive, function(req, res, next){
 	res.contentType('json');
+	console.log(req.body.action);
+	console.log(req.need_to_archive);
+	//if there are more than 20000 records unarchived then it has a point to manually archive
+	if (req.need_to_archive<20000 && req.body.action!=='force'){ 
+		console.log("there is no need to archive manually!");
+		return res.send({result:'no need'}); //using return to exit the function
+	}
 	archive_db.archive_database(function(err){
 		if(err){
 			console.error(err);
@@ -164,7 +166,7 @@ router.post('/archive_database', get_data_to_archive, function(req, res, next){
 		{
 			res.send({result:'ok'});
 		}
-	})
+	})		
 })
 //end of database functions
 
