@@ -621,12 +621,24 @@
 
 
 	function update_live_graph(temp){
-		var label=getCurTime().time;
-		//remove datapoints only if there are more than 24 of them esle just add
-		if (chart.datasets[0].points.length>24){ 
-			chart.removeData();
-		}	
-		chart.addData([temp], label);
+
+		var min_y=chart.options.scaleStartValue;
+		var max_y=chart.options.scaleStartValue+chart.options.scaleSteps*chart.options.scaleStepWidth;
+		// console.log("min y="+min_y);
+		// console.log("max y="+max_y);
+		if (temp<=min_y || temp>=max_y){
+			console.log("live data are out of the y axis range so we trigger a graph update!");
+			update_graph();
+		}
+		else
+		{
+			var label=getCurTime().time;
+			//remove datapoints only if there are more than 24 of them esle just add
+			if (chart.datasets[0].points.length>24){ 
+				chart.removeData();
+			}
+			chart.addData([temp], label);			
+		}
 	}
 
 

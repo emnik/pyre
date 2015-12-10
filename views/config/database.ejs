@@ -17,7 +17,7 @@
 	  <div class="modal-dialog">
 	    <div class="modal-content">
 	      <div class="modal-header">
-	        <h4 class="modal-title">Sensors' data archive function</h4>
+	        <h4 class="modal-title">function result</h4>
 	      </div>
 	      <div class="modal-body">
 	        <p>The operation succeded!</p>
@@ -29,7 +29,7 @@
 	  </div><!-- /.modal-dialog -->
 	</div><!-- /.modal -->
 
-	<div class="container-fluid">
+	<div id="body" class="container-fluid">
 		<div class="row">
 			<div class="col-xs-12">
 				<h4 style="margin-top:0px;margin-bottom:15px;color:white;">Database functions</h4>
@@ -47,7 +47,7 @@
 		</div>
 		<div class="row" style="margin-top:15px;">		
 			<div class="col-xs-2 col-sm-1">
-				<button id="export" type="button" class="btn btn-front">
+				<button id="export" type="button" class="btn btn-front" onclick="exportcsv();">
 					<span class="glyphicon glyphicon-download-alt"></span>
 				</button>
 			</div>
@@ -71,51 +71,76 @@
 
 
 	function archive(action){
+		$.ajax({
+			type: "POST",
+			contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
+			url: "/config/archive_database",
+			data: JSON.stringify({action:action}),
+			success: function(rdata) { //rdata = remote data that the server sends as feedback...
+				console.log(rdata.result);
+				if (rdata.result==="ok"){
+					$('.modal-body>p').text('All sensor prior the last 24 hours are archived successfully!');
+					$('#myModal').modal('show');
+				}
+				else if (rdata.result==="error"){
+					$('.modal-body>p').text('The archiving of sensor data failed!');
+					$('#myModal').modal('show');
+				}
+				else if (rdata.result==="no need"){
+					$('.modal-body>p').text('No need to archive. Aborted!');
+					$('.modal-footer').prepend('<button onclick="forcearchive();" name="forcebtn" type="button" class="btn btn-danger">Force archive</button>')
+					$('#myModal').modal('show');
+				}					
+			},
+			dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
+		});
+	}
+
+
+	$("[name='okbtn']").click(function(){
+		$('#myModal').modal('hide');
+	});
+
+	$('#myModal').on('hidden.bs.modal', function (e) {
+	    if($('[name="forcebtn"]').length){
+        	$('[name="forcebtn"]').remove();
+    	}
+	})
+
+	function forcearchive(){
+		$('#myModal').modal('hide');
+		setTimeout(function(){
+			archive('force');
+			}, 1000)				
+	};
+
+
+	function exportcsv(){
 			$.ajax({
 				type: "POST",
 				contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
-				url: "/config/archive_database",
-				data: JSON.stringify({action:action}),
+				url: "/config/export_database",
+				// data: JSON.stringify({action:action}),
 				success: function(rdata) { //rdata = remote data that the server sends as feedback...
 					console.log(rdata.result);
 					if (rdata.result==="ok"){
-						$('.modal-body>p').text('All sensor prior the last 24 hours are archived successfully!');
-						$('#myModal').modal('show');
+						var downloadbtn = '<div class="row" style="padding-top:15px;">' +
+							'<div class="col-xs-12">' +
+								'<a href="http://<%=base_url%>/files/sensor_data.csv" class="btn btn-primary">'+
+								'Download'+
+								'</a>'+
+							'</div>' +
+						'</div>';
+						$('#body').append(downloadbtn);				
 					}
 					else if (rdata.result==="error"){
-						$('.modal-body>p').text('The archiving of sensor data failed!');
+						$('.modal-body>p').text('The export of sensor data to csv file failed!');
 						$('#myModal').modal('show');
 					}
-					else if (rdata.result==="no need"){
-						$('.modal-body>p').text('No need to archive. Aborted!');
-						$('.modal-footer').prepend('<button onclick="forcearchive();" name="forcebtn" type="button" class="btn btn-danger">Force archive</button>')
-						$('#myModal').modal('show');
-					}					
 				},
 				dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
 			});
 		}
-
-
-		$("[name='okbtn']").click(function(){
-			$('#myModal').modal('hide');
-		});
-
-		$('#myModal').on('hidden.bs.modal', function (e) {
-		    if($('[name="forcebtn"]').length){
-            	$('[name="forcebtn"]').remove();
-        	}
-		})
-
-		function forcearchive(){
-			$('#myModal').modal('hide');
-			setTimeout(function(){
-				archive('force');
-				}, 1000)				
-		};
-
-
-
 
 
 </script>

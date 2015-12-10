@@ -3,7 +3,7 @@ var router = express.Router();
 var archive_db = require('../my_modules/archive_db');
 var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.cached.Database('./sensor-data.sqlite');
-
+var csv = require("fast-csv");
 
 
 function get_sensors(req,res,next){
@@ -168,6 +168,71 @@ router.post('/archive_database', get_data_to_archive, function(req, res, next){
 		}
 	})		
 })
+
+
+function get_history_data_to_export(req, res, next){
+	// get the data from history table
+	db.all("SELECT sensor_id, location, date, ROUND(avg(value),2) as temp FROM sensor_history join sensors on sensors.id=sensor_history.sensor_id GROUP BY date, sensor_id ORDER BY date ASC, sensor_id ASC;", function(err,rows){
+		if(err){
+			console.error(err);
+			req.export_hist_err=err;
+			return next();
+		}
+		req.export_hist_err=null;
+		req.history_data_to_export = rows;
+		next();
+	})
+}
+
+function get_latest_sensor_data_to_export(req, res, next){
+	//get the data from sensors_data table (these are the latest data that have not beed archived)
+	db.all("SELECT sensor_id, location, strftime('%Y-%m-%d',(timestamp/1000)/86400*86400, 'unixepoch', 'localtime') as date, ROUND(avg(value),2) as temp FROM sensor_data join sensors on sensors.id=sensor_data.sensor_id GROUP BY date, sensor_id ORDER BY date ASC, sensor_id ASC", function(err, rows){
+		if(err){
+			console.error(err);
+			req.export_latest_err=err;
+			return next();
+		}
+		req.export_latest_err=null;
+		req.latest_sensor_data_to_export = rows;
+		next();
+	})
+}
+
+router.post('/export_database', get_history_data_to_export, get_latest_sensor_data_to_export, function(req, res, next){
+	res.contentType('json');
+	if(req.export_hist_err!==null || req.export_latest_err!==null){
+		return res.send({result:'error'});
+	}
+	//Merge the data from the 2 tables. If there are data for the same day and sensor merge them using their average!
+	var data_to_export = req.history_data_to_export;
+	var hist=req.history_data_to_export;
+	var lat=req.latest_sensor_data_to_export;
+	
+	for (var i = lat.length - 1; i >= 0; i--) {
+		var j=hist.length - 1;
+		var found=false;
+		while(j>=0 && found==false){
+			if ((hist[j].date==lat[i].date) && (hist[j].sensor_id==lat[i].sensor_id)){
+				found=true;
+				var avg = (lat[i].temp+hist[j].temp)/2;
+				data_to_export[j].temp = Math.round(avg*100)/100;
+			}
+			j--;
+		};
+		if(!found){
+			data_to_export.push(lat[i]);
+		}
+	};
+	//generate the csv file for the user to download.
+	csv
+	.writeToPath("./public/files/sensor_data.csv", 
+    	data_to_export, {headers: true})
+    .on("finish", function(){
+	  res.send({result:'ok'});
+    });
+})
+
+
 //end of database functions
 
 
