@@ -5,6 +5,12 @@ var temperature = require("../my_modules/temperature");
 var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.cached.Database('./sensor-data.sqlite');
 
+function isAuthenticated(req, res, next) {
+  if (req.isAuthenticated())
+    return next();
+  res.redirect('/');
+}
+
 
 function update_profile (req, res, next){
   console.log("the method used is:"+ req.method);
@@ -295,7 +301,10 @@ function update_profile (req, res, next){
 
     function render_therm(req,res){
         var base_url = req.headers.host;
-        console.log(req.graph_data);
+        // console.log(req.graph_data);
+        res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+        res.header('Expires', '-1');
+        res.header('Pragma', 'no-cache');
         res.render('therm', {tempdata: req.tempdata, profiles: req.profiles, all_sensors:req.all_sensors, sensors: req.sensors, sensor_location:req.locations, default_sensor:req.default_sensor, time_window_data: req.time_window_data, state:req.state, time_window_next:req.time_window_next, graph_data:req.graph_data ,base_url:base_url});
       }
 
@@ -304,7 +313,7 @@ function update_profile (req, res, next){
     // When I used the GET method to send the select box data to /therm I had as a first callback function
     // in the following line the set_profile function
     // *I use router.use (instead of router.get()) to catch both GET and POST requests
-    router.use('/', update_profile, get_profiles,get_time_window_data, set_status, get_all_sensors, get_sensors, get_therm_data, get_graph_data, render_therm);
+    router.use('/', isAuthenticated, update_profile, get_profiles,get_time_window_data, set_status, get_all_sensors, get_sensors, get_therm_data, get_graph_data, render_therm);
 
     //GET therm page with one sqlite query
     //router.get('/therm', function(req, res) {

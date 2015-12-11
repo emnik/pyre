@@ -4,6 +4,11 @@ var router = express.Router();
 var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.cached.Database('./sensor-data.sqlite');
 
+function isAuthenticated(req, res, next) {
+  if (req.isAuthenticated())
+    return next();
+  res.redirect('/');
+}
 
 function get_sensors(req,res,next){
 	// used by both router.post('/get_timewindow_by_id',...) and router.get('/:id',...)
@@ -202,7 +207,7 @@ function get_timewindows_perday(req, res, next){
 
 
 
-router.get('/:id', get_sensors, get_timewindows, get_schedule, get_timewindows_perday, function(req, res) {
+router.get('/:id', isAuthenticated, get_sensors, get_timewindows, get_schedule, get_timewindows_perday, function(req, res) {
 	var base_url = req.headers.host;
 	var id = req.params.id;
 	// console.log(req.sensors);

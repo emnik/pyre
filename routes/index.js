@@ -1,22 +1,37 @@
 var express = require('express');
 var router = express.Router();
-// var ds1820 = require('../my_modules/ds1820');
+var passport = require('passport');
+var relay = require('../my_modules/relay');
+var config = require('../my_modules/config');
+var pin = config.pin;
 
 
 /* GET home page. */
-router.get('/', function(req, res) {
+router.get('/', function(req, res, next) {
   var base_url = req.headers.host;
-	/*I used a global variable (app.locals.startTemp) as with the following way
-	there was some delay on page refresh... probably due to asynchronous nature
-	of node.js?*/
-  // var firstTemp;
-  // ds1820.readLocalTemp(function(data){
-  // 		firstTemp = data.temperature_record[0].celsius;
-  // 	});
-  // var startTemp = req.param('temperature', firstTemp);
-  // res.render('index', {startTemp: startTemp});
   res.render('index', {base_url:base_url});
 })
+
+/* Handle Login POST */
+router.post('/login', passport.authenticate('local', {
+  successRedirect: '/therm',
+  failureRedirect: '/'
+  })
+);
+
+/* Handle Logout */
+router.get('/logout', function(req, res) {
+    //Pause the thermostat
+    relay.act(pin.thermostat, 0, function(err){ //0=OFF
+      if(err){
+        console.error(err);
+        return next(err);
+      }
+    }); 
+  req.logout();
+  // req.session.destroy();
+  res.redirect('/');
+});
 
 
 module.exports = router;

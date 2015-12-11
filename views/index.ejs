@@ -2,73 +2,48 @@
 <html>
 	<head>
 	<% include ./partials/head %>
-	<link rel="stylesheet" href="/stylesheets/bootstrap-switch.min.css">
 	</head>
-
+	<style type="text/css">
+		.col-centered {
+		    float: none;
+		    display: block;
+		    margin-left: auto;
+		    margin-right: auto;
+		}
+	</style>
 <body>
-	<!-- <div id="wrapper"> -->
 		<header>
-			<% include ./partials/header %>
+		<% include ./partials/header_login %>
 		</header>
 
-		<div class="container-fluid">
+		<div class="container-fluid"  >
 			<div class="row">
-	    		<div id="temp" class="col-xs-7" style="color:#F6F4EC;">
-	    			<h4 class="text-center"><strong>Current Temp</strong></h4>
-	    			<h1 class="text-center">
-	    			<strong>
-							...
-						</strong>&deg;C</h1>
-	    		</div>
-	    		<div class="col-xs-5">
-	    			<button type="button" name="start-button" class="btn btn-primary btn-lg" style="margin-top:40px" onclick="window.location='./therm/'"> Start</button>
-	    		</div>
+				<div class="col-sm-6 col-lg-4 col-centered">
+				<div class="panel panel-default">
+				  <div class="panel-heading">
+				    <h3 class="panel-title">Login</h3>
+				  </div>
+				  <div class="panel-body">
+					<form action="/login" method="post">
+						<div class="form-group">
+							<label for="username">Username</label>
+							<input type="text" name="username" class="form-control" placeholder="Username">
+						</div>
+						<div class="form-group">
+							<label for="password">Password</label>
+							<input type="password" class="form-control" name="password" placeholder="Password">
+						</div>
+						<div class="pull-right">
+							<button type="submit" class="btn btn-sm btn-primary">Submit</button>
+						</div>		
+					</form>
+				  </div>
+				</div>
+
+				</div>
 			</div>
 		</div>
 
-		<!-- <div id="footer"> -->
-			<div class="row" style="padding-top:30px; color:#F6F4EC;">
-				<div class="col-xs-7">
-					<p class="text-center">power status:</p>
-				</div>
-				<div class="col-xs-5">
-					<input type="checkbox" data-size="mini" name="power-checkbox" unchecked>
-				</div>
-			</div>
-		<!-- </div> end of footer-->
-	<!--</div> end of wrapper-->
 </body>
 
 <% include ./partials/javascript.ejs %>
-<script src="/javascripts/bootstrap-switch.min.js"></script>
-<script src="/socket.io/socket.io.js"></script>
-<script>
-	var socket = io.connect();
-  	socket.on('temperatures', function(data){
-			console.log(data);
-    	$('#temp>h1>strong').text(data.mean_sensor_1);
-  	});
-
-	$( document ).ready(function() {
-    	$("[name='power-checkbox']").bootstrapSwitch();
-
-    	//TODO: POWER STATUS FROM GPIO -> RELAY
-    	//if on initialization the power is off the start button should be disabled
-    // 	if ($("[name='power-checkbox']").is(':checked')==false)
-		// {
-		// 	$("[name='start-button']").prop('disabled', true);
-		// };
-
-		//if the user toggles the power then the start button should also toggle its state!
-		$("[name='power-checkbox']").on('switchChange.bootstrapSwitch', function(event, state) {
-			if (state==true)
-			{
-				$("[name='start-button']").prop('disabled', false);
-			}
-			else
-			{
-				$("[name='start-button']").prop('disabled', true);
-			}
-		});
-	});
-</script>
