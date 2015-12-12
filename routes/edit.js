@@ -238,7 +238,7 @@ router.get('/:id', isRequestLocal, isAuthenticated, get_sensors, get_timewindows
 				};
 				req.temp = rows[0];
 				// console.log(req.temp);
-				res.render('edit/constant', {curtemp: req.temp, sensors: req.sensors, base_url:base_url});
+				res.render('edit/constant', {curtemp: req.temp, sensors: req.sensors, base_url:base_url, isLocal:req.isLocal});
 	        });
 	 }
 	 else if (req.params.id==2){ //DAYNIGHT MODE
@@ -251,14 +251,14 @@ router.get('/:id', isRequestLocal, isAuthenticated, get_sensors, get_timewindows
 				if (rows[0].name=="DAY_PROFILE"){req.dayTemp = rows[0]};
 				if (rows[1].name=="NIGHT_PROFILE"){req.nightTemp = rows[1]};
 				console.log(rows);
-				res.render('edit/daynight', {dayTemp: req.dayTemp, nightTemp: req.nightTemp, sensors: req.sensors, base_url:base_url});
+				res.render('edit/daynight', {dayTemp: req.dayTemp, nightTemp: req.nightTemp, sensors: req.sensors, base_url:base_url, isLocal:req.isLocal});
 	        });
 	 }
 	 else if (req.params.id==3){ //WEEKLY MODE
 	 	res.render('edit/weekly', {sensors: req.sensors, schedule: req.schedule, timewindow: req.timewindows, timewindowsperday:req.timewindowsperday, base_url:base_url});
 	 }
 	 else if (req.params.id==4){ //CUSTOM MODE
-	 	res.render('edit/custom', {sensors: req.sensors, timewindow: req.timewindows, timewindowsperday:req.timewindowsperday, base_url:base_url})
+	 	res.render('edit/custom', {sensors: req.sensors, timewindow: req.timewindows, timewindowsperday:req.timewindowsperday, base_url:base_url, isLocal:req.isLocal})
 	 }
 })
 

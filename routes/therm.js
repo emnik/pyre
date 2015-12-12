@@ -324,7 +324,7 @@ function update_profile (req, res, next){
         res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
         res.header('Expires', '-1');
         res.header('Pragma', 'no-cache');
-        res.render('therm', {tempdata: req.tempdata, profiles: req.profiles, all_sensors:req.all_sensors, sensors: req.sensors, sensor_location:req.locations, default_sensor:req.default_sensor, time_window_data: req.time_window_data, state:req.state, time_window_next:req.time_window_next, graph_data:req.graph_data ,base_url:base_url});
+        res.render('therm', {tempdata: req.tempdata, profiles: req.profiles, all_sensors:req.all_sensors, sensors: req.sensors, sensor_location:req.locations, default_sensor:req.default_sensor, time_window_data: req.time_window_data, state:req.state, time_window_next:req.time_window_next, graph_data:req.graph_data ,base_url:base_url, isLocal:req.isLocal});
       }
 
 

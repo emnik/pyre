@@ -264,13 +264,13 @@ router.post('/export_database', get_history_data_to_export, get_latest_sensor_da
 router.get('/:section', isRequestLocal, isAuthenticated, get_timetables, get_sensors, function(req, res) {
   var base_url = req.headers.host;
   if (req.params.section == 'timewindows'){
-  	res.render('config/'+req.params.section, {timetables:req.timetables, sensors:req.sensors, base_url:base_url});
+  	res.render('config/'+req.params.section, {timetables:req.timetables, sensors:req.sensors, base_url:base_url, isLocal:req.isLocal});
   }
   else if(req.params.section == 'sensors'){
-  	res.render('config/'+req.params.section, {sensors:req.sensors, base_url:base_url});	
+  	res.render('config/'+req.params.section, {sensors:req.sensors, base_url:base_url, isLocal:req.isLocal});	
   }
     else if(req.params.section == 'database'){
-  	res.render('config/'+req.params.section, {base_url:base_url});	
+  	res.render('config/'+req.params.section, {base_url:base_url, isLocal:req.isLocal});	
   }
 })
 
