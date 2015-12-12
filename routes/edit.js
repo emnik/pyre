@@ -4,10 +4,29 @@ var router = express.Router();
 var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.cached.Database('./sensor-data.sqlite');
 
+function isRequestLocal(req, res, next){
+  var rpi_ip = req.hostname.split('.');
+  var request_ip = req.connection.remoteAddress.split('.');
+  var isLocal=true;
+  for(i=0;i<=2;i++){
+    if(rpi_ip[i]!==request_ip[i]){
+      isLocal=false;
+    }
+  }
+  req.isLocal = isLocal;
+  next();
+}
+
 function isAuthenticated(req, res, next) {
-  if (req.isAuthenticated())
-    return next();
-  res.redirect('/');
+  if(req.isLocal){
+    next();
+  }
+  else
+  {
+    if (req.isAuthenticated())
+      return next();
+    res.redirect('/');
+  }
 }
 
 function get_sensors(req,res,next){
@@ -207,7 +226,7 @@ function get_timewindows_perday(req, res, next){
 
 
 
-router.get('/:id', isAuthenticated, get_sensors, get_timewindows, get_schedule, get_timewindows_perday, function(req, res) {
+router.get('/:id', isRequestLocal, isAuthenticated, get_sensors, get_timewindows, get_schedule, get_timewindows_perday, function(req, res) {
 	var base_url = req.headers.host;
 	var id = req.params.id;
 	// console.log(req.sensors);

@@ -5,10 +5,29 @@ var temperature = require("../my_modules/temperature");
 var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.cached.Database('./sensor-data.sqlite');
 
+function isRequestLocal(req, res, next){
+  var rpi_ip = req.hostname.split('.');
+  var request_ip = req.connection.remoteAddress.split('.');
+  var isLocal=true;
+  for(i=0;i<=2;i++){
+    if(rpi_ip[i]!==request_ip[i]){
+      isLocal=false;
+    }
+  }
+  req.isLocal = isLocal;
+  next();
+}
+
 function isAuthenticated(req, res, next) {
-  if (req.isAuthenticated())
-    return next();
-  res.redirect('/');
+  if(req.isLocal){
+    next();
+  }
+  else
+  {
+    if (req.isAuthenticated())
+      return next();
+    res.redirect('/');
+  }
 }
 
 
@@ -313,7 +332,7 @@ function update_profile (req, res, next){
     // When I used the GET method to send the select box data to /therm I had as a first callback function
     // in the following line the set_profile function
     // *I use router.use (instead of router.get()) to catch both GET and POST requests
-    router.use('/', isAuthenticated, update_profile, get_profiles,get_time_window_data, set_status, get_all_sensors, get_sensors, get_therm_data, get_graph_data, render_therm);
+    router.use('/', isRequestLocal, isAuthenticated, update_profile, get_profiles,get_time_window_data, set_status, get_all_sensors, get_sensors, get_therm_data, get_graph_data, render_therm);
 
     //GET therm page with one sqlite query
     //router.get('/therm', function(req, res) {

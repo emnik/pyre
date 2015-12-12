@@ -1,13 +1,25 @@
 var express = require('express');
 var router = express.Router();
 var passport = require('passport');
-var relay = require('../my_modules/relay');
-var config = require('../my_modules/config');
-var pin = config.pin;
 
+function isRequestLocal(req, res, next){
+  var rpi_ip = req.hostname.split('.');
+  var request_ip = req.connection.remoteAddress.split('.');
+  var isLocal=true;
+  for(i=0;i<=2;i++){
+    if(rpi_ip[i]!==request_ip[i]){
+      isLocal=false;
+    }
+  }
+  req.isLocal = isLocal;
+  next();
+}
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
+router.get('/', isRequestLocal, function(req, res, next) {
+  if(req.isLocal){
+    return res.redirect('/therm');
+  }
   var base_url = req.headers.host;
   res.render('index', {base_url:base_url});
 })
@@ -21,13 +33,6 @@ router.post('/login', passport.authenticate('local', {
 
 /* Handle Logout */
 router.get('/logout', function(req, res) {
-    //Pause the thermostat
-    relay.act(pin.thermostat, 0, function(err){ //0=OFF
-      if(err){
-        console.error(err);
-        return next(err);
-      }
-    }); 
   req.logout();
   // req.session.destroy();
   res.redirect('/');

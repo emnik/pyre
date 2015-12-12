@@ -6,7 +6,32 @@ var relay = require('../my_modules/relay');
 
 var pin = config.pin;
 
-router.post('/actions', function(req, res, next){
+function isRequestLocal(req, res, next){
+  var rpi_ip = req.hostname.split('.');
+  var request_ip = req.connection.remoteAddress.split('.');
+  var isLocal=true;
+  for(i=0;i<=2;i++){
+    if(rpi_ip[i]!==request_ip[i]){
+      isLocal=false;
+    }
+  }
+  req.isLocal = isLocal;
+  next();
+}
+
+function isAuthenticated(req, res, next) {
+  if(req.isLocal){
+    next();
+  }
+  else
+  {
+    if (req.isAuthenticated())
+      return next();
+    res.redirect('/');
+  }
+}
+
+router.post('/actions', isRequestLocal, isAuthenticated, function(req, res, next){
   //console.log(JSON.stringify(req.body.status));
   console.log(req.body);
   if (req.body.status=="Paused")

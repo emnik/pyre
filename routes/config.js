@@ -5,10 +5,29 @@ var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.cached.Database('./sensor-data.sqlite');
 var csv = require("fast-csv");
 
+function isRequestLocal(req, res, next){
+  var rpi_ip = req.hostname.split('.');
+  var request_ip = req.connection.remoteAddress.split('.');
+  var isLocal=true;
+  for(i=0;i<=2;i++){
+    if(rpi_ip[i]!==request_ip[i]){
+      isLocal=false;
+    }
+  }
+  req.isLocal = isLocal;
+  next();
+}
+
 function isAuthenticated(req, res, next) {
-  if (req.isAuthenticated())
-    return next();
-  res.redirect('/');
+  if(req.isLocal){
+    next();
+  }
+  else
+  {
+    if (req.isAuthenticated())
+      return next();
+    res.redirect('/');
+  }
 }
 
 function get_sensors(req,res,next){
@@ -242,7 +261,7 @@ router.post('/export_database', get_history_data_to_export, get_latest_sensor_da
 
 
 /* GET home page. */
-router.get('/:section', isAuthenticated, get_timetables, get_sensors, function(req, res) {
+router.get('/:section', isRequestLocal, isAuthenticated, get_timetables, get_sensors, function(req, res) {
   var base_url = req.headers.host;
   if (req.params.section == 'timewindows'){
   	res.render('config/'+req.params.section, {timetables:req.timetables, sensors:req.sensors, base_url:base_url});
