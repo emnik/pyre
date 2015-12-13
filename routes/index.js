@@ -26,9 +26,9 @@ router.get('/', isRequestLocal, function(req, res, next) {
 
 /* Handle Login POST */
 router.post('/login', passport.authenticate('local', {
-  successRedirect: '/therm',
-  failureRedirect: '/'
-  })
+      successRedirect: '/therm',
+      failureRedirect: '/'
+    })
 );
 
 /* Handle Logout */

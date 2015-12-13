@@ -4,6 +4,8 @@ var archive_db = require('../my_modules/archive_db');
 var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.cached.Database('./sensor-data.sqlite');
 var csv = require("fast-csv");
+var passport = require('passport');
+var crypto = require('crypto');
 
 function isRequestLocal(req, res, next){
   var rpi_ip = req.hostname.split('.');
@@ -15,8 +17,9 @@ function isRequestLocal(req, res, next){
     }
   }
   req.isLocal = isLocal;
-  next();
+  return next();
 }
+
 
 function isAuthenticated(req, res, next) {
   if(req.isLocal){
@@ -24,8 +27,7 @@ function isAuthenticated(req, res, next) {
   }
   else
   {
-    if (req.isAuthenticated())
-      return next();
+    if (req.isAuthenticated()){return next();}
     res.redirect('/');
   }
 }
@@ -259,6 +261,43 @@ router.post('/export_database', get_history_data_to_export, get_latest_sensor_da
 
 //end of database functions
 
+//configure account account functions
+
+function hashPassword(password, salt) {
+  var hash = crypto.createHash('sha256');
+  hash.update(password);
+  hash.update(salt);
+  return hash.digest('hex');
+}
+
+router.post('/change_credentials', function(req, res, next){
+	res.contentType('json');
+	if(req.body.new_username!=="" && req.body.new_password!=="" && req.body.confirm_password!==""){
+		if (req.body.new_password==req.body.confirm_password){
+			var salt = crypto.randomBytes(16).toString('hex');
+			var shaPass = hashPassword(req.body.new_password, salt);
+			db.run("UPDATE users SET username=?, password=?, salt=? WHERE username=?",[req.body.new_username, shaPass, salt, req.user[0].username], function(err){
+				if(err){
+					console.error(err);
+					// return next(err);
+					return res.status(500).send({result:'error', error:err});
+				}
+				res.status(200).send({result:'ok'});
+			})
+		}
+		else
+		{
+			res.status(500).send({result:'noConfirm'});
+		}	
+	}
+	else
+	{
+		res.status(500).send({result:'all_required'});
+	}
+	
+}) 
+
+//end of account account functions
 
 /* GET home page. */
 router.get('/:section', isRequestLocal, isAuthenticated, get_timetables, get_sensors, function(req, res) {
@@ -269,11 +308,26 @@ router.get('/:section', isRequestLocal, isAuthenticated, get_timetables, get_sen
   else if(req.params.section == 'sensors'){
   	res.render('config/'+req.params.section, {sensors:req.sensors, base_url:base_url, isLocal:req.isLocal});	
   }
-    else if(req.params.section == 'database'){
+  else if(req.params.section == 'database'){
   	res.render('config/'+req.params.section, {base_url:base_url, isLocal:req.isLocal});	
+  }
+  else if(req.params.section == 'account'){
+  	if(req.isAuthenticated()){
+  		res.render('config/'+req.params.section, {base_url:base_url, isLocal:req.isLocal});		
+  	}
+  	else
+  	//if is not authenticated we present a login form for the user to login so he can change the credentials!
+  	{
+		res.render('config/login', {base_url:base_url, isLocal:req.isLocal});	
+  	}
   }
 })
 
-
+/* Handle Login POST */
+router.post('/login', passport.authenticate('local', {
+      successRedirect: '/config/account',
+      failureRedirect: '/config/account'
+    })
+);
 
 module.exports = router;

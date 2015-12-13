@@ -44,13 +44,6 @@ app.use('/edit', edit);
 app.use('/therm', therm);
 app.use('/config', config);
 
-
-// var crypto = require('crypto');
-// var salt = crypto.randomBytes(16).toString('hex');
-// console.log(salt);
-// var sha = account.hashPassword('usr#6379', salt);
-// console.log(sha);
-
 // passport config
 var account = require('./my_modules/account');
 passport.use(new LocalStrategy(account.authenticate));

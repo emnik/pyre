@@ -190,8 +190,6 @@ process.on('SIGINT', exit_handlers.gracefulExit).on('SIGTERM', exit_handlers.gra
 // })) 
 
 
-
-
 // process.on('exit', function(err){
 //   console.log("test"); //this will run just before exit and then it will exit! For the time being I don't need it
 // })
