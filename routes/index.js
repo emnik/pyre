@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var passport = require('passport');
+var package_json = require('../package.json');
 
 function isRequestLocal(req, res, next){
   var rpi_ip = req.hostname.split('.');
@@ -38,5 +39,12 @@ router.get('/logout', function(req, res) {
   res.redirect('/');
 });
 
+
+
+router.get('/about', function(req, res, next) {
+  var base_url = req.headers.host;
+  var ver=package_json.version;
+  res.render('about', {base_url:base_url, version:ver});
+})
 
 module.exports = router;

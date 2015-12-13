@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	<% include ./partials/head %>
+	</head>
+	<style type="text/css">
+		h1, h4{
+			color:lightgray;
+		}
+		p{
+			color:lightgray;
+			font-size: 15px;
+		}
+	</style>
+<body>
+		<header>
+			<nav class="navbar navbar-inverse navbar-static-top">
+			  <div class="container-fluid">
+			    <!-- Brand and toggle get grouped for better mobile display -->
+			    <div class="navbar-header">
+			      <a class="navbar-brand" href="#" onclick="history.go(-1);">
+			        <span class="glyphicon glyphicon-chevron-left" aria-hidden="true">
+			        </span> back
+			      </a>
+			    </div>
+			  </div><!-- /.container-fluid -->
+ 		    <hr style="margin-top:0px;margin-bottom:0px">
+			</nav>
+		</header>
+
+		<div class="container-fluid"  >
+			<div class="row">
+				<div class="col-xs-12">
+			        <h1 class="text-center" style="margin-top:10px;">
+			        <span class="glyphicon glyphicon-fire" aria-hidden="true"></span>
+			        Pyre</h1>
+			        <h4 class="text-center">the smart thermostat (v <%=version%>)</h4> 
+			        <p class="text-center" style="margin-top:20px;">Nikiforakis Manos (nikiforakis.m@gmail.com)</p>
+			        <p class="text-center">
+			        	<a href="https://opensource.org/licenses/MIT">MIT Licence</a> Copyright 
+			        	&copy; 2015, 2016
+			        </p>
+				</div>
+			</div>
+		</div>
+
+</body>
+
+<% include ./partials/javascript.ejs %>

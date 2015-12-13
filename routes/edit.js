@@ -229,6 +229,7 @@ function get_timewindows_perday(req, res, next){
 router.get('/:id', isRequestLocal, isAuthenticated, get_sensors, get_timewindows, get_schedule, get_timewindows_perday, function(req, res) {
 	var base_url = req.headers.host;
 	var id = req.params.id;
+	var show_config_tw_menus=false;
 	// console.log(req.sensors);
  	if (req.params.id==1){ //CONSTANT MODE
 	 	db.all("SELECT  time_window.name, time_window.temp, time_window.sensor_ids FROM time_window LEFT JOIN timetable ON timetable.time_window_id = time_window.id LEFT JOIN schedule ON schedule.id = timetable.schedule_id LEFT JOIN profile ON profile.id = schedule.profile_id WHERE profile.id = 1 LIMIT 1;", function(err,rows){
@@ -238,7 +239,7 @@ router.get('/:id', isRequestLocal, isAuthenticated, get_sensors, get_timewindows
 				};
 				req.temp = rows[0];
 				// console.log(req.temp);
-				res.render('edit/constant', {curtemp: req.temp, sensors: req.sensors, base_url:base_url, isLocal:req.isLocal});
+				res.render('edit/constant', {curtemp: req.temp, sensors: req.sensors, base_url:base_url, isLocal:req.isLocal, show_config_tw_menus:show_config_tw_menus});
 	        });
 	 }
 	 else if (req.params.id==2){ //DAYNIGHT MODE
@@ -251,14 +252,16 @@ router.get('/:id', isRequestLocal, isAuthenticated, get_sensors, get_timewindows
 				if (rows[0].name=="DAY_PROFILE"){req.dayTemp = rows[0]};
 				if (rows[1].name=="NIGHT_PROFILE"){req.nightTemp = rows[1]};
 				console.log(rows);
-				res.render('edit/daynight', {dayTemp: req.dayTemp, nightTemp: req.nightTemp, sensors: req.sensors, base_url:base_url, isLocal:req.isLocal});
+				res.render('edit/daynight', {dayTemp: req.dayTemp, nightTemp: req.nightTemp, sensors: req.sensors, base_url:base_url, isLocal:req.isLocal, show_config_tw_menus:show_config_tw_menus});
 	        });
 	 }
 	 else if (req.params.id==3){ //WEEKLY MODE
-	 	res.render('edit/weekly', {sensors: req.sensors, schedule: req.schedule, timewindow: req.timewindows, timewindowsperday:req.timewindowsperday, base_url:base_url});
+	 	show_config_tw_menus = true;
+	 	res.render('edit/weekly', {sensors: req.sensors, schedule: req.schedule, timewindow: req.timewindows, timewindowsperday:req.timewindowsperday, base_url:base_url, isLocal:req.isLocal, show_config_tw_menus:show_config_tw_menus});
 	 }
 	 else if (req.params.id==4){ //CUSTOM MODE
-	 	res.render('edit/custom', {sensors: req.sensors, timewindow: req.timewindows, timewindowsperday:req.timewindowsperday, base_url:base_url, isLocal:req.isLocal})
+	 	show_config_tw_menus = true;
+	 	res.render('edit/custom', {sensors: req.sensors, timewindow: req.timewindows, timewindowsperday:req.timewindowsperday, base_url:base_url, isLocal:req.isLocal, show_config_tw_menus:show_config_tw_menus})
 	 }
 })
 
