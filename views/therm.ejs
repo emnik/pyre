@@ -5,7 +5,6 @@
 		<link rel="stylesheet" type="text/css" href="/stylesheets/select2-frontpage-fix.css">
 		<% include ./partials/head %>
 	</head>
-
 <body>
 	<header>
 		<% include ./partials/header %>
@@ -50,7 +49,7 @@
 
 	<div class="container-fluid">
 		<div class="row"> 
-			<div class="col-xs-12 col-sm-12 col-md-6"> <!-- Main panel visible allways-->
+			<div class="col-xs-12 col-sm-6 col-md-6"> <!-- Main panel visible allways-->
 				<div class="row">
 					<div class="col-xs-10">
 						<form id="mainform" method="post" action="/therm">
@@ -82,18 +81,16 @@
 		    			</h1>
 		    		</div>
 		    		<div id="status" class="col-xs-4 text-right" style="color:#F6F4EC;">
-		    			<!-- <h5><strong>Status:</strong></h5> -->
 		    			<h4 style="margin-top:30px;"><span class="label label-default">...</span></h4>
-		    			<!-- <p style="font-size:20px;padding-left:0px;"><strong>...</strong></p>  -->
 		    			<!-- status can be either: Working / Paused / Overlap-->
 		    		</div>
 				</div>
 				<div class="row">
-					<div class="hidden-xs hidden-sm col-md-12" style="margin-top:50px;">
+					<div class="hidden-xs" style="margin-top:50px;">
 						<!-- vertical whitespace when not in extra small screens!-->
 					</div>
 				</div>
-				<div class="row" style="color:white;">
+				<div class="row" style="color:white;<%if (Object.keys(time_window_next).length!==0){%>margin-top:-10px;<%}%>">
 					<div class="col-xs-12">
 						<p>Target Temp: <strong><% if (state.err==="") {%><%=time_window_data[0].temp%><% } else {%> - <%}%> &deg C </strong></p>
 						<p>Sensors:
@@ -105,10 +102,16 @@
 							<%})%>
 							</span>
 						</p>
+						<%if (Object.keys(time_window_next).length!==0){%>
+						<p style="color:lightblue;font-size:small;">
+							<span class="glyphicon glyphicon-bell" ></span>
+							 At <%=time_window_next.on_time%> the target temp is scheduled to <%=time_window_next.temp%>&degC
+						</p>
+						<%}%>
 					</div>
 				</div>
 			</div>
-			<div class="hidden-xs col-sm-12 col-md-6">
+			<div class="hidden-xs col-sm-6 col-md-6">
 				<div class="row">
 					<div class="col-xs-12" style="min-height: 250px">
 						<canvas id="MyChart"></canvas>
@@ -142,6 +145,10 @@
 
 			</div>
 		</div> <!-- end of first row -->
+		<div class="row">
+			<div class="col-xs-12">
+			</div>
+		</div> <!-- end of second row -->
 	</div>
 </body>
 
