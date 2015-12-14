@@ -10,7 +10,17 @@
 
 <body>
 	<header>
-		<% include ../partials/header_config %>
+		<nav class="navbar navbar-inverse navbar-static-top">
+		  <div class="container-fluid">
+		    <div class="navbar-header">
+		      <a class="navbar-brand" href="#" onclick="window.location=document.referrer;">
+		        <span class="glyphicon glyphicon-chevron-left" aria-hidden="true">
+		        </span> back
+		      </a>
+		    </div>
+		  </div>
+		  <hr style="margin-top:0px;">
+		</nav>
 	</header>
 
 	<div class="container-fluid">
@@ -328,6 +338,26 @@ var latest_saved_data=[];
 					$("#savebtn").removeProp('disabled');
 					$("#savebtn").empty();
 					$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+
+					//the following .change functions seem to be needed again for the new timewindow...
+					$("input[name='setTargetTemp']").change(function(){
+						$("#savebtn").removeProp('disabled');
+						$("#savebtn").empty();
+						$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+					})
+
+					$('.timepicker').change(function(){
+						$("#savebtn").removeProp('disabled');			
+						$("#savebtn").empty();
+						$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+					})
+
+					$("[name='sensors']").change(function(){
+						$("#savebtn").removeProp('disabled');
+						$("#savebtn").empty();
+						$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+					})
+
 
 			},
 			dataType: "json" // dataType is what you're expecting back from the server: json, html, text,

@@ -458,7 +458,7 @@
 			else {
 				//we just went off the time window so we refresh to get new data
 				//console.log('refresh');
-				location.reload();
+				location.reload(true);
 			}
 		}
 		else if (<%=(state.err==="No_time_window")%>) //true if we are not in a time window...
@@ -469,7 +469,7 @@
 				console.log("There is a following time window. Waiting...");
 				//when we get in this following time window we refresh to update our data...
 				if (cur.time >= '<%if (Object.keys(time_window_next).length!==0)%><%=time_window_next.on_time%>' && cur.time < '<%if (Object.keys(time_window_next).length!==0)%><%=time_window_next.off_time%>') {
-				location.reload();
+				location.reload(true);
 				//console.log('refresh on new time window!!!');
 				}
 				console.log("Or maybe the next day comes first!");
@@ -477,7 +477,7 @@
 				if (cur.day > curday)
 				{
 					//console.log("refresh on new day!!!");
-					location.reload();
+					location.reload(true);
 				}
 			}
 			else //there is not a time window neither a following one so we refresh for new data on the next day!!!
@@ -486,7 +486,7 @@
 				if (cur.day > curday)
 				{
 					//console.log("refresh on new day!!!");
-					location.reload();
+					location.reload(true);
 				}
 			}
 		}

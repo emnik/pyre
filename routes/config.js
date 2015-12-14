@@ -6,6 +6,8 @@ var db = new sqlite3.cached.Database('./sensor-data.sqlite');
 var csv = require("fast-csv");
 var passport = require('passport');
 var crypto = require('crypto');
+var http = require("http");
+var url = require("url");
 
 function isRequestLocal(req, res, next){
   var rpi_ip = req.hostname.split('.');

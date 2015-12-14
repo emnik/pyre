@@ -257,10 +257,16 @@ router.get('/:id', isRequestLocal, isAuthenticated, get_sensors, get_timewindows
 	 }
 	 else if (req.params.id==3){ //WEEKLY MODE
 	 	show_config_tw_menus = true;
+	 	res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+        res.header('Expires', '-1');
+        res.header('Pragma', 'no-cache');
 	 	res.render('edit/weekly', {sensors: req.sensors, schedule: req.schedule, timewindow: req.timewindows, timewindowsperday:req.timewindowsperday, base_url:base_url, isLocal:req.isLocal, show_config_tw_menus:show_config_tw_menus});
 	 }
 	 else if (req.params.id==4){ //CUSTOM MODE
 	 	show_config_tw_menus = true;
+	 	res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+        res.header('Expires', '-1');
+        res.header('Pragma', 'no-cache');
 	 	res.render('edit/custom', {sensors: req.sensors, timewindow: req.timewindows, timewindowsperday:req.timewindowsperday, base_url:base_url, isLocal:req.isLocal, show_config_tw_menus:show_config_tw_menus})
 	 }
 })
