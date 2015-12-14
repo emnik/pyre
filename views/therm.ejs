@@ -92,7 +92,9 @@
 				</div>
 				<div class="row" style="color:white;<%if (Object.keys(time_window_next).length!==0){%>margin-top:-10px;<%}%>">
 					<div class="col-xs-12">
-						<p>Target Temp: <strong><% if (state.err==="") {%><%=time_window_data[0].temp%><% } else {%> - <%}%> &deg C </strong></p>
+						<p>Target Temp: <strong><% if (state.err==="") {%><%=time_window_data[0].temp%><% } else {%> - <%}%> &deg C </strong>
+
+						</p>
 						<p>Sensors:
 							<span id="sensorslist" class="label-group">
 							<% sensor_location.forEach(function(i){%>
@@ -102,12 +104,37 @@
 							<%})%>
 							</span>
 						</p>
-						<%if (Object.keys(time_window_next).length!==0){%>
+						<%if (typeof time_window_data[0]!=="undefined" && Object.keys(time_window_next).length!==0){%>
 						<p style="color:lightblue;font-size:small;">
 							<span class="glyphicon glyphicon-bell" ></span>
+							 <%if (time_window_next.on_time === time_window_data[0].off_time) {%> 
 							 At <%=time_window_next.on_time%> the target temp is scheduled to <%=time_window_next.temp%>&degC
+							<%} else if(time_window_data[0].off_time<time_window_next.on_time){%>
+							 There is no schedule between <%=time_window_data[0].off_time%> to <%=time_window_next.on_time%>
+							 <%} else {%>
+							There is no schedule after <%=time_window_data[0].off_time%>
+							<%}%>
 						</p>
-						<%}%>
+						<%}else if (typeof time_window_data[0]!=="undefined" && Object.keys(time_window_next).length===0){%>
+						<p style="color:lightblue;font-size:small;">
+							<span class="glyphicon glyphicon-bell" ></span>
+							 There is no schedule after <%=time_window_data[0].off_time%>
+						</p>						
+						<%}else if (typeof time_window_data[0]==="undefined" && Object.keys(time_window_next).length===0){%>
+						<p style="color:lightblue;font-size:small;">
+							<span class="glyphicon glyphicon-bell" ></span>
+							 There is no schedule for today!
+						</p>	
+						<%} else if (typeof time_window_data[0]==="undefined" && Object.keys(time_window_next).length!==0){%>
+						<p style="color:lightblue;font-size:small;">
+							<span class="glyphicon glyphicon-bell" ></span>
+							<%if (time_window_next.on_time>curtime){%>
+							 At <%=time_window_next.on_time%> the target temp is scheduled to <%=time_window_next.temp%>&degC							 
+							<%} else {%>
+							There is no schedule from now on for today!
+							<%}%>
+						</p>	
+						<%}%>																	
 					</div>
 				</div>
 			</div>
@@ -145,10 +172,6 @@
 
 			</div>
 		</div> <!-- end of first row -->
-		<div class="row">
-			<div class="col-xs-12">
-			</div>
-		</div> <!-- end of second row -->
 	</div>
 </body>
 
@@ -164,7 +187,6 @@
 	var curday = curdate.getDay();
 
 	$( document ).ready(function(){
-		
 		var socket = io.connect();	
 		var selected_profile=$('#profiles').val();
 		
@@ -286,10 +308,6 @@
 		});
 
 
-
-
-
-
 		socket.on('check_data', function(data){ //when the server sends the current profile data, compare it with the ones used and if any of them is different reload to get the updated data from the server. The change in any of the data would have been done from another client! 
 			// console.log(data);
 			var selected_profile=$('#profiles').val();
@@ -308,9 +326,12 @@
 			}
 		});
 
-		// $('#myModal').on('shown.bs.modal', function () {
-		//   $("[name='cancelbtn']").focus();
-		// });
+		socket.on('disconnect', function(){
+			console.log('SOCKET DISCONNECTED!'); //the server is propably down
+			//I could trigger a 404error page with location reload but that would be a problem when
+			//forever is running and will get the server up again...
+		})
+
 
 		var selected_profile;
 		$('#profiles').on('focus', function(){

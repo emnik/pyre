@@ -97,6 +97,7 @@ function update_profile (req, res, next){
        if (h<10) h="0"+h;
        if (m<10) m="0"+m;
        var curtime = h+":"+m;
+       req.curtime = curtime;
        console.log(curtime);
        var getdata=[]; //get the current time window data (if exists)
        var nextdata=[]; //get the next time window for the current day - if exists a next one!
@@ -324,7 +325,7 @@ function update_profile (req, res, next){
         res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
         res.header('Expires', '-1');
         res.header('Pragma', 'no-cache');
-        res.render('therm', {tempdata: req.tempdata, profiles: req.profiles, all_sensors:req.all_sensors, sensors: req.sensors, sensor_location:req.locations, default_sensor:req.default_sensor, time_window_data: req.time_window_data, state:req.state, time_window_next:req.time_window_next, graph_data:req.graph_data ,base_url:base_url, isLocal:req.isLocal});
+        res.render('therm', {tempdata: req.tempdata, profiles: req.profiles, all_sensors:req.all_sensors, sensors: req.sensors, sensor_location:req.locations, default_sensor:req.default_sensor, time_window_data: req.time_window_data, state:req.state, time_window_next:req.time_window_next, graph_data:req.graph_data ,base_url:base_url, isLocal:req.isLocal, curtime:req.curtime});
       }
 
 
