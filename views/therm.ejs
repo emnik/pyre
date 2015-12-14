@@ -90,7 +90,7 @@
 						<!-- vertical whitespace when not in extra small screens!-->
 					</div>
 				</div>
-				<div class="row" style="color:white;<%if (Object.keys(time_window_next).length!==0){%>margin-top:-10px;<%}%>">
+				<div class="row" style="color:white;margin-top:-10px;">
 					<div class="col-xs-12">
 						<p>Target Temp: <strong><% if (state.err==="") {%><%=time_window_data[0].temp%><% } else {%> - <%}%> &deg C </strong>
 
@@ -105,7 +105,7 @@
 							</span>
 						</p>
 						<%if (typeof time_window_data[0]!=="undefined" && Object.keys(time_window_next).length!==0){%>
-						<p style="color:lightblue;font-size:small;">
+						<p id="info" style="color:lightblue;font-size:small;">
 							<span class="glyphicon glyphicon-bell" ></span>
 							 <%if (time_window_next.on_time === time_window_data[0].off_time) {%> 
 							 At <%=time_window_next.on_time%> the target temp is scheduled to <%=time_window_next.temp%>&degC
@@ -116,17 +116,17 @@
 							<%}%>
 						</p>
 						<%}else if (typeof time_window_data[0]!=="undefined" && Object.keys(time_window_next).length===0){%>
-						<p style="color:lightblue;font-size:small;">
+						<p id="info" style="color:lightblue;font-size:small;">
 							<span class="glyphicon glyphicon-bell" ></span>
 							 There is no schedule after <%=time_window_data[0].off_time%>
 						</p>						
 						<%}else if (typeof time_window_data[0]==="undefined" && Object.keys(time_window_next).length===0){%>
-						<p style="color:lightblue;font-size:small;">
+						<p id="info" style="color:lightblue;font-size:small;">
 							<span class="glyphicon glyphicon-bell" ></span>
 							 There is no schedule for today!
 						</p>	
 						<%} else if (typeof time_window_data[0]==="undefined" && Object.keys(time_window_next).length!==0){%>
-						<p style="color:lightblue;font-size:small;">
+						<p id="info" style="color:lightblue;font-size:small;">
 							<span class="glyphicon glyphicon-bell" ></span>
 							<%if (time_window_next.on_time>curtime){%>
 							 At <%=time_window_next.on_time%> the target temp is scheduled to <%=time_window_next.temp%>&degC							 
@@ -189,6 +189,16 @@
 	$( document ).ready(function(){
 		var socket = io.connect();	
 		var selected_profile=$('#profiles').val();
+		if (selected_profile==2){
+			$('#info').html('<p id="info" style="color:lightblue;font-size:small;">'+
+							'<span class="glyphicon glyphicon-bell" ></span>'+
+							' At <%=time_window_next.on_time%> the target temp is scheduled to <%=time_window_next.temp%>&degC');
+		}
+		else if(selected_profile==1){
+			$('#info').html('<p id="info" style="color:lightblue;font-size:small;">'+
+							'<span class="glyphicon glyphicon-calendar" ></span>'+
+							' To setup a schedule choose another profile');
+		}
 		
 		//send all the working profile data to server to inform the other connected clients!
 		data_info={profile:selected_profile, 
