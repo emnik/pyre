@@ -2,13 +2,15 @@ var express = require('express');
 var router = express.Router();
 
 var sqlite3 = require('sqlite3').verbose();
-var db = new sqlite3.cached.Database('./sensor-data.sqlite');
+var db = new sqlite3.cached.Database('/home/pi/apps/pyre/sensor-data.sqlite');
 
 function isRequestLocal(req, res, next){
   var rpi_ip = req.hostname.split('.');
   var request_ip = req.connection.remoteAddress.split('.');
   var isLocal=true;
-  for(i=0;i<=2;i++){
+  for(i=1;i<=2;i++){
+  	//I compare the second and third part of the ips so that 
+  	//even if there is an IPv4 and an IPv6-IPv4-mapped address this would work!
     if(rpi_ip[i]!==request_ip[i]){
       isLocal=false;
     }

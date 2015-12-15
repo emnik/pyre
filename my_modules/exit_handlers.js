@@ -1,6 +1,6 @@
 
 var sqlite3 = require('sqlite3').verbose();
-var db = new sqlite3.cached.Database('./sensor-data.sqlite');
+var db = new sqlite3.cached.Database('/home/pi/apps/pyre/sensor-data.sqlite');
 var gpio = require("pi-gpio");
 var async = require('async');
 var config = require("../my_modules/config");

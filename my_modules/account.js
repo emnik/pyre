@@ -1,5 +1,5 @@
 var sqlite3 = require('sqlite3').verbose();
-var db = new sqlite3.Database('./sensor-data.sqlite');
+var db = new sqlite3.Database('/home/pi/apps/pyre/sensor-data.sqlite');
 var crypto = require('crypto'); //this is a native node.js module. I don't need to install anything!
 
 function hashPassword(password, salt) {

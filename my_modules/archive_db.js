@@ -3,7 +3,7 @@ var sqlite3 = require('sqlite3').verbose(),
 
 // Wrap sqlite3 database
 var db = new TransactionDatabase(
-    new sqlite3.cached.Database("./sensor-data.sqlite", sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE)
+    new sqlite3.cached.Database('/home/pi/apps/pyre/sensor-data.sqlite', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE)
 );
 
 function get_data_to_archive(callback){

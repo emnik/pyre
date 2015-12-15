@@ -7,7 +7,9 @@ function isRequestLocal(req, res, next){
   var rpi_ip = req.hostname.split('.');
   var request_ip = req.connection.remoteAddress.split('.');
   var isLocal=true;
-  for(i=0;i<=2;i++){
+  for(i=1;i<=2;i++){
+    //I compare the second and third part of the ips so that 
+    //even if there is an IPv4 and an IPv6-IPv4-mapped address this would work!
     if(rpi_ip[i]!==request_ip[i]){
       isLocal=false;
     }

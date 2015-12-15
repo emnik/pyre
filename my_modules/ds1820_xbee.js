@@ -2,7 +2,7 @@ var SerialPort = require('serialport').SerialPort;
 var xbee_api = require('xbee-api');
 var util = require('util');
 var sqlite3 = require('sqlite3').verbose();
-var db = new sqlite3.cached.Database('./sensor-data.sqlite');
+var db = new sqlite3.cached.Database('/home/pi/apps/pyre/sensor-data.sqlite');
 
 function readRemoteTemp(insertfunc, callback)
 {
