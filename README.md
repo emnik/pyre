@@ -19,9 +19,10 @@
 * GPIO Ribbon Cable (https://www.adafruit.com/products/1988)
 * Assembled Pi Cobbler Plus - Breakout Cable for Pi B+/A+/Pi2 (https://www.adafruit.com/products/2029)
 
-![Image of the pyre thermostat](https://https://github.com/emnik/pyre/images/thermostat.jpg)
+![Image of the pyre thermostat](https://github.com/emnik/pyre/blob/master/images/thermostat.jpg)
 
-![Image of the remote sensor of pyre thermostat](https://https://github.com/emnik/pyre/images/remote_sensor.jpg)
+![Image of the remote sensor of pyre thermostat](https://github.com/emnik/pyre/blob/master/images/remote_sensor.jpg)
+
 **The Software:** 
 It is a responsive web app that is coded in javascript using 
 * Node.js 
