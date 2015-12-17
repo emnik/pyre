@@ -255,7 +255,7 @@ router.post('/export_database', get_history_data_to_export, get_latest_sensor_da
 	};
 	//generate the csv file for the user to download.
 	csv
-	.writeToPath("./public/files/sensor_data.csv", 
+	.writeToPath("/home/pi/apps/pyre/public/files/sensor_data.csv", 
     	data_to_export, {headers: true})
     .on("finish", function(){
 	  res.send({result:'ok'});
@@ -291,12 +291,12 @@ router.post('/change_credentials', function(req, res, next){
 		}
 		else
 		{
-			res.status(500).send({result:'noConfirm'});
+			res.status(200).send({result:'noConfirm'});
 		}	
 	}
 	else
 	{
-		res.status(500).send({result:'all_required'});
+		res.status(200).send({result:'all_required'});
 	}
 	
 }) 

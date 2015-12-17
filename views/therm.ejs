@@ -5,6 +5,12 @@
 		<link rel="stylesheet" type="text/css" href="/stylesheets/select2-frontpage-fix.css">
 		<% include ./partials/head %>
 	</head>
+<style type="text/css">
+	.offline {
+		text-decoration: line-through;
+	}
+</style>
+
 <body>
 	<header>
 		<% include ./partials/header %>
@@ -108,17 +114,23 @@
 						<p id="info" style="color:lightblue;font-size:small;">
 							<span class="glyphicon glyphicon-bell" ></span>
 							 <%if (time_window_next.on_time === time_window_data[0].off_time) {%> 
-							 At <%=time_window_next.on_time%> the target temp is scheduled to <%=time_window_next.temp%>&degC
+							 At <%=time_window_next.on_time%> target temp is scheduled to <%=time_window_next.temp%>&degC
 							<%} else if(time_window_data[0].off_time<time_window_next.on_time){%>
 							 There is no schedule between <%=time_window_data[0].off_time%> to <%=time_window_next.on_time%>
-							 <%} else {%>
+							 <%} else if (time_window_data[0].off_time!=='24:00'){%>
 							There is no schedule after <%=time_window_data[0].off_time%>
+							<%} else {%>
+							The schedule will be updated at 24:00
 							<%}%>
 						</p>
 						<%}else if (typeof time_window_data[0]!=="undefined" && Object.keys(time_window_next).length===0){%>
 						<p id="info" style="color:lightblue;font-size:small;">
 							<span class="glyphicon glyphicon-bell" ></span>
+							<%if (time_window_data[0].off_time!=='24:00'){%>
 							 There is no schedule after <%=time_window_data[0].off_time%>
+							 <%} else {%>
+							 The schedule will be updated at 24:00
+							 <%}%> 
 						</p>						
 						<%}else if (typeof time_window_data[0]==="undefined" && Object.keys(time_window_next).length===0){%>
 						<p id="info" style="color:lightblue;font-size:small;">
@@ -129,7 +141,7 @@
 						<p id="info" style="color:lightblue;font-size:small;">
 							<span class="glyphicon glyphicon-bell" ></span>
 							<%if (time_window_next.on_time>curtime){%>
-							 At <%=time_window_next.on_time%> the target temp is scheduled to <%=time_window_next.temp%>&degC							 
+							 At <%=time_window_next.on_time%> target temp is scheduled to <%=time_window_next.temp%>&degC							 
 							<%} else {%>
 							There is no schedule from now on for today!
 							<%}%>
@@ -192,7 +204,7 @@
 		if (selected_profile==2){
 			$('#info').html('<p id="info" style="color:lightblue;font-size:small;">'+
 							'<span class="glyphicon glyphicon-bell" ></span>'+
-							' At <%=time_window_next.on_time%> the target temp is scheduled to <%=time_window_next.temp%>&degC');
+							' At <%=time_window_next.on_time%> target temp is scheduled to <%=time_window_next.temp%>&degC');
 		}
 		else if(selected_profile==1){
 			$('#info').html('<p id="info" style="color:lightblue;font-size:small;">'+
@@ -217,33 +229,34 @@
 		
 
 	//Get the initial data and get started...
-		<%
-		var found=0;
+		<% 
+		var allfound=0;
 		var sumtemp=0;
-		for (var i = tempdata.length - 1; i >= 0; i--) {
-			for (var j = sensors.length - 1; j >= 0; j--) {
-				if(sensors[j] == tempdata[i].id){
-					found=found+1;
-					sumtemp = sumtemp + tempdata[i].average;
+		for (var i = sensors.length - 1; i >= 0; i--){
+			var sensor_found=0;
+			for (var j = tempdata.length - 1; j >= 0; j--) {
+				if(sensors[i] == tempdata[j].id){
+					allfound=allfound+1;
+					sensor_found=1;
+					sumtemp = sumtemp + tempdata[j].average;
 				}
-			} 
+			}
+			if(sensor_found===0)
+			{%>
+				$('#sensor'+<%=sensors[i]%>).addClass('offline');
+			<%}
+			else
+			{%>
+				$('#sensor'+<%=sensors[i]%>).removeClass('offline');
+			<%}			 
 		}
 
-		if(found!=sensors.length){%>
-			if (document.getElementById('backupsensor')===null) {
-				$('#sensorslist').append('<span id="backupsensor" class="label label-default"><span class="glyphicon glyphicon-warning-sign"></span></span>');
-			}
-		<%}
-		else
-		{%>
-			$('#backupsensor').remove();
-		<%};	
 
 		if(sumtemp!=0){
-			var avgtemp = Math.round(sumtemp / found * 10)/10;
+			var avgtemp = Math.round(sumtemp / allfound * 10)/10;
 		}
 
-		if(found==0){var noData=true;} else {var noData=false;}
+		if(allfound==0){var noData=true;} else {var noData=false;}
 		%>
 		
 		if(<%=noData%>){ //true if no therm data comes for the selected sensors...
@@ -267,32 +280,37 @@
 
 		socket.on('temperatures', function(data){
 			console.log(data);
-			var found=0;
+			var allfound=0;
 			var sumtemp=0;
 			var sensors = "<%=sensors%>".split(',');
-			for (var i = data.length - 1; i >= 0; i--) {
-				for (var j = sensors.length - 1; j >= 0; j--) {
-					if(sensors[j]==data[i].id){
-						found=found+1;
-						sumtemp = sumtemp + data[i].average; 						
+			for (var i = sensors.length - 1; i >= 0; i--) {
+				var sensor_found=0;
+				for (var j = data.length - 1; j >= 0; j--) {
+					if(sensors[i]==data[j].id){
+						allfound=allfound+1;
+						sensor_found=1;
+						sumtemp = sumtemp + data[j].average; 						
 					}
 				}
-			}
-			if(found!=sensors.length){
-				if (document.getElementById('backupsensor')===null) {
-					$('#sensorslist').append('<span id="backupsensor" class="label label-default"><span class="glyphicon glyphicon-warning-sign"></span></span>');
+				if(sensor_found===0)
+				{
+					$('#sensor'+sensors[i]).addClass('offline');
+				}
+				else
+				{
+					$('#sensor'+sensors[i]).removeClass('offline');
 				}
 			}
-			else
-			{
-				$('#backupsensor').remove();
-			};				
+
+			// if(allfound==sensors.length){
+			// 	$('#sensorslist').children().removeClass('offline');
+			// };				
 			
 			if(sumtemp!=0){
-				var avgtemp = Math.round(sumtemp/found*10)/10;
+				var avgtemp = Math.round(sumtemp/allfound*10)/10;
 			}
 
-			if(found==0){ //true if no therm data comes for the selected sensors...
+			if(allfound==0){ //true if no therm data comes for the selected sensors...
 				curstate = "Paused";
 				console.log(curstate);
 				console.log("No therm data from any off the sensors!!! Either Offline, or disabled!");
@@ -300,7 +318,7 @@
 				$("#status>h4>span").addClass("label-info");
 				$("#status>h4>span").text("Paused");
 				setRelay();
-				$('#temp>h1>span').text("... "); //If the sensors are all remote, we might get data when available... Maybe we should inform the user about what is happening...
+				$('#temp>h1>span').text("... "); //If the sensors are all remote, we will get data when / if they become available... Maybe we should inform the user about what is happening...
 			}
 			else
 			{

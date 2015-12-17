@@ -182,18 +182,13 @@ function update_profile (req, res, next){
     }
 
 
-    function get_all_sensors(req, res, next){
-      db.all('SELECT * from sensors', function(err, rows){
+    function get_default_sensor(req, res, next){
+      db.all('SELECT id FROM sensors WHERE preset=1 LIMIT 1;', function(err, rows){
         if (err){
           console.error(err);
           return next(err);
         }
-        for (var i = rows.length - 1; i >= 0; i--) {
-          if(rows[i].preset==1){
-            req.default_sensor = rows[i].id;  //get the default sensor
-          }
-        };
-        req.all_sensors = rows;
+        req.default_sensor = rows[0].id;
         next();
       })
     }
@@ -328,7 +323,7 @@ function update_profile (req, res, next){
         res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
         res.header('Expires', '-1');
         res.header('Pragma', 'no-cache');
-        res.render('therm', {tempdata: req.tempdata, profiles: req.profiles, all_sensors:req.all_sensors, sensors: req.sensors, sensor_location:req.locations, default_sensor:req.default_sensor, time_window_data: req.time_window_data, state:req.state, time_window_next:req.time_window_next, graph_data:req.graph_data ,base_url:base_url, isLocal:req.isLocal, curtime:req.curtime});
+        res.render('therm', {tempdata: req.tempdata, profiles: req.profiles, sensors: req.sensors, sensor_location:req.locations, default_sensor:req.default_sensor, time_window_data: req.time_window_data, state:req.state, time_window_next:req.time_window_next, graph_data:req.graph_data ,base_url:base_url, isLocal:req.isLocal, curtime:req.curtime});
       }
 
 
@@ -336,7 +331,7 @@ function update_profile (req, res, next){
     // When I used the GET method to send the select box data to /therm I had as a first callback function
     // in the following line the set_profile function
     // *I use router.use (instead of router.get()) to catch both GET and POST requests
-    router.use('/', isRequestLocal, isAuthenticated, update_profile, get_profiles,get_time_window_data, set_status, get_all_sensors, get_sensors, get_therm_data, get_graph_data, render_therm);
+    router.use('/', isRequestLocal, isAuthenticated, update_profile, get_profiles,get_time_window_data, set_status, get_default_sensor, get_sensors, get_therm_data, get_graph_data, render_therm);
 
     //GET therm page with one sqlite query
     //router.get('/therm', function(req, res) {
