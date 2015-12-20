@@ -13,7 +13,36 @@
 
 <body>
 	<header>
-		<% include ./partials/header %>
+		<nav class="navbar navbar-inverse navbar-static-top">
+		  <div class="container-fluid">
+		    <!-- Brand and toggle get grouped for better mobile display -->
+		    <div class="navbar-header">
+		      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+		        <span class="sr-only">Toggle navigation</span>
+		        <span class="icon-bar"></span>
+		        <span class="icon-bar"></span>
+		        <span class="icon-bar"></span>
+		      </button>
+		      <a class="navbar-brand" href="http://<%=base_url%>/">
+		        <span class="glyphicon glyphicon-fire" aria-hidden="true">
+		        </span> pyre 
+		      </a>
+		    </div>
+
+		    <!-- Collect the nav links, forms, and other content for toggling -->
+		    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+		      <ul class="nav navbar-nav navbar-right">
+		       <li><a href="#" onclick="openPage('config')">Config</a></li>
+		       <li><a href="#" onclick="openPage('settings')">Settings</a></li>
+		        <li><a href="http://<%=base_url%>/about">About</a></li> 
+		        <%if(!isLocal){%>
+		        <li><a href="http://<%=base_url%>/logout">Logout</a></li> 
+		        <%}%>
+		      </ul>
+		    </div><!-- /.navbar-collapse -->
+		    <hr style="margin:0px;">
+		  </div><!-- /.container-fluid -->
+		</nav>
 	</header>
 
 	<div id="myModal" class="modal fade">
@@ -721,22 +750,16 @@
 </script>
 
 <script type="text/javascript">
-	function openConfig(){
-		createCookie('backUrl', window.location.href);
-		window.location.href = "/config/mode";		
-	}	
-	
-	function openSettings(page){
-		createCookie('backUrl', window.location.href);
-		if (page==='sensors'){
-			var setUrl = "http://<%=base_url%>/config/sensors";
+	function openPage(page){
+		if(page==='config'){
+			createCookie('backUrl', window.location.href);
+			var setUrl= "/config/mode";
 		}
-		else if (page==='database'){
-			var setUrl = "http://<%=base_url%>/config/database";
-		}
-		else if (page==='account'){
-			var setUrl = "http://<%=base_url%>/config/account";
+		else if(page==='settings'){
+			createCookie('backUrl', window.location.href);
+			var setUrl = "/config/settings"
 		}
 		window.location.href = setUrl;
-	}
+	}	
+	
 </script>

@@ -50,15 +50,6 @@
 			    <!-- Collect the nav links, forms, and other content for toggling -->
 			    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 			      <ul class="nav navbar-nav navbar-right">
-			       <li class="dropdown">
-			          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Settings <span class="caret"></span></a>
-			          <ul class="dropdown-menu">
-			            <li><a href="#" onclick="openSettings('sensors');">Sensors</a></li>        
-			            <li><a href="#" onclick="openSettings('database');">Database</a></li>
-			            <li><a href="#" onclick="openSettings('account');">Login account</a></li>
-			            <!-- <li role="separator" class="divider"></li> -->
-			          </ul>
-			        </li>
 			        <li><a href="http://<%=base_url%>/about">About</a></li> 
 			        <%if(!isLocal){%>
 			        <li><a href="http://<%=base_url%>/logout">Logout</a></li> 
@@ -127,19 +118,4 @@
 		createCookie('backUrl', window.location.href);
 		window.location.href = "/edit/"+id;
 	}
-
-	function openSettings(page){
-		createCookie('backUrl', window.location.href);
-		if (page==='sensors'){
-			var setUrl = "http://<%=base_url%>/config/sensors";
-		}
-		else if (page==='database'){
-			var setUrl = "http://<%=base_url%>/config/database";
-		}
-		else if (page==='account'){
-			var setUrl = "http://<%=base_url%>/config/account";
-		}
-		window.location.href = setUrl;
-	}
-
 </script>
