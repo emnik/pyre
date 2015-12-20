@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	<% include ../partials/head %>
+	</head>
+	<style type="text/css">
+		p {
+			color:lightblue;
+			margin-right: 80px;
+			margin-left: 80px;
+		}
+		a>p,h3 {
+			color: white;
+		}
+		a:hover {
+			color:white;
+			text-decoration: none;
+		}
+		@media (min-width: 768px) and (max-width: 991px) {
+			p {
+				margin-right: 50px;
+				margin-left: 50px;
+			} 
+		}
+		@media (max-width: 767px) {
+			p {
+				margin-right: 0px;
+				margin-left: 0px;
+			} 
+		}
+	</style>
+<body>
+		<header>
+			<nav class="navbar navbar-inverse navbar-static-top">
+			  <div class="container-fluid">
+			    <!-- Brand and toggle get grouped for better mobile display -->
+			    <div class="navbar-header">
+			      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+			        <span class="sr-only">Toggle navigation</span>
+			        <span class="icon-bar"></span>
+			        <span class="icon-bar"></span>
+			        <span class="icon-bar"></span>
+			      </button>
+			      <a class="navbar-brand" href="http://<%=base_url%>/therm">
+			        <span class="glyphicon glyphicon-chevron-left" aria-hidden="true">
+			        </span> back
+			      </a>
+			    </div>
+
+			    <!-- Collect the nav links, forms, and other content for toggling -->
+			    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			      <ul class="nav navbar-nav navbar-right">
+			       <li class="dropdown">
+			          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Settings <span class="caret"></span></a>
+			          <ul class="dropdown-menu">
+			            <li><a href="#" onclick="openSettings('sensors');">Sensors</a></li>        
+			            <li><a href="#" onclick="openSettings('database');">Database</a></li>
+			            <li><a href="#" onclick="openSettings('account');">Login account</a></li>
+			            <!-- <li role="separator" class="divider"></li> -->
+			          </ul>
+			        </li>
+			        <li><a href="http://<%=base_url%>/about">About</a></li> 
+			        <%if(!isLocal){%>
+			        <li><a href="http://<%=base_url%>/logout">Logout</a></li> 
+			        <%}%>
+			      </ul>
+			    </div><!-- /.navbar-collapse -->
+			    <hr style="margin:0px;">
+			  </div><!-- /.container-fluid -->
+			</nav>
+		</header>
+
+		<div class="container-fluid" style="margin-top:-10px;">
+			<div class="row">
+				<div class="col-xs-6 text-center">
+					<!-- <div class="config_btn"> -->
+					<a href="#" onclick="editProfile(1);">
+						<h3><span class="glyphicon glyphicon-repeat"></span></h3>
+						<p>Constant mode</p>
+					</a>
+					<!-- </div> -->
+					<p class="hidden-xs">
+						<i>In <b>Constant mode</b> the thermostat works 24/7 and keeps the temperature steady at the configured value.</i>
+					</p>
+				</div>
+				<div class="col-xs-6 text-center">
+					<a href="#" onclick="editProfile(2);">
+						<h3><span class="glyphicon glyphicon-refresh"></span></h3>
+						<p>Daylight mode</p>
+					</a>
+					<p class="hidden-xs" >
+						<i>In <b>Daylight mode</b> the thermostat works using different temperature values for the day and night. The night temperature is set between 00:00 - 07:00 and the night between 07:00 - 24:00.</i>
+					</p>					
+				</div>
+			</div>
+			<div class="row hidden-xs" style="margin-top:40px;">
+			</div>
+			<div class="row">
+				<div class="col-xs-6 text-center">
+					<a href="#" onclick="editProfile(3);">
+						<h3><span class="glyphicon glyphicon-calendar"></span></h3>
+						<p>Weekly mode</p>
+					</a>
+					<p class="hidden-xs">
+						<i>In <b>Weekly mode</b> the user can setup different time schedules for each day of the week.</i>
+					</p>	
+				</div>
+				<div class="col-xs-6 text-center">
+					<a href="#" onclick="editProfile(4);">
+						<h3><span class="glyphicon glyphicon-time"></span></h3>
+						<p>Custom mode</p>
+					</a>
+					<p class="hidden-xs">
+						<i>In <b>Custom mode</b> the user can setup different time schedules within a day that will be repeated every day.</i>
+					</p>	
+				</div>												
+			</div>
+		</div>
+
+</body>
+
+<% include ../partials/javascript.ejs %>
+<script src="/javascripts/custom.js"></script>
+
+<script type="text/javascript">
+	function editProfile(id){
+		createCookie('backUrl', window.location.href);
+		window.location.href = "/edit/"+id;
+	}
+
+	function openSettings(page){
+		createCookie('backUrl', window.location.href);
+		if (page==='sensors'){
+			var setUrl = "http://<%=base_url%>/config/sensors";
+		}
+		else if (page==='database'){
+			var setUrl = "http://<%=base_url%>/config/database";
+		}
+		else if (page==='account'){
+			var setUrl = "http://<%=base_url%>/config/account";
+		}
+		window.location.href = setUrl;
+	}
+
+</script>

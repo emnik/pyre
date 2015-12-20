@@ -278,3 +278,15 @@ var prevtimewindows=[];
 	}
 
 </script>
+
+<script type="text/javascript">
+	function backButton() {
+	    var value = readCookie('backUrl');
+	    eraseCookie('backUrl');
+	    document.location.href = value;
+	}	
+	function editTimeWindows() {
+		createCookie('backUrl_edit', window.location.href);
+		document.location.href = 'http://<%=base_url%>/config/timewindows';
+	}	
+</script>

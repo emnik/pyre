@@ -77,3 +77,28 @@ function compare_arrays_of_obj(arr1, arr2){
     //found no difference!
     return true;
 }
+
+/*Cookie Functions*/
+
+function createCookie(name, value)
+{
+    document.cookie=name+"="+escape(value)+"; path=/";
+}
+
+function readCookie(name)
+{
+    var re=new RegExp("(?:^|;)\\s?"+name+"=(.*?)(?:;|$)", "i"), result=document.cookie.match(re), output=null;
+    if (result!=null)
+    {
+        output=unescape(result[1]);
+    }
+    return output;
+}
+
+function eraseCookie(name)
+{
+    var d=new Date();
+    document.cookie=name+"=; path=/; expires="+d.toUTCString();
+}
+
+

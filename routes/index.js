@@ -27,12 +27,14 @@ router.get('/', isRequestLocal, function(req, res, next) {
   res.render('index', {base_url:base_url});
 })
 
+
 /* Handle Login POST */
 router.post('/login', passport.authenticate('local', {
       successRedirect: '/therm',
       failureRedirect: '/'
     })
 );
+
 
 /* Handle Logout */
 router.get('/logout', function(req, res) {

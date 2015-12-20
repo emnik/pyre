@@ -13,7 +13,7 @@
 		<nav class="navbar navbar-inverse navbar-static-top">
 		  <div class="container-fluid">
 		    <div class="navbar-header">
-		      <a class="navbar-brand" href="#" onclick="window.location=document.referrer;">
+		      <a class="navbar-brand" href="#" onclick="backButton()">
 		        <span class="glyphicon glyphicon-chevron-left" aria-hidden="true">
 		        </span> back
 		      </a>
@@ -43,7 +43,7 @@
 				  	<div class="row">
 					  	<div class="col-xs-12">
 							<div class="input-group">
-								<input type="text" value="<%=window.temp%>" name="setTargetTemp">
+								<input class="form-control" type="text" value="<%=window.temp%>" name="setTargetTemp">
 							</div>
 						</div>
 					</div>
@@ -433,3 +433,10 @@ var latest_saved_data=[];
 
 </script>
 
+<script type="text/javascript">
+	function backButton() {
+	    var value = readCookie('backUrl_edit');
+	    eraseCookie('backUrl_edit');
+	    document.location.href = value;
+	}
+</script>

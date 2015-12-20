@@ -327,7 +327,6 @@ function update_profile (req, res, next){
       }
 
 
-
     // When I used the GET method to send the select box data to /therm I had as a first callback function
     // in the following line the set_profile function
     // *I use router.use (instead of router.get()) to catch both GET and POST requests

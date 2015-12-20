@@ -307,16 +307,19 @@ router.post('/change_credentials', function(req, res, next){
 router.get('/:section', isRequestLocal, isAuthenticated, get_timetables, get_sensors, function(req, res) {
   var base_url = req.headers.host;
   var show_config_tw_menus=false;
-  if (req.params.section == 'timewindows'){
+  if (req.params.section === 'timewindows'){
   	res.render('config/'+req.params.section, {timetables:req.timetables, sensors:req.sensors, base_url:base_url, isLocal:req.isLocal, show_config_tw_menus:show_config_tw_menus});
   }
-  else if(req.params.section == 'sensors'){
+  else if(req.params.section === 'sensors'){
   	res.render('config/'+req.params.section, {sensors:req.sensors, base_url:base_url, isLocal:req.isLocal, show_config_tw_menus:show_config_tw_menus});	
   }
-  else if(req.params.section == 'database'){
+  else if(req.params.section === 'database'){
   	res.render('config/'+req.params.section, {base_url:base_url, isLocal:req.isLocal, show_config_tw_menus:show_config_tw_menus});	
   }
-  else if(req.params.section == 'account'){
+  else if(req.params.section === 'mode'){
+  	res.render('config/'+req.params.section, {base_url:base_url, isLocal:req.isLocal});	
+  }
+  else if(req.params.section === 'account'){
   	if(req.isAuthenticated()){
   		res.render('config/'+req.params.section, {base_url:base_url, isLocal:req.isLocal, show_config_tw_menus:show_config_tw_menus});		
   	}
@@ -327,6 +330,7 @@ router.get('/:section', isRequestLocal, isAuthenticated, get_timetables, get_sen
   	}
   }
 })
+
 
 /* Handle Login POST */
 router.post('/login', passport.authenticate('local', {
