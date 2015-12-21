@@ -23,8 +23,16 @@
 			        </span> back
 			      </a>
 			    </div>
+			    <!-- Collect the nav links, forms, and other content for toggling -->
+			    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			      <ul class="nav navbar-nav navbar-right">
+			        <%if(!isLocal){%>
+			        <li><a href="http://<%=base_url%>/logout">Logout</a></li> 
+			        <%}%>
+			      </ul>
+			    </div><!-- /.navbar-collapse -->
+			    <hr style="margin:0px;">
 			  </div><!-- /.container-fluid -->
- 		    <hr style="margin-top:0px;margin-bottom:0px">
 			</nav>
 		</header>
 

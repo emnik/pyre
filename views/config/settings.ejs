@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-	<link rel="stylesheet" href="/stylesheets/font-awesome.min.css">
+	<!-- <link rel="stylesheet" href="/stylesheets/font-awesome.min.css"> -->
 	<% include ../partials/head %>
 	</head>
 	<style type="text/css">
@@ -51,14 +51,6 @@
 			    <!-- Collect the nav links, forms, and other content for toggling -->
 			    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 			      <ul class="nav navbar-nav navbar-right">
-<!-- 			       <li class="dropdown">
-			          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Settings <span class="caret"></span></a>
-			          <ul class="dropdown-menu">
-			            <li><a href="#" onclick="openSettings('sensors');">Sensors</a></li>        
-			            <li><a href="#" onclick="openSettings('database');">Database</a></li>
-			            <li><a href="#" onclick="openSettings('account');">Login account</a></li>
-			          </ul>
-			        </li> -->
 			        <li><a href="http://<%=base_url%>/about">About</a></li> 
 			        <%if(!isLocal){%>
 			        <li><a href="http://<%=base_url%>/logout">Logout</a></li> 
@@ -75,7 +67,8 @@
 				<div class="col-xs-6 text-center">
 					<!-- <div class="config_btn"> -->
 					<a href="#" onclick="openSettings('sensors');">
-						<h3><i class="fa fa-share-alt"></i></h3>
+						<!-- <h3><i class="fa fa-share-alt"></i></h3> -->
+						<h3><span class="glyphicon glyphicon-eye-open"></span></h3>
 						<p>Sensors settings</p>
 					</a>
 					<!-- </div> -->
@@ -85,7 +78,8 @@
 				</div>
 				<div class="col-xs-6 text-center">
 					<a href="#" onclick="openSettings('database');">
-						<h3><i class="fa fa-database"></i></h3>
+						<!-- <h3><i class="fa fa-database"></i></h3> -->
+						<h3><span class="glyphicon glyphicon-transfer"></span></h3>
 						<p>Database functions</p>
 					</a>
 					<p class="hidden-xs" >
@@ -98,13 +92,24 @@
 			<div class="row">
 				<div class="col-xs-6 text-center">
 					<a href="#" onclick="openSettings('account');">
-						<h3><i class="fa fa-lock"></i></h3>
+						<!-- <h3><i class="fa fa-lock"></i></h3> -->
+						<h3><span class="glyphicon glyphicon-user"></span></h3>
 						<p>Login account</p>
 					</a>
 					<p class="hidden-xs">
 						<i>In <b>Login account</b> the user can change the name and password used to enter <b>Pyre</b>. This can only be done if the user is authenticated!</i>
 					</p>	
 				</div>
+				<div class="col-xs-6 text-center">
+					<a href="#" onclick="openSettings('timewindows');">
+						<!-- <h3><i class="fa fa-lock"></i></h3> -->
+						<h3><span class="glyphicon glyphicon glyphicon-th-large"></span></h3>
+						<p>Time windows</p>
+					</a>
+					<p class="hidden-xs">
+						<i>In <b>Time windows</b> the user can change the preset timewindows and add or delete new custom timewindows that are used in both <b>Weekly mode</b> and <b>Custom mode</b>.</i>
+					</p>	
+				</div>				
 			</div>
 		</div>
 
@@ -115,16 +120,23 @@
 
 <script type="text/javascript">
 	function openSettings(page){
-		createCookie('backUrl', window.location.href);
 		if (page==='sensors'){
+			var name='backUrl';
 			var setUrl = "http://<%=base_url%>/config/sensors";
 		}
 		else if (page==='database'){
+			var name='backUrl';
 			var setUrl = "http://<%=base_url%>/config/database";
 		}
 		else if (page==='account'){
+			var name='backUrl';
 			var setUrl = "http://<%=base_url%>/config/account";
 		}
+		else if (page==='timewindows'){
+			var name='backUrl_edit';
+			var setUrl = "http://<%=base_url%>/config/timewindows";
+		}
+		createCookie(name, window.location.href);
 		window.location.href = setUrl;
 	}
 </script>

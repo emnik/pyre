@@ -45,10 +45,10 @@ router.get('/logout', function(req, res) {
 
 
 
-router.get('/about', function(req, res, next) {
+router.get('/about', isRequestLocal, function(req, res, next) {
   var base_url = req.headers.host;
   var ver=package_json.version;
-  res.render('about', {base_url:base_url, version:ver});
+  res.render('about', {base_url:base_url, isLocal:req.isLocal, version:ver});
 })
 
 module.exports = router;
