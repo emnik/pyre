@@ -1,6 +1,8 @@
 var express = require('express');
 var router = express.Router();
 
+/*require the <config module> for the pin numbers and the <relay module> for the functions that control
+the relays via the gpios.*/
 var config = require('../my_modules/config');
 var relay = require('../my_modules/relay');
 
@@ -29,14 +31,11 @@ function isAuthenticated(req, res, next) {
   {
     if (req.isAuthenticated())
       return next();
-    console.log("REDIRECT");
     res.redirect('/');
   }
 }
 
 router.post('/actions', isRequestLocal, isAuthenticated, function(req, res, next){
-  //console.log(JSON.stringify(req.body.status));
-  console.log(req.body);
   if (req.body.status=="Paused")
   {
     relay.act(pin.thermostat, 0, function(err){ //0=OFF
@@ -58,26 +57,5 @@ router.post('/actions', isRequestLocal, isAuthenticated, function(req, res, next
   res.contentType('json');
   res.send({result:'ok'});
 });
-
-// router.get('/:pin/state', function(req, res) {
-//   relay.get(req.params.pin);
-//   res.send(200);
-// });
-//
-// router.get('/:pin/on', function(req, res) {
-//   relay.on(req.params.pin);
-//   res.send(200);
-// });
-//
-// router.get('/:pin/off', function(req, res) {
-//   relay.off(req.params.pin);
-//   res.send(200);
-// });
-//
-//
-// router.get('/:pin/toggle', function(req, res) {
-//   relay.toggle(req.params.pin);
-//   res.send(200);
-// });
 
 module.exports = router;

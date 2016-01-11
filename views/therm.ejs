@@ -227,19 +227,25 @@
 	var curstate = ""; // so we know when the state changes and call the setRelay function
 	var curdate = new Date();
 	var curday = curdate.getDay();
+	var infomsg=""; //to revert to the initial message when a sensor becomes available again!
 
 	$( document ).ready(function(){
+		infomsg = $('#info').clone();
 		var socket = io.connect();	
 		var selected_profile=$('#profiles').val();
 		if (selected_profile==2){
-			$('#info').html('<p id="info" style="color:lightblue;font-size:small;">'+
-							'<span class="glyphicon glyphicon-bell" style="padding-right:5px;"></span>'+
-							' At <%=time_window_next.on_time%> target temp is scheduled to <%=time_window_next.temp%>&degC');
+			$('#info').remove();
+			infomsg =   '<p id="info" style="color:lightblue;font-size:small;">'+
+						'<span class="glyphicon glyphicon-bell" style="padding-right:5px;"></span>'+
+						' At <%=time_window_next.on_time%> target temp is scheduled to <%=time_window_next.temp%>&degC'
+			$('#details').append(infomsg);
 		}
 		else if(selected_profile==1){
-			$('#info').html('<p id="info" style="color:lightblue;font-size:small;">'+
-							'<span class="glyphicon glyphicon-wrench" style="padding-right:5px;"></span>'+
-							'To setup a schedule choose <b>Config</b> from menu');
+			$('#info').remove();
+			infomsg =   '<p id="info" style="color:lightblue;font-size:small;">'+
+						'<span class="glyphicon glyphicon-wrench" style="padding-right:5px;"></span>'+
+						'To edit a schedule choose <b>menu > Config</b>'
+			$('#details').append(infomsg);
 		}
 		
 		//send all the working profile data to server to inform the other connected clients!
@@ -372,6 +378,10 @@
 			{
 				manage(avgtemp);
 				$('#temp>h1>span').text(avgtemp);
+
+				$('#info').remove();
+				$('#details').append(infomsg);
+
 	
 				//update live graph with new data if <Live graph> is selected.
 				var duration=$('#graph_duration').val();

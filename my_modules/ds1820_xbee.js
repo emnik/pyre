@@ -49,7 +49,7 @@ function readRemoteTemp(insertfunc, callback)
         return callback(err);
       }
       if(row.length==0){ //New remote sensor! Just Insert it in the sensor table and mark it's status as disabled. The user has first to set location and enable
-        db.run("INSERT INTO sensors (type, xbee_id, status, protected) VALUES ('TEMPERATURE', ?, 0, 0)",data.temperature_record[0].xbee_id, function(err){
+        db.run("INSERT INTO sensors (type, name, xbee_id, status, preset) VALUES ('TEMPERATURE','NEW', ?, 0, 0)",data.temperature_record[0].xbee_id, function(err){
          if (err){
            callback(err);
          }

@@ -8,7 +8,7 @@ function isRequestLocal(req, res, next){
   var request_ip = req.connection.remoteAddress.split('.');
   var isLocal=true;
   for(i=1;i<=2;i++){
-    //I compare the second and third part of the ips so that 
+    //I compare the second and third part of the IPs so that 
     //even if there is an IPv4 and an IPv6-IPv4-mapped address this would work!
     if(rpi_ip[i]!==request_ip[i]){
       isLocal=false;
@@ -44,7 +44,7 @@ router.get('/logout', function(req, res) {
 });
 
 
-
+/* GET about page. */
 router.get('/about', isRequestLocal, function(req, res, next) {
   var base_url = req.headers.host;
   var ver=package_json.version;

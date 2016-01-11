@@ -23,19 +23,6 @@ gpio.open(pin.power, "output",function(err){
   }
 });
 
-// function get(pin, callback){
-//   gpio.read(pin, function(err, value) {
-//       if(err)
-//       {
-//           console.log(err);
-//           process.exit(1);
-//       }
-//     	if (value==0) status='OFF'
-//     	else status='ON';
-//     	console.log(value, status); // The current state of the pin
-//       callback = status;
-//     })
-// }
 
 function on(pin, callback){
 	gpio.write(pin, 1, function(err){
