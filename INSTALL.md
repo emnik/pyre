@@ -47,7 +47,7 @@ dwc_otg.lpm_enable=0 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 rootwait
 
 Also you need to disable the getty on that serial port in /etc/inittab
 Comment out the following line
-# 2 : 23 : respawn:/sbin/getty -L ttyAMA0 115200 vt100
+2 : 23 : respawn:/sbin/getty -L ttyAMA0 115200 vt100
 
 
 **Download the quick2wire-gpio-admin (needed to control the gpios as a user and is required by the pi-gpio node module used in our code**
@@ -73,3 +73,4 @@ mkdir /home/pi/apps/pyre
 cd /home/pi/apps/pyre
 git clone https://github.com/emnik/pyre.git
 npm install
+

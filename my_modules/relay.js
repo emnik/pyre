@@ -17,6 +17,7 @@ gpio.open(pin.thermostat, "output",function(err){
     console.error(err);
   }
 });
+
 gpio.open(pin.power, "output",function(err){
     if(err){
     console.error(err);
@@ -25,7 +26,7 @@ gpio.open(pin.power, "output",function(err){
 
 
 function on(pin, callback){
-	gpio.write(pin, 1, function(err){
+	gpio.write(pin, 0, function(err){
     if(err){
       callback(err);
     }
@@ -33,7 +34,7 @@ function on(pin, callback){
 }
 
 function off(pin, callback){
-	gpio.write(pin, 0, function(err){
+	gpio.write(pin, 1, function(err){
     if(err){
       callback(err);
     }
@@ -46,7 +47,7 @@ function toggle(pin, callback){
       {
           return callback(err);
       }
-      if (value==0) {
+      if (value==1) {
         on(pin, function(err){
           if(err){
             callback(err);
