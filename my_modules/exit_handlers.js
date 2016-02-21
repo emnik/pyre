@@ -1,6 +1,7 @@
 
 var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.cached.Database('/home/pi/apps/pyre/sensor-data.sqlite');
+var status = require('../my_modules/status');
 var gpio = require("pi-gpio");
 var async = require('async');
 var config = require("../my_modules/config");
@@ -8,7 +9,7 @@ var pin = config.pin;
 
 
 function close_pins(callback){
-	console.log('\n');
+	// console.log('\n');
 	async.forEachOf(pin, function(value, key, innercallback){
 		// I need async.forEachOf because if I use a simple Object.keys(pin).forEach() then after the
 		// first itteration it triggers again the callback and this throws an error. The callback should be
@@ -37,7 +38,7 @@ function close_pins(callback){
 
 function close_database(callback){
   	db.close(function(err){
-  		console.log("closing database...");
+  		console.log("closing file database...");
   		if(err){
   			return callback(err);
   		}
@@ -53,6 +54,29 @@ function gracefulExit(){
   //When I close node (CTRL+C) I should close the pins and database!
   async.series([
     function(callback){
+      close_database(function(err){
+        if(err){
+          callback(err,null);
+        }
+        else
+        {
+          callback(null,null); //@params: err,result
+        }
+      })
+    },
+    function(callback){
+      status.finalize_status(function(err){
+        console.log("closing memory database...");
+        if(err){
+          callback(err,null);
+        }
+        else
+        {
+          callback(null,null); //@params: err,result
+        }
+      })
+    },
+    function(callback){
         close_pins(function(err){
         if(err){
           callback(err,null);
@@ -62,19 +86,7 @@ function gracefulExit(){
           callback(null,null); //@params: err,result   
         }
       }) 
-    },
-    function(callback){
-        close_database(function(err){
-        if(err){
-          console.error(err);
-          callback(err,null);
-        }
-        else
-        {
-          callback(null,null); //@params: err,result
-        }
-      })
-    }
+    }    
   ],function(error,result){
       if(error){
         for (var i = error.length - 1; i >= 0; i--) {
@@ -95,6 +107,4 @@ function gracefulExit(){
 }
 
 
-// module.exports.close_pins = close_pins;
-// module.exports.close_database = close_database;
 module.exports.gracefulExit = gracefulExit;

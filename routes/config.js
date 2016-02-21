@@ -316,9 +316,6 @@ router.get('/:section', isRequestLocal, isAuthenticated, get_timetables, get_sen
   else if(req.params.section === 'database'){
   	res.render('config/'+req.params.section, {base_url:base_url, isLocal:req.isLocal, show_edit:show_edit});	
   }
-  else if(req.params.section === 'mode'){
-  	res.render('config/'+req.params.section, {base_url:base_url, isLocal:req.isLocal});	
-  }
   else if(req.params.section === 'settings'){
   	res.render('config/'+req.params.section, {base_url:base_url, isLocal:req.isLocal});	
   }  

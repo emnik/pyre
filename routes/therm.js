@@ -5,6 +5,8 @@ var temperature = require("../my_modules/temperature");
 var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.cached.Database('/home/pi/apps/pyre/sensor-data.sqlite');
 
+var status = require("../my_modules/status");
+
 function isRequestLocal(req, res, next){
   var rpi_ip = req.hostname.split('.');
   var request_ip = req.connection.remoteAddress.split('.');
@@ -45,13 +47,7 @@ function update_profile (req, res, next){
       db.run("UPDATE profile SET status=0", function(err){
         if(err){
           console.error(err);
-          return next(err); /*this will get to the default errorhandler and show a 500 error page
-          or maybe I should make my own error page [especially for LITESQL errors that are likely not persistant]
-          where a link to the home page will exist...
-          If it is a random SQL error then just the profile change failed... If otherwise the
-          user could still exit the app! If he is only shown the 500 page he cannot do anything
-          in either case...
-          */ 
+          return next(err); 
           }
           else
           {
@@ -91,7 +87,6 @@ function update_profile (req, res, next){
 
 
     function get_time_window_data(req, res, next){
-       // var db = new sqlite3.Database('./sensor-data.sqlite');
        //get current daynum: 0=Sunday,... 6=Saturday
        var d = new Date();
        var n = d.getDay();
@@ -156,7 +151,6 @@ function update_profile (req, res, next){
           }
           next(); //next should be called once!
         })
-      // db.close();
     };
 
     function compare(a,b) {
@@ -195,7 +189,6 @@ function update_profile (req, res, next){
 
 
     function get_sensors(req, res, next){
-      // var db = new sqlite3.Database('./sensor-data.sqlite');
            if (req.state.err===""){
                var sensors_arr=req.time_window_data[0].sensor_ids.split(',');               
            }
@@ -216,14 +209,12 @@ function update_profile (req, res, next){
               };
               req.locations = rows;
               // console.log(rows);
-              // db.close();
               next();
            })
     }
 
     function get_therm_data(req, res, next){
       /* Get the initial temperature data for the view*/
-      // req.tempdata = null;
       temperature.get_temp_data(240, function(err, result){
         if(err){
           console.error(err);
@@ -254,7 +245,6 @@ function update_profile (req, res, next){
         var selected_sensors = sensors;
       }
       // console.log(selected_sensors);
-      // var selected_sensors = ((req.body.sensor!='undefined' && req.body.sensor!=null)? req.body.sensor : req.sensors);
       var duration = ((req.body.duration!='undefined' && req.body.duration!=null)? req.body.duration : "1"); //in hours
       
       if (duration<=24){
@@ -323,14 +313,14 @@ function update_profile (req, res, next){
         res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
         res.header('Expires', '-1');
         res.header('Pragma', 'no-cache');
-        res.render('therm', {tempdata: req.tempdata, profiles: req.profiles, sensors: req.sensors, sensor_location:req.locations, default_sensor:req.default_sensor, time_window_data: req.time_window_data, state:req.state, time_window_next:req.time_window_next, graph_data:req.graph_data ,base_url:base_url, isLocal:req.isLocal, curtime:req.curtime});
+        res.render('therm', {tempdata: req.tempdata, profiles: req.profiles, sensors: req.sensors, sensor_location:req.locations, default_sensor:req.default_sensor, time_window_data: req.time_window_data, state:req.state, time_window_next:req.time_window_next, graph_data:req.graph_data ,base_url:base_url, isLocal:req.isLocal, curtime:req.curtime, status:req.workstatus});
       }
 
 
     // When I used the GET method to send the select box data to /therm I had as a first callback function
     // in the following line the set_profile function
     // *I use router.use (instead of router.get()) to catch both GET and POST requests
-    router.use('/', isRequestLocal, isAuthenticated, update_profile, get_profiles,get_time_window_data, set_status, get_default_sensor, get_sensors, get_therm_data, get_graph_data, render_therm);
+    router.use('/', isRequestLocal, isAuthenticated, update_profile, get_profiles,get_time_window_data, set_status, get_default_sensor, get_sensors, get_therm_data, get_graph_data, get_status, render_therm);
 
     //GET therm page with one sqlite query
     //router.get('/therm', function(req, res) {
@@ -341,6 +331,28 @@ function update_profile (req, res, next){
         //   db.close();
         // });
       // })
+
+
+
+function get_status(req, res, next){
+/*get the working status from the memory database*/
+  req.workstatus = "";
+  status.get_status(function(err, result){
+    if(err){
+      console.error(err);
+      next(err);
+    }
+    if (result){
+      req.workstatus = result.status;
+    }
+    
+    console.log("FROM index route > the current status is: "+req.workstatus)
+    next();
+  });
+}
+
+
+
 
 
 module.exports = router;

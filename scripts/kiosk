@@ -1,0 +1,7 @@
+#!/bin/sh 
+sleep 1m
+#ip=$(ifconfig | grep 'inet ' | grep -v '127.0.0.1' | cut -c 21-33 )
+ip=$(hostname -I)
+ip_nospaces=$(echo "${ip}" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+url=$ip_nospaces':3000'
+/usr/bin/kweb3 -KHJE $url &

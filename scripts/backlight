@@ -1,0 +1,79 @@
+#!/bin/bash
+
+usage() {
+	PROG=`basename $0`
+	echo "Usage: $PROG [duration_s]"
+	echo "Turn off backlight of PiTFT when xscreensaver starts and on when ends."
+	echo "Example: $PROG 300"
+	echo ""
+	echo "Options:"
+	echo "  -h, --help   This help text"
+}
+
+if [[ "-h" == "$1" || "--help" == "$1" ]] ; then
+	usage
+	exit
+fi
+DURATION_S=0
+if [[ "" != "$1" && $1 =~ ^[0-9]+$ ]] ; then
+	DURATION_S=$1
+fi
+
+TEMPFILE=`tempfile --prefix=backlight. --suffix=.pid`
+echo 0 > $TEMPFILE
+
+
+interrupt_potential_sleeping_processes() {
+    SLEEP_PID=0
+    if [ -x $TEMPFILE ] ; then
+        SLEEP_PID=`cat $TEMPFILE`
+    fi
+    if [ "0" != "$SLEEP_PID" ] ; then
+        echo 0 > $TEMPFILE
+        kill $SLEEP_PID
+    fi
+}
+
+
+backlight_off() {
+    echo `gpio -g pwm 18 0`
+    echo "setting backlight off"
+}
+
+
+backlight_on() {
+    echo `gpio -g pwm 18 1000`
+    echo "setting backlight on"
+}
+
+# failsafe to make sure monitor stays on in case of quit
+backlight_on_exit() {
+    interrupt_potential_sleeping_processes
+    rm $TEMPFILE
+    backlight_on
+    exit
+}
+
+
+trap 'backlight_on_exit' SIGQUIT SIGINT
+echo `gpio -g mode 18 pwm`
+backlight_on
+
+# see fancy process substitution down below
+while read line ; do
+    echo $line
+    if [[ $line =~ ^BLANK || $line =~ ^LOCK ]] ; then
+        (
+            sleep $DURATION_S
+            backlight_off
+            echo 0 > $TEMPFILE
+        ) &
+        echo $! > $TEMPFILE
+    fi
+    if [[ $line =~ ^UNBLANK ]] ; then
+        interrupt_potential_sleeping_processes
+        backlight_on
+    fi
+done < <( xscreensaver-command --watch )
+
+backlight_on_exit

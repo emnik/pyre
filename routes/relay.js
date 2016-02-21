@@ -6,6 +6,8 @@ the relays via the gpios.*/
 var config = require('../my_modules/config');
 var relay = require('../my_modules/relay');
 
+var status = require('../my_modules/status');
+
 var pin = config.pin;
 
 function isRequestLocal(req, res, next){
@@ -54,6 +56,15 @@ router.post('/actions', isRequestLocal, isAuthenticated, function(req, res, next
       }
     }); 
   }
+
+  //save the working status in the memory database
+  status.set_status(req.body.status, function(err){
+    if(err){
+      console.error(err);
+      return next(err);
+    }
+  })  
+
   res.contentType('json');
   res.send({result:'ok'});
 });

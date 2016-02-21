@@ -271,9 +271,10 @@ router.get('/:id', isRequestLocal, isAuthenticated, get_sensors, get_timewindows
         res.header('Pragma', 'no-cache');
 	 	res.render('edit/custom', {sensors: req.sensors, timewindow: req.timewindows, timewindowsperday:req.timewindowsperday, base_url:base_url, isLocal:req.isLocal, show_edit:show_edit})
 	 }
+	 else if (req.params.id=="mode"){
+	 	res.render('edit/mode', {base_url:base_url, isLocal:req.isLocal});	
+	 }
 })
-
-
 
 
 module.exports = router;

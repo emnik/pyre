@@ -1,13 +1,13 @@
 var SerialPort = require('serialport').SerialPort;
 var xbee_api = require('xbee-api');
-var util = require('util');
+// var util = require('util');
 var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.cached.Database('/home/pi/apps/pyre/sensor-data.sqlite');
 
 function readRemoteTemp(insertfunc, callback)
 {
   var xbeeAPI = new xbee_api.XBeeAPI({
-    api_mode: 1, //ATAP1 -without escape characters
+    api_mode: 2, //ATAP1 -with escape characters
     module: "802.15.4"
   });
 

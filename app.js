@@ -35,6 +35,7 @@ app.use(require('express-session')({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(partials());
 
@@ -49,12 +50,12 @@ to the outside world. What you can is make a /scripts static route in your serve
 files from "./node_modules/bootstrap/dist/". Then, the script tag in your pages just looks like this:
 <script src="/scripts/bootstrap.min.js"></script>
 */
-app.use('/bootstrap', express.static(__dirname + '/node_modules/bootstrap/dist/'));
-app.use('/jquery', express.static(__dirname + '/node_modules/jquery/dist/'));
-app.use('/bootstrap-toggle', express.static(__dirname + '/node_modules/bootstrap-toggle/'));
-app.use('/bootstrap-touchspin', express.static(__dirname + '/node_modules/bootstrap-touchspin/dist/'));
-app.use('/select2', express.static(__dirname + '/node_modules/select2/dist/'));
-app.use('/pickadate', express.static(__dirname + '/node_modules/pickadate/lib/'));
+app.use('/bootstrap', express.static(path.join(__dirname, '/node_modules/bootstrap/dist/')));
+app.use('/jquery', express.static(path.join(__dirname, '/node_modules/jquery/dist/')));
+app.use('/bootstrap-toggle', express.static(path.join(__dirname, '/node_modules/bootstrap-toggle/')));
+app.use('/bootstrap-touchspin', express.static(path.join(__dirname, '/node_modules/bootstrap-touchspin/dist/')));
+app.use('/select2', express.static(path.join(__dirname, '/node_modules/select2/dist/')));
+app.use('/pickadate', express.static(path.join(__dirname, '/node_modules/pickadate/lib/')));
 
 // passport config
 var account = require('./my_modules/account');

@@ -18,4 +18,3 @@ function get_temp_data(duration, callback) {
 	};
 
 module.exports.get_temp_data =  get_temp_data;
- 

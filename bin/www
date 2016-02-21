@@ -125,7 +125,7 @@ function onListening() {
 
 io.sockets.on('connection', function(socket){
     
-    //send data to client
+    //get temperature data on an interval and broadcast them to all clients
     setInterval(function(){
       var duration = 240; //the last x seconds of temperature data that we want to retrieve from the database
       temperature.get_temp_data(duration, function(err,result){
@@ -134,7 +134,7 @@ io.sockets.on('connection', function(socket){
         };
         socket.emit('temperatures', result);
       });
-    }, 60000); //we want data every 1 min
+    }, 60000); //repeat every 1 min
     
     socket.on('working_data', function(data){ //If a client sends working data to the server
         //console.log("Server got update on the working profile data. The current profile is: "+data.profile);
@@ -155,7 +155,7 @@ io.sockets.on('connection', function(socket){
 
 // set later to use local time
 later.date.localTime();
-var sched=later.parse.recur().on('11:38:00').time(); 
+var sched=later.parse.recur().on('11:55:00').time(); 
 
 later.setInterval(function(){
   archive_db.archive_database(function(err){
@@ -175,22 +175,3 @@ later.setInterval(function(){
  */
 
 process.on('SIGINT', exit_handlers.gracefulExit).on('SIGTERM', exit_handlers.gracefulExit);
-
-
- // * The following 2 functions are not used as some errors are not of that importance to exit the app
- // * I'll decide about them while testing 
-
-// process.on('error', function(err){
-//   console.error(err);
-//   gracefulExit();
-// })
-
-// process.on('uncaughtException', function(err){
-//   console.error(err);
-//   gracefulExit();
-// })) 
-
-
-// process.on('exit', function(err){
-//   console.log("test"); //this will run just before exit and then it will exit! For the time being I don't need it
-// })

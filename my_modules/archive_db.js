@@ -51,10 +51,4 @@ function archive_database(callback){
 	})
 }
 
-
-
-
-
-
-
-  module.exports.archive_database = archive_database;
+module.exports.archive_database = archive_database;

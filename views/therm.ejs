@@ -100,7 +100,7 @@
 					</div>
 					<div class="col-xs-2">
 						<button type="button" class="btn btn-front pull-right" onclick="editProfile()">
-							<span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+							<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
 						</button>
 					</div>
 				</div>
@@ -223,13 +223,15 @@
 <script src="/javascripts/custom.js"></script>
 
 <script>
-	var prevstate = "";
+	var prevstate = '<%=status%>';
+	console.log('the prevstate is: '+prevstate);
 	var curstate = ""; // so we know when the state changes and call the setRelay function
 	var curdate = new Date();
 	var curday = curdate.getDay();
 	var infomsg=""; //to revert to the initial message when a sensor becomes available again!
-
+	
 	$( document ).ready(function(){
+
 		infomsg = $('#info').clone();
 		var socket = io.connect();	
 		var selected_profile=$('#profiles').val();
@@ -394,7 +396,9 @@
 		});
 
 
-		socket.on('check_data', function(data){ //when the server sends the current profile data, compare it with the ones used and if any of them is different reload to get the updated data from the server. The change in any of the data would have been done from another client! 
+		socket.on('check_data', function(data){ 
+			//compare our data with those, that the server just send us! 
+			//If there is a difference reload to get the updated data!
 			// console.log(data);
 			var selected_profile=$('#profiles').val();
 			if ((selected_profile!=data.profile) || 
@@ -417,7 +421,6 @@
 			//I could trigger a 404error page with location reload but that would be a problem when
 			//forever is running and will get the server up again...
 		})
-
 
 		var selected_profile;
 		$('#profiles').on('focus', function(){
@@ -541,29 +544,82 @@
 		var cur = getCurTime();
 		if (<%=(state.err==="")%>) //true if there is no error so we are in a time window...
 		{
-			if (cur.time >= '<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].on_time%><%};%>' && cur.time < '<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].off_time%><%};%>') {
-				if (curTemp < '<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].temp%><%};%>'){
-					//the status is: working
-					$("#status>h4>span").removeClass("label-info label-danger label-default");
-					$("#status>h4>span").addClass("label-success");
-					$("#status>h4>span").text("Working");
-					// $("#status>h4>span").css({"color":"#F6F4EC", "font-size":"100%"});
-					curstate = "Working";
-					console.log(curstate);
-					setRelay();
+			if (cur.time >= '<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].on_time%><%};%>' && cur.time < '<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].off_time%><%};%>') 
+			{
+				if (prevstate==="Working"){
+					if (curTemp >= '<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].temp%><%};%>'){
+						//the status is: paused
+						$("#status>h4>span").removeClass("label-success label-danger label-default");
+						$("#status>h4>span").addClass("label-info");
+						$("#status>h4>span").text("Paused");
+						// $("#status>h4>span").css({"color":"#666666", "font-size":"100%"});
+						curstate = "Paused";
+						console.log(curstate);
+						setRelay();
+					}
+					else
+					{
+						//the status is: working
+						$("#status>h4>span").removeClass("label-success label-danger label-default");
+						$("#status>h4>span").addClass("label-success");
+						$("#status>h4>span").text("Working");
+						// $("#status>h4>span").css({"color":"#666666", "font-size":"100%"});
+						curstate = "Working";
+						console.log(curstate);
+						setRelay();						
+					}
+
 				}
-				else {
-					//the status is: paused
-					$("#status>h4>span").removeClass("label-success label-danger label-default");
-					$("#status>h4>span").addClass("label-info");
-					$("#status>h4>span").text("Paused");
-					// $("#status>h4>span").css({"color":"#666666", "font-size":"100%"});
-					curstate = "Paused";
-					console.log(curstate);
-					setRelay();
+				else if (prevstate==="Paused"){
+					if(curTemp+0.5 < '<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].temp%><%};%>'){
+						//the status is: working
+						$("#status>h4>span").removeClass("label-info label-danger label-default");
+						$("#status>h4>span").addClass("label-success");
+						$("#status>h4>span").text("Working");
+						// $("#status>h4>span").css({"color":"#F6F4EC", "font-size":"100%"});
+						curstate = "Working";
+						console.log(curstate);
+						setRelay();
+					}
+					else
+					{
+						//the status is: paused
+						$("#status>h4>span").removeClass("label-info label-danger label-default");
+						$("#status>h4>span").addClass("label-info");
+						$("#status>h4>span").text("Paused");
+						// $("#status>h4>span").css({"color":"#F6F4EC", "font-size":"100%"});
+						curstate = "Paused";
+						console.log(curstate);
+						setRelay();						
+					}
+				}
+				else //prevstate==="" Initial state - we just got data for the first time!
+				{
+					if(curTemp+0.5 < '<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].temp%><%};%>'){
+						//the status is: working
+						$("#status>h4>span").removeClass("label-info label-danger label-default");
+						$("#status>h4>span").addClass("label-success");
+						$("#status>h4>span").text("Working");
+						// $("#status>h4>span").css({"color":"#F6F4EC", "font-size":"100%"});
+						curstate = "Working";
+						console.log(curstate);
+						setRelay();
+					}
+					else
+					{
+						//the status is: paused
+						$("#status>h4>span").removeClass("label-success label-danger label-default");
+						$("#status>h4>span").addClass("label-info");
+						$("#status>h4>span").text("Paused");
+						// $("#status>h4>span").css({"color":"#666666", "font-size":"100%"});
+						curstate = "Paused";
+						console.log(curstate);
+						setRelay();
+					}
 				}
 			}
-			else {
+			else 
+			{
 				//we just went off the time window so we refresh to get new data
 				//console.log('refresh');
 				location.reload(true);
@@ -604,6 +660,7 @@
 		}
 	}
 
+
 </script>
 
 <script>
@@ -638,7 +695,8 @@
 	    datasets: [
 	        {
 	            label: "Average temperature",
-	            fillColor: "rgba(220,220,220,0.2)",
+	            //fillColor: "rgba(220,220,220,0.2)",
+	            fillColor: "rgba(151,187,205,0.2)",
 	            strokeColor: "rgba(220,220,220,1)",
 	            pointColor: "rgba(220,220,220,1)",
 	            pointStrokeColor: "#fff",
@@ -709,7 +767,8 @@
 							    datasets: [
 							        {
 							            label: "Average temperature",
-							            fillColor: "rgba(220,220,220,0.2)",
+							            //fillColor: "rgba(220,220,220,0.2)",
+							            fillColor: "rgba(151,187,205,0.2)",
 							            strokeColor: "rgba(220,220,220,1)",
 							            pointColor: "rgba(220,220,220,1)",
 							            pointStrokeColor: "#fff",
@@ -763,7 +822,7 @@
 	function openPage(page){
 		if(page==='config'){
 			createCookie('backUrl', window.location.href);
-			var setUrl= "/config/mode";
+			var setUrl= "/edit/mode";
 		}
 		else if(page==='settings'){
 			createCookie('backUrl', window.location.href);
