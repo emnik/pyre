@@ -1,3 +1,14 @@
-#node_modules/
+#node modules are generated through the npm install command
+node_modules/
+
+#the database files are populated with new records while working. Only the default is needed which is in the database-init dir
+/sensor-data.sqlite*
+
+#the sesnor_data.csv file is generated from the app and the user can downloaded. It is not needed in github
+public/files/sensor_data.csv
+
+#Other files (debug e.t.c.)
 misc/
+
+#log files
 *.log
