@@ -55,6 +55,7 @@ Save the file and then compile it and install it:
  cd ~/apps
  git clone https://github.com/emnik/pyre.git
  cd pyre
+ mkdir node_modules
  npm install
  sudo npm install forever -g
  sudo npm install nodemon -g
