@@ -12,7 +12,7 @@
 	</header>
 
 	<div class="container-fluid">
-		<div class="row"> 
+		<div class="row">
 			<div class="col-xs-12">
 				<div class="panel panel-default">
 				  <!-- Default panel contents -->
@@ -47,7 +47,7 @@
 								if(j.id == i){%>
 									<span class="label label-default ">
 									<%=j.location%>
-									</span>	
+									</span>
 								<%}
 							})
 						})%>
@@ -59,15 +59,18 @@
 				  </ul>
 				  </div>
 				</div>
-			</div>	
+			</div>
 		</div>
 		<div class="row" style="padding-bottom:20px;">
 			<div class="col-xs-12">
-				<div class="btn-group pull-left">
-					<button id="resetbtn" type="button" class="btn btn-danger pull-left">Reset</button>
+				<!-- <div class="btn-group pull-left"> -->
+					<button id="setbtn" type="button" class="btn btn-primary pull-left">Set active</button>
+				<!-- </div> -->
+				<div class="btn-group pull-right">
 					<button id="refreshbtn" type="button" class="btn btn-danger" onclick="location.reload(true);"><span class="glyphicon glyphicon-refresh"></span></button>
+					<button id="resetbtn" type="button" class="btn btn-danger">Reset</button>
+					<button id="savebtn" type="button" class="btn btn-success">Save</button>
 				</div>
-				<button id="setbtn" type="button" class="btn btn-success pull-right">Save</button>
 			</div>
 		</div>
 	</div>
@@ -85,7 +88,7 @@ var prevtimewindows=[];
 	$(document).ready(function(){
 
 		$("#resetbtn").prop('disabled', true);
-		$("#setbtn").prop('disabled', true);
+		$("#savebtn").prop('disabled', true);
 
 		prevtimewindows = get_current_timewindows();
 		lastsavedwindows = get_current_timewindows();
@@ -103,7 +106,7 @@ var prevtimewindows=[];
 			var listgroup = $(this).parent().next();
 			$.ajax({
 				type: "POST",
-				contentType: "application/json; charset=utf-8", 
+				contentType: "application/json; charset=utf-8",
 				url: "/edit/get_timewindow_by_id",
 				data: JSON.stringify({id:timewindows_id}),
 				success: function(rdata) { //rdata = remote data that the server sends as feedback...
@@ -151,13 +154,13 @@ var prevtimewindows=[];
 						}
 
 						curtimewindows = get_current_timewindows();
-						$("#setbtn").empty();
+						$("#savebtn").empty();
 						if (curtimewindows.compare(lastsavedwindows)){
-							$("#setbtn").append('Save');
-							$("#setbtn").prop('disabled',true);}
+							$("#savebtn").append('Save');
+							$("#savebtn").prop('disabled',true);}
 						else {
-							$("#setbtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
-							$("#setbtn").removeProp('disabled');}
+							$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+							$("#savebtn").removeProp('disabled');}
 					}
 					else
 					{
@@ -166,20 +169,20 @@ var prevtimewindows=[];
 				},
 				dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
 			});
-			$(this).val(null).trigger('change.select2');	
+			$(this).val(null).trigger('change.select2');
 		})
 
 
-		$('#setbtn').click(function(){
+		$('#savebtn').click(function(){
 			curtimewindows = get_current_timewindows();
 			if (!curtimewindows.compare(prevtimewindows)){
-				updatetimetable(curtimewindows,'set');				
-			} 
+				updatetimetable(curtimewindows,'set');
+			}
 			else {
 				console.log("no need to send to server. There are no changes!");
-				$("#setbtn").empty();
-				$("#setbtn").append('Save <span class="glyphicon glyphicon-ok"</span>');	
-				$('#setbtn').prop('disabled', true);			
+				$("#savebtn").empty();
+				$("#savebtn").append('Save <span class="glyphicon glyphicon-ok"</span>');
+				$('#savebtn').prop('disabled', true);
 			}
 		})
 
@@ -191,25 +194,29 @@ var prevtimewindows=[];
 			}
 			else{
 				console.log("no need to send to server. There are no changes!");
-				$("#setbtn").empty();
-				$("#setbtn").append('Save');		
-				$("#setbtn").prop('disabled',true);
+				$("#savebtn").empty();
+				$("#savebtn").append('Save');
+				$("#savebtn").prop('disabled',true);
 				$("#resetbtn").prop('disabled',true);
 			}
 		})
+
+		$('#setbtn').click(function(){
+			setActiveProfile('4');
+		});
 
 	}) //end of $(document).ready()
 
 	function windowremove(id){
 		$(id).remove();
 		curtimewindows = get_current_timewindows();
-		$("#setbtn").empty();
+		$("#savebtn").empty();
 		if (curtimewindows.compare(lastsavedwindows)){
-			$("#setbtn").append('Save');
-			$("#setbtn").prop('disabled',true);}
+			$("#savebtn").append('Save');
+			$("#savebtn").prop('disabled',true);}
 		else {
-			$("#setbtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
-			$("#setbtn").removeProp('disabled');}
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+			$("#savebtn").removeProp('disabled');}
 	}
 
 	function get_current_timewindows(){
@@ -236,20 +243,20 @@ var prevtimewindows=[];
 					console.log("success");
 					lastsavedwindows = arr;
 					if (action=="set"){
-						$("#setbtn").empty();
-						$("#setbtn").append('Save <span class="glyphicon glyphicon-ok"</span>');
-						$("#setbtn").prop("disabled", true);
+						$("#savebtn").empty();
+						$("#savebtn").append('Save <span class="glyphicon glyphicon-ok"</span>');
+						$("#savebtn").prop("disabled", true);
 						$("#resetbtn").removeProp('disabled');
 					}
 					else if(action=="reset"){
-						location.reload(true); 
+						location.reload(true);
 					}
 				}
 				else
 				{
 					console.log('error');
-					$("#setbtn").empty();
-					$("#setbtn").append('Error <span class="glyphicon glyphicon-alert"</span>');
+					$("#savebtn").empty();
+					$("#savebtn").append('Error <span class="glyphicon glyphicon-alert"</span>');
 				}
 			},
 			dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
@@ -257,16 +264,39 @@ var prevtimewindows=[];
 	}
 
 
-</script>
-
-<script type="text/javascript">
 	function backButton() {
 	    var value = readCookie('backUrl');
 	    eraseCookie('backUrl');
 	    document.location.href = value;
-	}	
+	}
+
 	function editTimeWindows() {
 		createCookie('backUrl_edit', window.location.href);
 		document.location.href = 'http://<%=base_url%>/config/timewindows';
 	}
+
+	function setActiveProfile(profile_id){
+		$.ajax({
+			type: "POST",
+			contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
+			url: "/edit/update_profile",
+			data: JSON.stringify({selected_profile:profile_id}),
+			/*JavaScript Object Notation is a way to share data between applications in object format.
+			However, you cannot send an object over an HTTP request without first turning it into a string
+			and sending it as a single variable. The functions JSON.parse() and JSON.stringify() do this for us.*/
+			success: function(rdata) { //rdata = remote data that the server sends as feedback...
+				// console.log(rdata.result);
+				if (rdata.result==="ok"){
+					console.log("success");
+					document.location.href ='/therm';
+				}
+				else
+				{
+					console.log('error');
+				}
+			},
+			dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
+		});
+	}
+
 </script>

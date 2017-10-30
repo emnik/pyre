@@ -9,7 +9,7 @@ function isRequestLocal(req, res, next){
   var request_ip = req.connection.remoteAddress.split('.');
   var isLocal=true;
   for(i=1;i<=2;i++){
-  	//I compare the second and third part of the ips so that 
+  	//I compare the second and third part of the ips so that
   	//even if there is an IPv4 and an IPv6-IPv4-mapped address this would work!
     if(rpi_ip[i]!==request_ip[i]){
       isLocal=false;
@@ -61,38 +61,81 @@ router.post('/get_timewindow_by_id', get_sensors, function(req,res){
 	})
 })
 
-router.post('/update_temp',function(req, res){
-  // console.log("the method used is:"+ req.method);
-  if (req.method=='POST'){
+
+function get_timewindows_name_ids(req,res,next){
+	// used by the update_temp function below
+  db.all('SELECT id, name FROM time_window', function(err, rows){
+    if (err){
+      console.error(err);
+      return next(err);
+    }
+    var timewindows = rows;
+    req.timewindows_nameids = rows;
+    // console.log(rows);
+    next();
+  })
+}
+
+router.post('/update_temp',get_timewindows_name_ids, function(req, res){
+    var timewindows_nameids = req.timewindows_nameids;
+    // console.log(timewindows_nameids);
+    if (req.method=='POST'){
     var targettemp = req.body.newtemp; //numeric
     var name = req.body.name; //string
     var sensor_ids = req.body.sensor_ids; //array
     var ids = sensor_ids.join(','); //array->string
 
-    var locked_timewindows = {2:'CONSTANT_PROFILE',1:'DAY_PROFILE',3:'NIGHT_PROFILE'};//I could get this from a query...index = time_window_id
-
-    for (var index in locked_timewindows) { //forEach is not working for js objects - only arrays!
-    	if (name==locked_timewindows[index]){
-    		db.run("UPDATE time_window SET temp=?, sensor_ids=? WHERE id=?",targettemp,ids,index,function(err){
+    timewindows_nameids.forEach(function(index){
+      if(name==index.name){
+    		db.run("UPDATE time_window SET temp=?, sensor_ids=? WHERE id=?",targettemp,ids,index.id,function(err){
     			if (err==null){
     				res.contentType('json');
 					res.send({result:'ok'});
     			}
     			else
     			{
-    				// if the query is successfull, the this object contains the following -as an example.
+    				// if the query is successfull, then this object contains the following -as an example.
     				// { sql: 'UPDATE time_window SET temp=?, sensor_ids=? WHERE id=?',lastID: 0,changes: 1 }
     				console.error(err);
     				res.contentType('json');
     				res.send({result:'error'}); //instead of a 500 error page I return an error status and I use it to inform the user
     			}
     		})
-    	}
-    };
-
-
+    	};
+    });
   };
 })
+
+
+router.post('/update_profile', function(req,res){
+  console.log("the method used is:"+ req.method);
+  if (req.method=='POST'){
+    var selected_profile = req.body.selected_profile;
+    console.log("selected_profile= " + selected_profile);
+    // var db = new sqlite3.Database('./sensor-data.sqlite');
+
+    db.serialize(function(){
+      db.run("UPDATE profile SET status=0", function(err){
+        if(err){
+          console.error(err);
+          }
+          else
+          {
+            db.run("UPDATE profile SET status=1 WHERE id=?",selected_profile, function(err){
+              if(err){
+                console.error(err);
+              }
+              else {
+                  res.contentType('json');
+                  res.send({result:'ok', graph_data:req.graph_data});
+              };
+            });
+          }
+        });
+      });
+    }
+  })
+
 
 function get_weekly_schedule_data(req, res, next){
 	var schedule = [];
@@ -140,7 +183,7 @@ router.post('/update_timetable', get_weekly_schedule_data, function(req,res){
 							} //end of callback
 						) //end of db.run
 					} //end of inner for loop
-				} //end of outer for loop				
+				} //end of outer for loop
 			}
 			else if (profile_name=='CUSTOM'){
 					for (var j in newtimewindows){
@@ -152,7 +195,7 @@ router.post('/update_timetable', get_weekly_schedule_data, function(req,res){
 							} //end of callback
 						) //end of db.run
 					} //end of inner for loop
-			
+
 			}
 			//if no error until here it is safe to sent a successfull response!
 			res.contentType('json');
@@ -272,7 +315,7 @@ router.get('/:id', isRequestLocal, isAuthenticated, get_sensors, get_timewindows
 	 	res.render('edit/custom', {sensors: req.sensors, timewindow: req.timewindows, timewindowsperday:req.timewindowsperday, base_url:base_url, isLocal:req.isLocal, show_edit:show_edit})
 	 }
 	 else if (req.params.id=="mode"){
-	 	res.render('edit/mode', {base_url:base_url, isLocal:req.isLocal});	
+	 	res.render('edit/mode', {base_url:base_url, isLocal:req.isLocal});
 	 }
 })
 

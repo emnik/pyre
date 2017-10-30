@@ -107,7 +107,7 @@ function onListening() {
   });
 
   // Start Remote temperature logging
-  process.nextTick(function(){ //the interval is defined by the sender XBee! When we get a value we store it!    
+  process.nextTick(function(){ //the interval is defined by the sender XBee! When we get a value we store it!
     ds1820_xbee.logRemoteTemp(function(err){
       if(err){
         console.error(err);
@@ -120,14 +120,14 @@ function onListening() {
 
 
 /**
- * use sockets.io to emit current temperatures every 1min to anyone who wants it! 
+ * use sockets.io to emit current temperatures every 1min to anyone who wants it!
  */
 
 io.sockets.on('connection', function(socket){
-    
+
     //get temperature data on an interval and broadcast them to all clients
     setInterval(function(){
-      var duration = 240; //the last x seconds of temperature data that we want to retrieve from the database
+      var duration = 300; //the last x seconds of temperature data that we want to retrieve from the database
       temperature.get_temp_data(duration, function(err,result){
         if(err){
           console.error(err);
@@ -135,27 +135,32 @@ io.sockets.on('connection', function(socket){
         socket.emit('temperatures', result);
       });
     }, 60000); //repeat every 1 min
-    
+
     socket.on('working_data', function(data){ //If a client sends working data to the server
         //console.log("Server got update on the working profile data. The current profile is: "+data.profile);
         //console.log("Current window data: id="+data.id+" on_time="+data.on+" off_time="+data.off+" sensors="+data.sensors+" temp="+data.temp);
         //console.log("Next window data: id=",data.next_id+" on_time="+data.next_on+" off_time="+data.next_off+" sensors="+data.next_sensors+" temp="+data.next_temp);
         //the server broadcasts the data back to all other clients!
         console.log('server got an update on the current data - will broadcast to all clients');
-        socket.broadcast.emit('check_data', {profile:data.profile, id:data.id, on:data.on, off:data.off, sensors:data.sensors, temp:data.temp, next_id:data.next_id, next_on:data.next_on, next_off:data.next_off, next_sensors:data.next_sensors, next_temp:data.next_temp}); 
-    })
+        socket.broadcast.emit('check_data', {id:data.id, on:data.on, off:data.off, sensors:data.sensors, temp:data.temp, next_id:data.next_id, next_on:data.next_on, next_off:data.next_off, next_sensors:data.next_sensors, next_temp:data.next_temp});
+    });
+
+    socket.on('newtemp', function(data){
+      console.log('server got an update of target temp - will broadcast to all clients');
+      socket.broadcast.emit('new_target',{newtemp:data.newtemp});
+    });
 
 });
 
 
 /**
  * schedule sensor data archive every day at the time (24 hour) that is specified here
- * using later.js 
+ * using later.js
  */
 
 // set later to use local time
 later.date.localTime();
-var sched=later.parse.recur().on('11:55:00').time(); 
+var sched=later.parse.recur().on('11:55:00').time();
 
 later.setInterval(function(){
   archive_db.archive_database(function(err){
@@ -171,7 +176,7 @@ later.setInterval(function(){
 
 
 /**
- * Exit functions 
+ * Exit functions
  */
 
 process.on('SIGINT', exit_handlers.gracefulExit).on('SIGTERM', exit_handlers.gracefulExit);
