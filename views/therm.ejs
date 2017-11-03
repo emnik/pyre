@@ -17,7 +17,7 @@
 	document.addEventListener('contextmenu', event => event.preventDefault());
 </script>
 
-<body>
+<body class="noselect">
 	<header>
 		<nav class="navbar navbar-inverse navbar-static-top">
 		  <div class="container-fluid">
@@ -92,7 +92,7 @@
 				</div>
 				<div class="row" style="color:white;">
 					<div class="col-xs-8" style="margin-top:5px;">
-						<p style="font-size:18px;">Target Temp: <strong><span  id="targetTemp"><% if (state.err==="") {%><%=time_window_data[0].temp%><% } else {%> - <%}%> </span> &deg C </strong>
+						<p style="font-size:16px;">Target Temp: <strong><span  id="targetTemp"><% if (state.err==="") {%><%=time_window_data[0].temp%><% } else {%> - <%}%> </span> &deg C </strong>
 						</p>
 					</div>
 					<div class="col-xs-4">
