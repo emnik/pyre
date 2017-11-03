@@ -12,6 +12,10 @@
 	}
 </style>
 
+<script type="text/javascript">
+	//we need to disable the right click context menu as to be able to handle bot mouse and touch events for lowering and raising the temperature.
+	document.addEventListener('contextmenu', event => event.preventDefault());
+</script>
 
 <body>
 	<header>
@@ -87,11 +91,11 @@
 		    		</div>
 				</div>
 				<div class="row" style="color:white;">
-					<div class="col-xs-7" style="margin-top:5px;">
-						<p style="font-size:14px;">Target Temp: <strong><span  id="targetTemp"><% if (state.err==="") {%><%=time_window_data[0].temp%><% } else {%> - <%}%> </span> &deg C </strong>
+					<div class="col-xs-8" style="margin-top:5px;">
+						<p style="font-size:18px;">Target Temp: <strong><span  id="targetTemp"><% if (state.err==="") {%><%=time_window_data[0].temp%><% } else {%> - <%}%> </span> &deg C </strong>
 						</p>
 					</div>
-					<div class="col-xs-5">
+					<div class="col-xs-4">
 						<div class="btn-group" style="float:right;">
 						  <button type="button" id="lowerTempBtn" class="btn btn-default" style="padding:0px 7px 0px 7px;font-size:20px;">
 									<i class="fa fa-arrow-down" aria-hidden="true"></i>
@@ -228,6 +232,8 @@
 <script src="/javascripts/custom.js"></script>
 
 <script>
+	var MINTEMP = 10;
+	var MAXTEMP = 30;
 	var prevstate = '<%=status%>';
 	console.log('the prevstate is: '+prevstate);
 	var curstate = ""; // so we know when the state changes and call the setRelay function
@@ -482,19 +488,22 @@
 		});
 
 
-		$("#raiseTempBtn").on('mousedown',function(){
+		$("#raiseTempBtn").on('mousedown touchstart', function(){
 			<%if(typeof time_window_data[0]!=="undefined"){%>
 				tempC = $('#targetTemp').text();
 				var fl = parseFloat(tempC);
 				myVar = window.setInterval(function(){
 					fl = Math.round(fl*10+1)/10;
-					$('#targetTemp').text(fl)
+					if (fl<=MAXTEMP){
+						$('#targetTemp').text(fl);
+					}
 				}, 200);
 			<%};%>
 			return false;
 		});
 
-		$("#raiseTempBtn").on('mouseup', function(){
+
+		$("#raiseTempBtn").on('mouseup touchend', function(){
 			<%if(typeof time_window_data[0]!=="undefined"){%>
 				tempC = $('#targetTemp').text();
 				window.clearInterval(myVar);
@@ -510,18 +519,20 @@
 		});
 
 
-		$("#lowerTempBtn").on('mousedown',function(){
+		$("#lowerTempBtn").on('mousedown touchstart', function(){
 			<%if(typeof time_window_data[0]!=="undefined"){%>
 				tempC = $('#targetTemp').text();
 				var fl = parseFloat(tempC);
 				myVar = window.setInterval(function(){
 					fl = Math.round(fl*10-1)/10;
-					$('#targetTemp').text(fl)
+					if (fl>=MINTEMP) {
+						$('#targetTemp').text(fl);
+					}
 				}, 200);
 			<%};%>
 			});
 
-		$("#lowerTempBtn").on('mouseup', function(){
+		$("#lowerTempBtn").on('mouseup touchend', function(){
 			<%if(typeof time_window_data[0]!=="undefined"){%>
 				tempC = $('#targetTemp').text();
 				window.clearInterval(myVar);
@@ -857,9 +868,6 @@
 	}
 
 
-</script>
-
-<script type="text/javascript">
 	function openPage(page){
 		if(page==='config'){
 			createCookie('backUrl', window.location.href);
@@ -875,10 +883,7 @@
 		}
 		window.location.href = setUrl;
 	}
-</script>
 
-
-<script type="text/javascript">
 var mtc; //for handling possible multiple successfull tenperature changes!
 function setTemp(t, name, sensor_ids){
 	if (sensor_ids!=null){

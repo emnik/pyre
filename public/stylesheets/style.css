@@ -14,6 +14,7 @@ html {
 }
 
 body {
+  user-select: none; /*this disables the user text selection!*/
   font: 14px "Ubuntu", sans-serif;
   /*background-color: #252830;*/
   background-color: #002B36;
