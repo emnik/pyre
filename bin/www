@@ -13,7 +13,26 @@ var temperature = require('../my_modules/temperature');
 var archive_db = require('../my_modules/archive_db');
 var later = require('later');
 var exit_handlers = require("../my_modules/exit_handlers");
+var mqtt = require('mqtt');
 
+
+// MQTT setup
+var mqttclient  = mqtt.connect({
+   host: '10.185.9.109',
+   port: 8883,
+   username:'mosquitto',
+   password:'sandra'});
+
+mqttclient.on('connect', function () {
+  mqttclient.subscribe('sensor/temperature');
+  mqttclient.publish('pyre', 'Hello mqtt');
+})
+
+mqttclient.on('message', function (topic, message) {
+  // message is Buffer
+  console.log(message.toString());
+  // mqttclient.end();
+})
 
 
 /**
