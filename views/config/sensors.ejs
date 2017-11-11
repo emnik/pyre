@@ -47,17 +47,15 @@
 						<div class="form-group">
 							<label class="col-sm-2 control-label" for="sensortype<%=sensor.id%>">Type</label>
 							<div class="col-sm-10">
-						      <select class="form-control" style="width:100%;" id="sensortype<%=sensor.id%>" name="sensortype">
-						      	<option value="TEMPERATURE" selected="selected">TEMPERATURE</option>
-						      </select>
-						    </div>
+									<input type="text" class="form-control" id="sensortype<%=sensor.id%>" value="<%=sensor.type%>" name="sensortype">
+							</div>
 						</div>
 						<div class="form-group">
 							<label class="col-sm-2 control-label" for="sensorlocation<%=sensor.id%>">Location</label>
 						    <div class="col-sm-10">
 						    	<select class="form-control" style="width:100%;" id="sensorlocation<%=sensor.id%>" name="sensorlocation">
-						    		<option value="LivingRoom">Living Room</option>
-						    		<option value="KidsRoom">Kids Room</option>
+						    		<option value="LivingRoom">LivingRoom</option>
+						    		<option value="KidsRoom">KidsRoom</option>
 						    		<option value="Bedroom">Bedroom</option>
 						    		<option value="Hall">Hall</option>
 						    		<option value="Kitchen">Kitchen</option>
@@ -74,15 +72,15 @@
 							</div>
 						</div>
 						<div class="form-group">
-							<label class="col-sm-2 control-label" for="sensorxbee<%=sensor.id%>">xbeeID</label>
-						    <div class="col-sm-4">
+							<label class="col-sm-2 control-label <%if (sensor.xbee_id==''){%>hidden<%};%>" for="sensorxbee<%=sensor.id%>">xbeeID</label>
+						    <div class="col-sm-4 <%if (sensor.xbee_id==''){%>hidden<%};%>">
 						    	<input type="text" class="form-control" name="sensorxbeeid" id="sensorxbee<%=sensor.id%>" value="<%=sensor.xbee_id%>">
 							</div>
 							<label class="col-sm-2 control-label" for="sensorstatus<%=sensor.id%>">Status</label>
 						    <div class="col-sm-4">
 						    	<input type="checkbox"  data-onstyle="success" data-on="Enabled" data-off="Disabled" class="form-control"  id="sensorstatus<%=sensor.id%>"  name="sensorstatus">
-							</div>							
-						</div>						
+							</div>
+						</div>
 					</form>
 				  </div>
 				</div>
@@ -125,37 +123,32 @@ var latest_saved_data=[];
 			}).val("<%=sensors[i].location%>").trigger('change');
 		<%}%>
 
-		$("[name='sensortype']").select2({
-			minimumResultsForSearch: Infinity,
-			placeholder: "Select type"
-		})
-
 		$("[name='sensortype']").change(function(){
-			$("#savebtn").removeProp('disabled');			
+			$("#savebtn").removeProp('disabled');
 			$("#savebtn").empty();
 			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 		})
 
 		$("[name='sensorlocation']").change(function(){
-			$("#savebtn").removeProp('disabled');			
+			$("#savebtn").removeProp('disabled');
 			$("#savebtn").empty();
 			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 		})
 
 		$("[name='sensorname']").change(function(){
-			$("#savebtn").removeProp('disabled');			
+			$("#savebtn").removeProp('disabled');
 			$("#savebtn").empty();
 			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 		})
 
 		$("[name='sensorxbeeid']").change(function(){
-			$("#savebtn").removeProp('disabled');			
+			$("#savebtn").removeProp('disabled');
 			$("#savebtn").empty();
 			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 		})
 
 		$("[name='sensorstatus']").change(function(){
-			$("#savebtn").removeProp('disabled');			
+			$("#savebtn").removeProp('disabled');
 			$("#savebtn").empty();
 			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 		})
@@ -187,7 +180,7 @@ var latest_saved_data=[];
 			else
 			{
 				if(!compare_arrays_of_obj(arr, latest_saved_data)){
-					update_sensors(arr, "update");	
+					update_sensors(arr, "update");
 				}
 				else
 				{
@@ -196,7 +189,7 @@ var latest_saved_data=[];
 					$("#savebtn").append('Save');
 					$("#savebtn").prop('disabled', true);
 				}
-				
+
 			}
 		})
 
@@ -204,7 +197,7 @@ var latest_saved_data=[];
 		var arr=[];
 		$('.panel.panel-default').each(function(){
 			var sn = new Object();
-			sn.type=$(this).find("[name='sensortype']").select2().val();
+			sn.type=$(this).find("[name='sensortype']").val();
 			sn.location=$(this).find("[name='sensorlocation']").select2().val();
 			sn.name=$(this).find("[name='sensorname']").val();
 			sn.xbee=$(this).find("[name='sensorxbeeid']").val();
@@ -223,7 +216,7 @@ var latest_saved_data=[];
 			$(id).find("[name='sensorpreset']").removeClass("glyphicon-star-empty");
 			$(id).find("[name='sensorpreset']").addClass("glyphicon-star").css("color","green");
 
-			$("#savebtn").removeProp('disabled');			
+			$("#savebtn").removeProp('disabled');
 			$("#savebtn").empty();
 			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 
@@ -250,7 +243,7 @@ var latest_saved_data=[];
 							latest_saved_data = arr;
 						}
 						else if(action=="reset"){
-							location.reload(true); 
+							location.reload(true);
 						}
 					}
 					// else

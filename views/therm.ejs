@@ -358,11 +358,15 @@
 				}
 				if(sensor_found===0)
 				{
+					$('#sensor'+sensors[i]).removeClass('label-success');
+					$('#sensor'+sensors[i]).addClass('label-danger');
 					$('#sensor'+sensors[i]).addClass('offline');
 				}
 				else
 				{
 					$('#sensor'+sensors[i]).removeClass('offline');
+					$('#sensor'+sensors[i]).removeClass('label-danger');
+					$('#sensor'+sensors[i]).addClass('label-success');
 				}
 			}
 

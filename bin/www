@@ -7,32 +7,19 @@
 var app = require('../app');
 var debug = require('debug')('myapp:server');
 var http = require('http');
-var ds1820 = require('../my_modules/ds1820'); //load module ds1820
-var ds1820_xbee = require('../my_modules/ds1820_xbee'); //load module ds1820_xbee
+
+//load module schedule responsible for scheduling the db backup every night
+require('../my_modules/later');
+//load module ds1820 responsible for getting and storing the temperature from the on board sensor
+require('../my_modules/ds1820');
+//load module ds1820_xbee responsible for getting and storing the temperature from the xbee sensors
+require('../my_modules/ds1820_xbee');
+//load module mqtt responsible for getting and storing the temperature from the mqtt sensors
+require('../my_modules/mqtt');
+//load module temperature responsible for getting the average temperature of each sensor from the database
 var temperature = require('../my_modules/temperature');
-var archive_db = require('../my_modules/archive_db');
-var later = require('later');
+//load module exit_handlers responsible exiting the app in case of error or just quiting!
 var exit_handlers = require("../my_modules/exit_handlers");
-var mqtt = require('mqtt');
-
-
-// MQTT setup
-var mqttclient  = mqtt.connect({
-   host: '10.185.9.109',
-   port: 8883,
-   username:'mosquitto',
-   password:'sandra'});
-
-mqttclient.on('connect', function () {
-  mqttclient.subscribe('sensor/temperature');
-  mqttclient.publish('pyre', 'Hello mqtt');
-})
-
-mqttclient.on('message', function (topic, message) {
-  // message is Buffer
-  console.log(message.toString());
-  // mqttclient.end();
-})
 
 
 /**
@@ -117,22 +104,7 @@ function onListening() {
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
 
-  // Start local temperature logging
-  var msecs = (60 * 0.5) * 1000; // log interval duration in milliseconds - Now is set in 30000msec = 30sec = 1/2 min
-  ds1820.logLocalTemp(msecs, function(err){
-    if(err){
-      console.error(err);
-    }
-  });
 
-  // Start Remote temperature logging
-  process.nextTick(function(){ //the interval is defined by the sender XBee! When we get a value we store it!
-    ds1820_xbee.logRemoteTemp(function(err){
-      if(err){
-        console.error(err);
-      }
-    })
-  })
   // Send a message to console
   console.log('Server up and running!');
 }
@@ -173,29 +145,7 @@ io.sockets.on('connection', function(socket){
 
 
 /**
- * schedule sensor data archive every day at the time (24 hour) that is specified here
- * using later.js
- */
-
-// set later to use local time
-later.date.localTime();
-var sched=later.parse.recur().on('11:55:00').time();
-
-later.setInterval(function(){
-  archive_db.archive_database(function(err){
-    if(err){
-      console.error(err);
-    }
-    else
-    {
-      console.log('sensor data are archived successfully!');
-    }
-  })
-}, sched)
-
-
-/**
  * Exit functions
  */
 
-process.on('SIGINT', exit_handlers.gracefulExit).on('SIGTERM', exit_handlers.gracefulExit);
+process.on('SIGINT', exit_handlers.gracefulExit).on('SIGTERM', exit_handlers.gracefulExit).on('uncaughtException', exit_handlers.gracefulExit);
