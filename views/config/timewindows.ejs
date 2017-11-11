@@ -44,8 +44,8 @@
 						</div>
 						<div class="col-xs-6" style="padding-left:5px;">
 							<input class="timepicker form-control" name="off_time" placeholder="OFF time" type="time" value="<%=window.off_time%>">
-						</div>	
-					</div>	
+						</div>
+					</div>
 
 					<div class="row">
 						<div class="col-xs-12">
@@ -66,7 +66,7 @@
 
 				  </div>
 				</div>
-			</div>	
+			</div>
 		<%})%>
 		</div>
 		<div class="row" id="buttons" style="padding-bottom:20px;">
@@ -129,7 +129,7 @@ var latest_saved_data=[];
 		})
 
 		$('.timepicker').change(function(){
-			$("#savebtn").removeProp('disabled');			
+			$("#savebtn").removeProp('disabled');
 			$("#savebtn").empty();
 			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 		})
@@ -139,7 +139,7 @@ var latest_saved_data=[];
 			$("#savebtn").empty();
 			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 		})
-		
+
 		$("#resetbtn").prop('disabled', true);
 		$("#savebtn").prop('disabled', true);
 
@@ -164,16 +164,16 @@ var latest_saved_data=[];
 				timeRangeError = true
 			}
 		}
-		
+
 		if (timeRangeError){
 			console.log("The ON time cannot be later than the OFF time! The only \"exception\" is 24:00 which is interpreted as 00:00.\nIf you want to set a time range from before 00:00 until after 00:00 you should break it in two timewindows. One until 00:00 and one from 00:00 until...");
 		}
-		
+
 		if(emptyError)
 		{
 			console.log("All fields are required.");
 		}
-		
+
 		if(!emptyError && !timeRangeError)
 		{
 			// console.log(arr);
@@ -215,7 +215,7 @@ var latest_saved_data=[];
 							latest_saved_data = arr;
 						}
 						else if(action=="reset"){
-							location.reload(true); 
+							location.reload(true);
 						}
 					}
 					// else
@@ -253,7 +253,7 @@ var latest_saved_data=[];
 	$('#addbtn').click(function(){
 		$.ajax({
 			type: "POST",
-			contentType: "application/json; charset=utf-8", 
+			contentType: "application/json; charset=utf-8",
 			url: "/config/add_timewindow",
 			success: function(rdata) { //rdata = remote data that the server sends as feedback...
 				// console.log(rdata.result);
@@ -301,11 +301,11 @@ var latest_saved_data=[];
 					$('#timewindows').append(html);
 					var TempTarget = $('.newtm').children('.panel-body').children().find("input[name='setTargetTemp']");
 					TempTarget.TouchSpin({
-						min: 0, // Minimum value.
-						max: 100, // Maximum value.
+						min: 5, // Minimum value.
+						max: 40, // Maximum value.
 						decimals: 1,
-						boostat: 3, // Boost at every nth step.
-						maxboostedstep: 2, // Maximum step when boosted.
+						boostat: 10, // Boost at every nth step.
+						maxboostedstep: 1, // Maximum step when boosted.
 						postfix: '&deg C', // Text after the input.
 						// prefix: '<span class="glyphicon glyphicon-fire"></span>', // Text before the input.
 						step: 0.1, // Incremental/decremental step on up/down change.
@@ -337,7 +337,7 @@ var latest_saved_data=[];
 					})
 
 					$('.timepicker').change(function(){
-						$("#savebtn").removeProp('disabled');			
+						$("#savebtn").removeProp('disabled');
 						$("#savebtn").empty();
 						$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 					})
@@ -369,10 +369,10 @@ var latest_saved_data=[];
 	})
 
 
-	
+
 
 	function setCustomNum(){
-		var customNums=new Array();	
+		var customNums=new Array();
 		$('.panel-heading > span').each(function(){
 			label = $(this).text();
 			if(label!=""){
@@ -382,10 +382,10 @@ var latest_saved_data=[];
 			}
 		})
 		if(customNums!=null){
-			customNums.sort(function(a, b){return a-b});	
+			customNums.sort(function(a, b){return a-b});
 			// console.log(customNums);
 			var missing=false;
-			for (var i = 0; i <= customNums.length - 1; i++) {	
+			for (var i = 0; i <= customNums.length - 1; i++) {
 				if(customNums[i]!=i+1){
 						missing=true;
 						return i+1;
@@ -395,7 +395,7 @@ var latest_saved_data=[];
 		}
 		else {return 1;}
 	}
-	
+
 	function get_form_data(){
 		var arr=[];
 		$('.panel.panel-default').each(function(){
@@ -408,7 +408,7 @@ var latest_saved_data=[];
 			if(tw.off=='00:00'){tw.off='24:00'};
 			var sensor_ids = $(this).find('[name="sensors"]').val();
 			if (sensor_ids!=null){
-				tw.sensors = sensor_ids.join(',');	
+				tw.sensors = sensor_ids.join(',');
 			}
 			else
 			{
@@ -416,14 +416,11 @@ var latest_saved_data=[];
 			}
 			arr.push(tw);
 		});
-		
+
 		return arr;
 	}
 
 
-</script>
-
-<script type="text/javascript">
 	function backButton() {
 	    var value = readCookie('backUrl_edit');
 	    eraseCookie('backUrl_edit');

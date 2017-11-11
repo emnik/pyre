@@ -33,19 +33,20 @@
 								  </option>
 								 <%});%>
 							 </select>
-						</div>						
+						</div>
 					</div>
-				</div>		
-			</div>	
+				</div>
+			</div>
 		</div>
 
 		<div class="row" style="padding-bottom:20px;">
 			<div class="col-xs-12 col-md-6 col-lg-5">
 				<div class="btn-group pull-left">
-					<button id="resetbtn" type="button" class="btn btn-danger pull-left">Reset</button>
-					<button id="refreshbtn" type="button" class="btn btn-danger" onclick="location.reload(true);"><span class="glyphicon glyphicon-refresh"></span></button>
+					<button id="setbtn" type="button" class="btn btn-primary pull-left">Set active</button>
+					<!-- <button id="resetbtn" type="button" class="btn btn-danger pull-left">Reset</button>
+					<button id="refreshbtn" type="button" class="btn btn-danger" onclick="location.reload(true);"><span class="glyphicon glyphicon-refresh"></span></button> -->
 				</div>
-				<button id="setbtn" type="button" class="btn btn-success pull-right">Save</button>
+				<button id="savebtn" type="button" class="btn btn-success pull-right">Save</button>
 			</div>
 		</div>
 	</div>
@@ -60,31 +61,35 @@
 <script>
 
 	$( document ).ready(function() {
-		$('#resetbtn').prop('disabled',true);
-		$('#setbtn').prop('disabled',true);
+		// $('#resetbtn').prop('disabled',true);
+		$('#savebtn').prop('disabled',true);
 
-		$('#resetbtn').click(function(){
-			var curvalue = $("input[name='setTargetTemp']").val();
-			var curSensorIds = $("#sensors").val(); //array
-			var prevSensorArr='<%=curtemp.sensor_ids%>'.split(','); //string -> array
+		// $('#resetbtn').click(function(){
+		// 	var curvalue = $("input[name='setTargetTemp']").val();
+		// 	var curSensorIds = $("#sensors").val(); //array
+		// 	var prevSensorArr='<%=curtemp.sensor_ids%>'.split(','); //string -> array
+		//
+		// 	$("input[name='setTargetTemp']").val(<%=curtemp.temp%>);
+		// 	$("#sensors").val(prevSensorArr).trigger("change");
+		//
+		// 	if (curSensorIds!=null && (curvalue!=<%=curtemp.temp%> || !(curSensorIds.compare(prevSensorArr)))){
+		// 		setTemp(<%=curtemp.temp%>, '<%=curtemp.name%>', prevSensorArr, "reset");
+		// 	}
+		// 	else
+		// 	{
+		// 		console.log("No need for action...");
+		// 	}
+		// })
 
-			$("input[name='setTargetTemp']").val(<%=curtemp.temp%>);
-			$("#sensors").val(prevSensorArr).trigger("change");
-
-			if (curSensorIds!=null && (curvalue!=<%=curtemp.temp%> || !(curSensorIds.compare(prevSensorArr)))){
-				setTemp(<%=curtemp.temp%>, '<%=curtemp.name%>', prevSensorArr, "reset");
-			}
-			else
-			{
-				console.log("No need for action...");
-			}
+		$('#savebtn').click(function(){
+			var newtemp = $("input[name='setTargetTemp']").val();
+			var newSensorIds = $("#sensors").val();
+			setTemp(newtemp,'<%=curtemp.name%>', newSensorIds, "save");
 		})
 
 		$('#setbtn').click(function(){
-			var newtemp = $("input[name='setTargetTemp']").val();
-			var newSensorIds = $("#sensors").val();
-			setTemp(newtemp,'<%=curtemp.name%>', newSensorIds, "set");
-		})
+			setActiveProfile('1');
+		});
 
 		$('#sensors').select2({
 			minimumResultsForSearch: Infinity,
@@ -107,24 +112,24 @@
 					// console.log(rdata.result);
 					if (rdata.result==="ok"){
 						console.log("success");
-						if (action=="set"){
-							$("#setbtn").empty();
-							$("#setbtn").append('Save <span class="glyphicon glyphicon-ok"</span>');	
-							$("#setbtn").prop('disabled',true);
-							$("#resetbtn").removeProp('disabled');						
+						if (action=="save"){
+							$("#savebtn").empty();
+							$("#savebtn").append('Save <span class="glyphicon glyphicon-ok"</span>');
+							$("#savebtn").prop('disabled',true);
+							// $("#resetbtn").removeProp('disabled');
 						}
 						if (action=="reset"){
-							$("#setbtn").empty();
-							$("#setbtn").append('Save');	
-							$("#setbtn").prop('disabled',true);
-							$("#resetbtn").prop('disabled', true);									
+							$("#savebtn").empty();
+							$("#savebtn").append('Save');
+							$("#savebtn").prop('disabled',true);
+							// $("#resetbtn").prop('disabled', true);
 						}
 					}
 					else
 					{
 						console.log('error');
-						$("#setbtn").empty();
-						$("#setbtn").append('Error <span class="glyphicon glyphicon-alert"</span>');
+						$("#savebtn").empty();
+						$("#savebtn").append('Error <span class="glyphicon glyphicon-alert"</span>');
 					}
 				},
 				dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
@@ -137,11 +142,11 @@
 	}
 
 	$("input[name='setTargetTemp']").TouchSpin({
-	min: 0, // Minimum value.
-	max: 100, // Maximum value.
+	min: 10, // Minimum value.
+	max: 30, // Maximum value.
 	decimals: 1,
-	boostat: 3, // Boost at every nth step.
-	maxboostedstep: 2, // Maximum step when boosted.
+	boostat: 10, // Boost at every nth step.
+	maxboostedstep: 1, // Maximum step when boosted.
 	postfix: '&deg C', // Text after the input.
 	prefix: '<span class="glyphicon glyphicon-fire"></span>', // Text before the input.
 	step: 0.1, // Incremental/decremental step on up/down change.
@@ -150,23 +155,46 @@
 	});
 
 	$("input[name='setTargetTemp']").change(function(){
-		$("#setbtn").empty();
-		$("#setbtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
-		$("#setbtn").removeProp('disabled');
+		$("#savebtn").empty();
+		$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		$("#savebtn").removeProp('disabled');
 	})
-	
+
 	$('#sensors').change(function(){
-		$("#setbtn").empty();
-		$("#setbtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
-		$("#setbtn").removeProp('disabled');		
+		$("#savebtn").empty();
+		$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		$("#savebtn").removeProp('disabled');
 	})
 
-</script>
 
-<script type="text/javascript">
 	function backButton() {
 	    var value = readCookie('backUrl');
 	    eraseCookie('backUrl');
 	    document.location.href = value;
 	}
+
+	function setActiveProfile(profile_id){
+		$.ajax({
+			type: "POST",
+			contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
+			url: "/edit/update_profile",
+			data: JSON.stringify({selected_profile:profile_id}),
+			/*JavaScript Object Notation is a way to share data between applications in object format.
+			However, you cannot send an object over an HTTP request without first turning it into a string
+			and sending it as a single variable. The functions JSON.parse() and JSON.stringify() do this for us.*/
+			success: function(rdata) { //rdata = remote data that the server sends as feedback...
+				// console.log(rdata.result);
+				if (rdata.result==="ok"){
+					console.log("success");
+					document.location.href ='/therm';
+				}
+				else
+				{
+					console.log('error');
+				}
+			},
+			dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
+		});
+	}
+
 </script>

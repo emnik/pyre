@@ -4,9 +4,9 @@ html {
 	/*If I decide to have a background image. On desktop & mobile looks good but on Rpi seems to
 	be heavy on rendering and doesn't look that good...
 	*/
-	
+
 	/*height:100%;
-	background: url(../images/flames_mono_2.jpg) no-repeat center center fixed; 
+	background: url(../images/flames_mono_2.jpg) no-repeat center center fixed;
   	-webkit-background-size: cover;
   	-moz-background-size: cover;
   	-o-background-size: cover;
@@ -15,11 +15,24 @@ html {
 
 body {
   font: 14px "Ubuntu", sans-serif;
-  background-color: #252830;
+  /*background-color: #252830;*/
+  background-color: #002B36;
   /*background-color: inherit; if I decide to have a background image...*/
   margin: 0px 0px 0px 0px;
   height:100%;
 }
+
+/*this disables the user text selection!*/
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
+}
+
 
 /*Grouping labels*/
 
@@ -27,23 +40,23 @@ body {
 	border-top-left-radius: 0.25em
 	border-bottom-left-radius: 0.25em
 	margin-right:0;
-	border-top-right-radius:0; 
-	border-bottom-right-radius:0; 
+	border-top-right-radius:0;
+	border-bottom-right-radius:0;
 }
 
-.label-group>.label:nth-child(2) {
+.label-group>.label:nth-child(n+2) {
 	border-top-left-radius: 0;
-	border-bottom-left-radius: 0;	
-	border-top-right-radius:0; 
-	border-bottom-right-radius:0; 
+	border-bottom-left-radius: 0;
+	border-top-right-radius:0;
+	border-bottom-right-radius:0;
     filter: alpha(opacity=90);
     opacity: 0.9;
 }
-    
+
 .label-group>.label:last-child {
 	border-top-left-radius: 0;
 	border-bottom-left-radius: 0;
-    margin-left: 0;	
+    margin-left: 0;
 	border-top-right-radius: 0.25em;
 	border-bottom-right-radius: 0.25em;
 }
@@ -87,7 +100,7 @@ a.navbar-brand {
 
 .navbar-header>button {
 	padding-top:7px;
-	padding-bottom: 7px; 
+	padding-bottom: 7px;
 	margin-top: 7px;
 	margin-bottom: 5px;
 }
@@ -102,8 +115,10 @@ a.navbar-brand {
 .navbar-inverse{
 	background-image: none;
 	background-repeat: no-repeat;
-	background-color: #252830;
-	border-color: #252830;
+	/*background-color: #252830;*/
+	/*border-color: #252830;*/
+  background-color: #001F27;
+  border-color: #001F27;
 	/*opacity:0.8;*/
 }
 
@@ -176,7 +191,8 @@ ul.nav.navbar-nav.navbar-right{
 /*horizontal line styling*/
 
 hr{
-    border-color: #434857; 
+    /*border-color: #434857;*/
+    border-color: #001F27;
     border-image: none;
     border-style: solid none none;
     border-width: 1px 0 0;
@@ -197,7 +213,7 @@ hr{
 
 
 .select2-container--default .select2-results__option--highlighted[aria-selected]{
-	background-color: #434857!important;	
+	background-color: #434857!important;
 }
 
 .select2-container--default.select2-container--disabled .select2-selection--single{

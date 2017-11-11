@@ -60,7 +60,7 @@
 								  </option>
 								 <%});%>
 							 </select>
-						</div>						
+						</div>
 					</div>
 				</div>
 			</div>
@@ -69,10 +69,11 @@
 		<div class="row" style="padding-bottom:20px;">
 			<div class="col-xs-12 col-md-12 col-lg-12">
 				<div class="btn-group pull-left">
-					<button id="resetbtn" type="button" class="btn btn-danger pull-left">Reset</button>
-					<button id="refreshbtn" type="button" class="btn btn-danger" onclick="location.reload(true);"><span class="glyphicon glyphicon-refresh"></span></button>
+					<button id="setbtn" type="button" class="btn btn-primary pull-left">Set active</button>
+					<!-- <button id="resetbtn" type="button" class="btn btn-danger pull-left">Reset</button> -->
+					<!-- <button id="refreshbtn" type="button" class="btn btn-danger" onclick="location.reload(true);"><span class="glyphicon glyphicon-refresh"></span></button> -->
 				</div>
-				<button id="setbtn" type="button" class="btn btn-success pull-right">Save</button>
+				<button id="savebtn" type="button" class="btn btn-success pull-right">Save</button>
 			</div>
 		</div>
 	</div>
@@ -88,46 +89,46 @@
 
 	$( document ).ready(function() {
 
-		$('#resetbtn').prop('disabled', true);
-		$('#setbtn').prop('disabled', true);
+		// $('#resetbtn').prop('disabled', true);
+		$('#savebtn').prop('disabled', true);
 
-		$('#resetbtn').click(function(){
-			// the dayTemp.sensor_ids variable contains a string with value either 1 or 2 or 1,2.
-			// Summarizing: using the .split() function on the day/nightTemp.sensor_ids variable helps me to 
-			// send data to POST <as array> and update the select2 input value (which also needs an array!!! 
-			var curDayValue = $("input[name='setDayTargetTemp']").val(); //numeric
-			var curNightValue = $("input[name='setNightTargetTemp']").val(); //numeric
-			var curDaySensorIds = $("#daysensors").val(); //array
-			var curNightSensorIds = $("#nightsensors").val(); //array
-			var prevDaySensorArr='<%=dayTemp.sensor_ids%>'.split(','); //string -> array
-			var prevNightSensorArr='<%=nightTemp.sensor_ids%>'.split(','); //string ->array
+		// $('#resetbtn').click(function(){
+		// 	// the dayTemp.sensor_ids variable contains a string with value either 1 or 2 or 1,2.
+		// 	// Summarizing: using the .split() function on the day/nightTemp.sensor_ids variable helps me to
+		// 	// send data to POST <as array> and update the select2 input value (which also needs an array!!!
+		// 	var curDayValue = $("input[name='setDayTargetTemp']").val(); //numeric
+		// 	var curNightValue = $("input[name='setNightTargetTemp']").val(); //numeric
+		// 	var curDaySensorIds = $("#daysensors").val(); //array
+		// 	var curNightSensorIds = $("#nightsensors").val(); //array
+		// 	var prevDaySensorArr='<%=dayTemp.sensor_ids%>'.split(','); //string -> array
+		// 	var prevNightSensorArr='<%=nightTemp.sensor_ids%>'.split(','); //string ->array
+		//
+		// 	$("input[name='setDayTargetTemp']").val(<%=dayTemp.temp%>);
+		// 	$("input[name='setNightTargetTemp']").val(<%=nightTemp.temp%>);
+		//
+		// 	//programmatically set one ore more values to the select2 input:
+		// 	$("#daysensors").val(prevDaySensorArr).trigger("change");
+		// 	$("#nightsensors").val(prevNightSensorArr).trigger("change");
+		//
+		//
+		// 	if (curDaySensorIds!=null && (curDayValue!=<%=dayTemp.temp%> || !(curDaySensorIds.compare(prevDaySensorArr)))){
+		// 		setTemp(<%=dayTemp.temp%>, '<%=dayTemp.name%>', prevDaySensorArr, 'reset');
+		// 	}
+		// 	else
+		// 	{
+		// 		console.log("No need for action...");
+		// 	}
+		// 	if (curNightSensorIds!=null && (curNightValue!=<%=nightTemp.temp%> || !(curNightSensorIds.compare(prevNightSensorArr)))){
+		// 		setTemp(<%=nightTemp.temp%>,'<%=nightTemp.name%>', prevNightSensorArr, 'reset');
+		// 	}
+		// 	else
+		// 	{
+		// 		console.log("No need for action...");
+		// 	}
+		//
+		// })
 
-			$("input[name='setDayTargetTemp']").val(<%=dayTemp.temp%>);
-			$("input[name='setNightTargetTemp']").val(<%=nightTemp.temp%>);
-
-			//programmatically set one ore more values to the select2 input:
-			$("#daysensors").val(prevDaySensorArr).trigger("change");
-			$("#nightsensors").val(prevNightSensorArr).trigger("change");
-
-
-			if (curDaySensorIds!=null && (curDayValue!=<%=dayTemp.temp%> || !(curDaySensorIds.compare(prevDaySensorArr)))){
-				setTemp(<%=dayTemp.temp%>, '<%=dayTemp.name%>', prevDaySensorArr, 'reset');
-			}
-			else
-			{
-				console.log("No need for action...");
-			}
-			if (curNightSensorIds!=null && (curNightValue!=<%=nightTemp.temp%> || !(curNightSensorIds.compare(prevNightSensorArr)))){
-				setTemp(<%=nightTemp.temp%>,'<%=nightTemp.name%>', prevNightSensorArr, 'reset');
-			}
-			else
-			{
-				console.log("No need for action...");
-			}
-			
-		})
-
-		$('#setbtn').click(function(){
+		$('#savebtn').click(function(){
 			var newDaytemp = $("input[name='setDayTargetTemp']").val();
 			var newDaySensorIds = $("#daysensors").val();
 			setTemp(newDaytemp, '<%=dayTemp.name%>', newDaySensorIds, 'set');
@@ -136,7 +137,7 @@
 			var newNightSensorIds = $("#nightsensors").val();
 			setTemp(newNighttemp, '<%=nightTemp.name%>', newNightSensorIds, 'set');
 		})
-		
+
 		$('#daysensors').select2({
 			minimumResultsForSearch: Infinity,
 			placeholder: "Select day sensors"
@@ -164,24 +165,24 @@
 					if (rdata.result==="ok"){
 						console.log("success");
 						if (action=='set'){
-							$("#setbtn").empty();
-							$("#setbtn").append('Save <span class="glyphicon glyphicon-ok"</span>');
-							$("#setbtn").prop('disabled', true);
-							$("#resetbtn").removeProp('disabled');
+							$("#savebtn").empty();
+							$("#savebtn").append('Save <span class="glyphicon glyphicon-ok"</span>');
+							$("#savebtn").prop('disabled', true);
+							// $("#resetbtn").removeProp('disabled');
 						}
 						if (action=='reset'){
-							$("#setbtn").empty();
-							$("#setbtn").append('Save');
-							$("#setbtn").prop('disabled', true);
-							$("#resetbtn").prop('disabled', true);
+							$("#savebtn").empty();
+							$("#savebtn").append('Save');
+							$("#savebtn").prop('disabled', true);
+							// $("#resetbtn").prop('disabled', true);
 						}
 
 					}
 					else
 					{
 						console.log('error');
-						$("#setbtn").empty();
-						$("#setbtn").append('Error <span class="glyphicon glyphicon-alert"</span>');
+						$("#savebtn").empty();
+						$("#savebtn").append('Error <span class="glyphicon glyphicon-alert"</span>');
 					}
 				},
 				dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
@@ -194,11 +195,11 @@
 	}
 
 	$("input[name='setDayTargetTemp']").TouchSpin({
-		min: 0, // Minimum value.
-		max: 100, // Maximum value.
+		min: 10, // Minimum value.
+		max: 30, // Maximum value.
 		decimals: 1,
-		boostat: 3, // Boost at every nth step.
-		maxboostedstep: 2, // Maximum step when boosted.
+		boostat: 10, // Boost at every nth step.
+		maxboostedstep: 1, // Maximum step when boosted.
 		postfix: '&deg C', // Text after the input.
 		prefix: '<span class="glyphicon glyphicon-fire"></span>', // Text before the input.
 		step: 0.1, // Incremental/decremental step on up/down change.
@@ -207,11 +208,11 @@
 	});
 
 	$("input[name='setNightTargetTemp']").TouchSpin({
-		min: 0, // Minimum value.
-		max: 100, // Maximum value.
+		min: 10, // Minimum value.
+		max: 30, // Maximum value.
 		decimals: 1,
-		boostat: 3, // Boost at every nth step.
-		maxboostedstep: 2, // Maximum step when boosted.
+		boostat: 10, // Boost at every nth step.
+		maxboostedstep: 1, // Maximum step when boosted.
 		postfix: '&deg C', // Text after the input.
 		prefix: '<span class="glyphicon glyphicon-fire"></span>', // Text before the input.
 		step: 0.1, // Incremental/decremental step on up/down change.
@@ -220,36 +221,61 @@
 	});
 
 	$("input[name='setDayTargetTemp']").change(function(){
-		$("#setbtn").empty();
-		$("#setbtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
-		$("#setbtn").removeProp('disabled');
+		$("#savebtn").empty();
+		$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		$("#savebtn").removeProp('disabled');
 	})
 
 	$("input[name='setNightTargetTemp']").change(function(){
-		$("#setbtn").empty();
-		$("#setbtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
-		$("#setbtn").removeProp('disabled');
+		$("#savebtn").empty();
+		$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		$("#savebtn").removeProp('disabled');
 	})
 
 	$('#nightsensors').change(function(){
-		$("#setbtn").empty();
-		$("#setbtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
-		$("#setbtn").removeProp('disabled');
+		$("#savebtn").empty();
+		$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		$("#savebtn").removeProp('disabled');
 	})
 
 	$('#daysensors').change(function(){
-		$("#setbtn").empty();
-		$("#setbtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
-		$("#setbtn").removeProp('disabled');
+		$("#savebtn").empty();
+		$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		$("#savebtn").removeProp('disabled');
 	})
 
+	$('#setbtn').click(function(){
+		setActiveProfile('2');
+	});
 
-</script>
-
-<script type="text/javascript">
 	function backButton() {
 	    var value = readCookie('backUrl');
 	    eraseCookie('backUrl');
 	    document.location.href = value;
-	}	
+	}
+
+	function setActiveProfile(profile_id){
+		$.ajax({
+			type: "POST",
+			contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
+			url: "/edit/update_profile",
+			data: JSON.stringify({selected_profile:profile_id}),
+			/*JavaScript Object Notation is a way to share data between applications in object format.
+			However, you cannot send an object over an HTTP request without first turning it into a string
+			and sending it as a single variable. The functions JSON.parse() and JSON.stringify() do this for us.*/
+			success: function(rdata) { //rdata = remote data that the server sends as feedback...
+				// console.log(rdata.result);
+				if (rdata.result==="ok"){
+					console.log("success");
+					document.location.href ='/therm';
+				}
+				else
+				{
+					console.log('error');
+				}
+			},
+			dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
+		});
+	}
+
 </script>

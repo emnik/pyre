@@ -12,7 +12,7 @@ function isRequestLocal(req, res, next){
   var request_ip = req.connection.remoteAddress.split('.');
   var isLocal=true;
   for(i=1;i<=2;i++){
-    //I compare the second and third part of the ips so that 
+    //I compare the second and third part of the ips so that
     //even if there is an IPv4 and an IPv6-IPv4-mapped address this would work!
     if(rpi_ip[i]!==request_ip[i]){
       isLocal=false;
@@ -34,41 +34,6 @@ function isAuthenticated(req, res, next) {
     res.redirect('/');
   }
 }
-
-
-function update_profile (req, res, next){
-  console.log("the method used is:"+ req.method);
-  if (req.method=='POST'){
-    var selected_profile = req.body.selected_profile;
-    console.log("selected_profile= " + selected_profile);
-    // var db = new sqlite3.Database('./sensor-data.sqlite');
-
-    db.serialize(function(){
-      db.run("UPDATE profile SET status=0", function(err){
-        if(err){
-          console.error(err);
-          return next(err); 
-          }
-          else
-          {
-            db.run("UPDATE profile SET status=1 WHERE id=?",selected_profile, function(err){
-              if(err){
-                console.error(err);
-                return next(err);
-              };
-            });
-            next();
-          }
-        });
-      });
-    }
-    else
-    {
-       next();
-    }
-  }
-
-
 
 
     function get_profiles(req,res,next){
@@ -190,7 +155,7 @@ function update_profile (req, res, next){
 
     function get_sensors(req, res, next){
            if (req.state.err===""){
-               var sensors_arr=req.time_window_data[0].sensor_ids.split(',');               
+               var sensors_arr=req.time_window_data[0].sensor_ids.split(',');
            }
            else //in overlap or no timewindow the default sensor is used to show the temperature.
            {
@@ -201,7 +166,7 @@ function update_profile (req, res, next){
 
            // console.log(req.sensors);
 
-           var sensors = sensors_arr.map(function(p){ return '"' + p + '"'; }).join(','); // needed to put it inside the IN(...) in the sql           
+           var sensors = sensors_arr.map(function(p){ return '"' + p + '"'; }).join(','); // needed to put it inside the IN(...) in the sql
            db.all("SELECT id, location FROM sensors WHERE id IN ("+sensors+")", function(err,rows){
               if (err){
                 console.error(err);
@@ -229,7 +194,7 @@ function update_profile (req, res, next){
 
 
     function get_graph_data(req, res, next){
-      //this function is used either at start, either when I need to update the graph data
+      //this function is used either at start, or when I need to update the graph data
       var interval;
       var labels=[];
       var temps=[];
@@ -246,9 +211,9 @@ function update_profile (req, res, next){
       }
       // console.log(selected_sensors);
       var duration = ((req.body.duration!='undefined' && req.body.duration!=null)? req.body.duration : "1"); //in hours
-      
+
       if (duration<=24){
-        var sql = "SELECT datetime((timestamp/1000)/?*?, 'unixepoch', 'localtime') as localtime, "+ 
+        var sql = "SELECT datetime((timestamp/1000)/?*?, 'unixepoch', 'localtime') as localtime, "+
         "date((timestamp/1000)/?*?, 'unixepoch', 'localtime') as date, "+
         "strftime('%H:%M', (timestamp/1000)/?*?, 'unixepoch', 'localtime') as time, "+
         "ROUND(avg(value),2) as temp "+
@@ -278,7 +243,7 @@ function update_profile (req, res, next){
         "WHERE date >= date('now',?) "+
         "AND sensor_id IN ("+selected_sensors+") "+
         "GROUP BY date "+
-        "ORDER BY date ASC;";  
+        "ORDER BY date ASC;";
 
         options.push("-"+duration/24+" day");
       }
@@ -320,7 +285,8 @@ function update_profile (req, res, next){
     // When I used the GET method to send the select box data to /therm I had as a first callback function
     // in the following line the set_profile function
     // *I use router.use (instead of router.get()) to catch both GET and POST requests
-    router.use('/', isRequestLocal, isAuthenticated, update_profile, get_profiles,get_time_window_data, set_status, get_default_sensor, get_sensors, get_therm_data, get_graph_data, get_status, render_therm);
+
+    router.use('/', isRequestLocal, isAuthenticated, get_profiles,get_time_window_data, set_status, get_default_sensor, get_sensors, get_therm_data, get_graph_data, get_status, render_therm);
 
     //GET therm page with one sqlite query
     //router.get('/therm', function(req, res) {
@@ -345,7 +311,7 @@ function get_status(req, res, next){
     if (result){
       req.workstatus = result.status;
     }
-    
+
     console.log("FROM index route > the current status is: "+req.workstatus)
     next();
   });
