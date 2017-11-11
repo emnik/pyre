@@ -1,4 +1,5 @@
-var SerialPort = require('serialport').SerialPort;
+// var SerialPort = require('serialport').SerialPort;
+var SerialPort = require('serialport');
 var xbee_api = require('xbee-api');
 // var util = require('util');
 var sqlite3 = require('sqlite3').verbose();
@@ -10,10 +11,12 @@ var xbeeAPI = new xbee_api.XBeeAPI({
 });
 
 
-var serialport = new SerialPort("/dev/ttyAMA0", {
-  baudrate: 9600,
-  parser: xbeeAPI.rawParser()
-});
+  var serialport = new SerialPort("/dev/ttyAMA0", {
+    // baudrate: 9600,
+    baudRate: 9600,
+    parser: xbeeAPI.rawParser()
+  });
+
 
 
 xbeeAPI.on("frame_object", function(frame) {
@@ -70,3 +73,4 @@ function insertRemoteXbeeTemp(data, callback){
     }
   })
 }
+

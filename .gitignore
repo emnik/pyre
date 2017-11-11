@@ -1,9 +1,9 @@
 #node modules are generated through the npm install command
 node_modules/
-node_modules_old/
+package-lock.json
 
 #the database files are populated with new records while working. Only the default is needed which is in the database-init dir
-sensor-data.sqlite*
+/sensor-data.sqlite*
 file:memdb1?mode=memory&cache=shared
 
 #the sesnor_data.csv file is generated from the app and the user can downloaded. It is not needed in github

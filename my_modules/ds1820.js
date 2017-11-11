@@ -60,3 +60,8 @@ function logLocalTemp(interval, callback){
         }
       });
 };
+
+// export logTemp and readLocalTemp functions to app
+module.exports.logLocalTemp = logLocalTemp;
+// module.exports.readLocalTemp = readLocalTemp;
+
