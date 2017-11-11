@@ -1,5 +1,5 @@
 var sqlite3 = require('sqlite3').verbose(),
-	TransactionDatabase = require("sqlite3-transactions").TransactionDatabase;
+	TransactionDatabase = require("../my_modules/sqlite3-transactions").TransactionDatabase;
 
 // Wrap sqlite3 database
 var db = new TransactionDatabase(
@@ -8,7 +8,7 @@ var db = new TransactionDatabase(
 
 function get_data_to_archive(callback){
 	var sql = 	"SELECT sensor_id, "+
-				"datetime((timestamp/1000)/86400*86400, 'unixepoch', 'localtime') as localtime, "+ 
+				"datetime((timestamp/1000)/86400*86400, 'unixepoch', 'localtime') as localtime, "+
 				"strftime('%Y-%m-%d',(timestamp/1000)/86400*86400, 'unixepoch', 'localtime') as date, "+
 				"ROUND(avg(value),2) as temp "+ //this will be value in the sensor_history table
 				"FROM sensor_data "+
@@ -46,7 +46,7 @@ function archive_database(callback){
             		return callback(err);
             	}
             	callback(null);
-        	}) 
+        	})
 		})
 	})
 }

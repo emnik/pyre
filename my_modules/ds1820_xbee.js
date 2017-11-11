@@ -1,4 +1,5 @@
-var SerialPort = require('serialport').SerialPort;
+// var SerialPort = require('serialport').SerialPort;
+var SerialPort = require('serialport');
 var xbee_api = require('xbee-api');
 // var util = require('util');
 var sqlite3 = require('sqlite3').verbose();
@@ -13,7 +14,8 @@ function readRemoteTemp(insertfunc, callback)
 
 
   var serialport = new SerialPort("/dev/ttyAMA0", {
-    baudrate: 9600,
+    // baudrate: 9600,
+    baudRate: 9600,
     parser: xbeeAPI.rawParser()
   });
 
@@ -63,9 +65,9 @@ function readRemoteTemp(insertfunc, callback)
           db.run("INSERT INTO sensor_data (timestamp, sensor_id, value) VALUES (?, ?, ?)",[data.temperature_record[0].unix_time, sensor_id, data.temperature_record[0].celsius], function(err){
            if (err){
              callback(err);
-           }           
+           }
         })
-       } 
+       }
 
       }
     })

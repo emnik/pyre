@@ -7,7 +7,7 @@
 
   // Read current temperature from local sensor
   function readLocalTemp(insertfunc, callback){
-    ds18b20.temperature('28-000006b3513e', function(err, value) {
+    ds18b20.temperature('28-00000704830c', function(err, value) {
      if (err){
          return callback(err);
       }
@@ -34,7 +34,7 @@
      db.run("INSERT INTO sensor_data (timestamp, sensor_id, value) VALUES (?, 1, ?)",[data.unix_time, data.celsius], function(error){
        if (error){
          callback(error);
-       }      
+       }
      });
   }
 
@@ -45,7 +45,7 @@
         readLocalTemp(insertLocalTemp, function(error){
           return callback(error);
         });
-        // Set the repeat interval (milliseconds). The insertLocalTemp below, is passed as an 
+        // Set the repeat interval (milliseconds). The insertLocalTemp below, is passed as an
         // argument to readLocalTemp (i.e. readLocalTemp(insertLocalTemp)).
         setInterval(readLocalTemp, interval, insertLocalTemp, function(error){
           if(error){
