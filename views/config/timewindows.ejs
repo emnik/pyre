@@ -33,7 +33,7 @@
 				  	<div class="row">
 					  	<div class="col-xs-12">
 							<div class="input-group">
-								<input class="form-control" type="text" value="<%=window.temp%>" name="setTargetTemp">
+								<input class="form-control" type="text" value="<%=window.temp%>" name="setTargetTemp" readonly>
 							</div>
 						</div>
 					</div>
@@ -101,6 +101,12 @@ var latest_saved_data=[];
 		$("[name='sensors']").select2({
 			minimumResultsForSearch: Infinity,
 			placeholder: "Select sensors"
+		});
+
+		//disabling the keyboard showing up on mobile devices!
+		$("[name='sensors']").on('select2:opening select2:closing', function( event ) {
+    var $searchfield = $(this).parent().find('.select2-search__field');
+    $searchfield.prop('disabled', true);
 		});
 
 		$('.timepicker').pickatime({
@@ -271,7 +277,7 @@ var latest_saved_data=[];
 								  	"<div class='row'>"+
 									  	"<div class='col-xs-12'>"+
 											"<div class='input-group'>"+
-												"<input class='form-control' type='text' value='25' name='setTargetTemp'>"+
+												"<input class='form-control' type='text' value='25' name='setTargetTemp' readonly>"+
 											"</div>"+
 										"</div>"+
 									"</div>"+
@@ -324,6 +330,11 @@ var latest_saved_data=[];
 					SensorTarget.select2({
 						minimumResultsForSearch: Infinity,
 						placeholder: "Select sensors"
+					});
+					//disabling the keyboard showing up on mobile devices!
+					SensorTarget.on('select2:opening select2:closing', function( event ) {
+			    	var $searchfield = $(this).parent().find('.select2-search__field');
+			    	$searchfield.prop('disabled', true);
 					});
 					$("#savebtn").removeProp('disabled');
 					$("#savebtn").empty();

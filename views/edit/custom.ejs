@@ -99,6 +99,12 @@ var prevtimewindows=[];
 			placeholder: "Select a time window to add"
 		});
 
+		//disabling the keyboard showing up on mobile devices!
+		$('[name="timewindows"]').on('select2:opening select2:closing', function( event ) {
+    var $searchfield = $(this).parent().find('.select2-search__field');
+    $searchfield.prop('disabled', true);
+		});
+
 
 		$('[name="timewindows"]').on('change', function(){
 			var timewindows_id = this.value;

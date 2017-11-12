@@ -19,7 +19,7 @@
 					</div>
 					<div class="panel-body">
 						<div class="input-group">
-							<input id="setTargetTemp" type="text" value=<%=curtemp.temp%> name="setTargetTemp">
+							<input id="setTargetTemp" type="text" value=<%=curtemp.temp%> name="setTargetTemp" readonly>
 						</div>
 						<div style="padding-top:15px;">
 							<select id="sensors" class="form-control" style="width:100%;" name="sensors" multiple="multiple">
@@ -94,6 +94,12 @@
 		$('#sensors').select2({
 			minimumResultsForSearch: Infinity,
 			placeholder: "Select sensors"
+		});
+
+		//disabling the keyboard showing up on mobile devices!
+		$('#sensors').on('select2:opening select2:closing', function( event ) {
+    var $searchfield = $(this).parent().find('.select2-search__field');
+    $searchfield.prop('disabled', true);
 		});
 
 	}) //end of ( document ).ready(function()

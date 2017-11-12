@@ -20,7 +20,7 @@
 					</div>
 					<div class="panel-body">
 						<div class="input-group">
-							<input id="setDayTargetTemp" type="text" value=<%=dayTemp.temp%> name="setDayTargetTemp">
+							<input id="setDayTargetTemp" type="text" value=<%=dayTemp.temp%> name="setDayTargetTemp" readonly>
 						</div>
 						<div style="padding-top:15px;">
 							<select id="daysensors" class="form-control" style="width:100%;" name="daysensors" multiple="multiple">
@@ -46,7 +46,7 @@
 					</div>
 					<div class="panel-body">
 						<div class="input-group">
-							<input id="setNightTargetTemp" type="text" value=<%=nightTemp.temp%> name="setNightTargetTemp">
+							<input id="setNightTargetTemp" type="text" value=<%=nightTemp.temp%> name="setNightTargetTemp" readonly>
 						</div>
 						<div style="padding-top:15px;">
 							<select id="nightsensors" class="form-control" style="width:100%;" name="nightsensors" multiple="multiple">
@@ -143,9 +143,21 @@
 			placeholder: "Select day sensors"
 		});
 
+		//disabling the keyboard showing up on mobile devices!
+		$('#daysensors').on('select2:opening select2:closing', function( event ) {
+    var $searchfield = $(this).parent().find('.select2-search__field');
+    $searchfield.prop('disabled', true);
+		});
+
 		$('#nightsensors').select2({
 			minimumResultsForSearch: Infinity,
 			placeholder: "Select night sensors"
+		});
+
+		//disabling the keyboard showing up on mobile devices!
+		$('#nightsensors').on('select2:opening select2:closing', function( event ) {
+    var $searchfield = $(this).parent().find('.select2-search__field');
+    $searchfield.prop('disabled', true);
 		});
 
 	}) //end of ( document ).ready(function()
