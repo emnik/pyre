@@ -1,7 +1,6 @@
-// var SerialPort = require('serialport').SerialPort;
+// var SerialPort = require('serialport').SerialPort; //Deprecated in serialport v.4
 var SerialPort = require('serialport');
 var xbee_api = require('xbee-api');
-// var util = require('util');
 var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.cached.Database('/home/pi/apps/pyre/sensor-data.sqlite');
 
@@ -11,11 +10,11 @@ var xbeeAPI = new xbee_api.XBeeAPI({
 });
 
 
-  var serialport = new SerialPort("/dev/ttyAMA0", {
-    // baudrate: 9600,
-    baudRate: 9600,
-    parser: xbeeAPI.rawParser()
-  });
+var serialport = new SerialPort("/dev/ttyAMA0", {
+  // baudrate: 9600, //changed to baudRate in serialport v.4
+  baudRate: 9600,
+  parser: xbeeAPI.rawParser()
+});
 
 
 
@@ -73,4 +72,3 @@ function insertRemoteXbeeTemp(data, callback){
     }
   })
 }
-

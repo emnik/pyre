@@ -1,5 +1,14 @@
+/* Using the sqlite3-transactions.js from ../my_modules which I've downloaded from  https://github.com/Strix-CZ/sqlite3-transactions.
+This is because the npm downloaded version although it has the same version number, it is not the same with the one at github.
+The github uses the util module instead of the sys module which is deprecated...
+Until this is solved I included the sqlite3-transactions.js in the project!!!
+I've also removed the dependancy: "sqlite3-transactions": "~0.0.5" from the package.json!
+and added the "underscore": "1.8.3" dependancy which is needed by the sqlite3-transactions module!
+*/
+
 var sqlite3 = require('sqlite3').verbose(),
 	TransactionDatabase = require("../my_modules/sqlite3-transactions").TransactionDatabase;
+	// TransactionDatabase = require("sqlite3-transactions").TransactionDatabase;
 
 // Wrap sqlite3 database
 var db = new TransactionDatabase(
