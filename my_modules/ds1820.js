@@ -14,7 +14,8 @@ logLocalTemp(msecs, function(err){
 
 // Read current temperature from local sensor
 function readLocalTemp(insertfunc, callback){
-  ds18b20.temperature('28-000006b3513e', function(err, value) {
+  // ds18b20.temperature('28-000006b3513e', function(err, value) {
+  ds18b20.temperature('28-00000704830c', function(err, value) {
    if (err){
        return callback(err);
     }
