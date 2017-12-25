@@ -141,6 +141,11 @@ io.sockets.on('connection', function(socket){
       socket.broadcast.emit('new_target',{newtemp:data.newtemp});
     });
 
+    // socket.on('state_update', function(data){
+    //   console.log('server got an update of status - will broadcast to all clients');
+    //   socket.broadcast.emit('state_update',{curstate:data.curstate});
+    // });
+
 });
 
 

@@ -72,9 +72,9 @@
 							</div>
 						</div>
 						<div class="form-group">
-							<label class="col-sm-2 control-label <%if (sensor.xbee_id==''){%>hidden<%};%>" for="sensorxbee<%=sensor.id%>">xbeeID</label>
-						    <div class="col-sm-4 <%if (sensor.xbee_id==''){%>hidden<%};%>">
-						    	<input type="text" class="form-control" name="sensorxbeeid" id="sensorxbee<%=sensor.id%>" value="<%=sensor.xbee_id%>">
+							<label class="col-sm-2 control-label <%if (sensor.uid==''){%>hidden<%};%>" for="sensor<%=sensor.id%>">uID</label>
+						    <div class="col-sm-4 <%if (sensor.uid==''){%>hidden<%};%>">
+						    	<input type="text" class="form-control" name="sensoruid" id="sensor<%=sensor.id%>" value="<%=sensor.uid%>">
 							</div>
 							<label class="col-sm-2 control-label" for="sensorstatus<%=sensor.id%>">Status</label>
 						    <div class="col-sm-4">
@@ -141,7 +141,7 @@ var latest_saved_data=[];
 			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 		})
 
-		$("[name='sensorxbeeid']").change(function(){
+		$("[name='sensoruid']").change(function(){
 			$("#savebtn").removeProp('disabled');
 			$("#savebtn").empty();
 			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
@@ -167,7 +167,7 @@ var latest_saved_data=[];
 			var emptyError = false;
 			for (var i = arr.length - 1; i >= 0; i--) {
 				for (var key in arr[i]){
-					if(key!='xbee' && key!='name' && arr[i][key]===""){
+					if(key!='uid' && key!='name' && arr[i][key]===""){
 						emptyError = true;
 						console.log(key+" field is empty!");
 					}
@@ -175,7 +175,7 @@ var latest_saved_data=[];
 			};
 
 			if(emptyError){
-				console.log("All fields except xbeeID and Name are required!");
+				console.log("All fields except uID and Name are required!");
 			}
 			else
 			{
@@ -200,7 +200,7 @@ var latest_saved_data=[];
 			sn.type=$(this).find("[name='sensortype']").val();
 			sn.location=$(this).find("[name='sensorlocation']").select2().val();
 			sn.name=$(this).find("[name='sensorname']").val();
-			sn.xbee=$(this).find("[name='sensorxbeeid']").val();
+			sn.uid=$(this).find("[name='sensoruid']").val();
 			sn.status=($(this).find("[name='sensorstatus']").prop('checked') ? "1" : "0");
 			sn.id = $(this).attr('id');
 			sn.preset = ($(this).find("[name='sensorpreset']").hasClass("glyphicon-star") ? "1" : "0");

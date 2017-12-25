@@ -1,0 +1,11 @@
+Install the pitft driver
+curl -SLs https://apt.adafruit.com/add-pin | sudo bash
+sudo apt-get install raspberrypi-bootloader adafruit-pitft-helper raspberrypi-kernel
+sudo adafruit-pitft-helper -t 28r
+
+sudo nano /boot/config.txt and change the rotation option to 270
+
+sudo adafruit-pitft-touch-cal
+
+if the touch calibration is wrong check in the /usr/share/X11/xorg.conf.d whether there are both the files 10-evdev.conf and 40-libinput.conf. If this is the case then mv the 40-libinput.conf to another place or delete it!!!
+/usr/share/X11/xorg.conf.d $ sudo mv  40-libinput.conf /home/pi/

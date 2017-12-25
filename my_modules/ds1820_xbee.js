@@ -29,7 +29,7 @@ xbeeAPI.on("frame_object", function(frame) {
     temperature_record:[{
     unix_time: Date.now(),
     celsius: Math.round(value * 10) / 10, //round temperature to 1 decimal digit
-    xbee_id: xbee_id,
+    uid: xbee_id,
     rssi: rssi
     }]};
   console.log(data);
@@ -47,16 +47,17 @@ xbeeAPI.on("frame_object", function(frame) {
 // Write a single temperature record in JSON format to database table.
 function insertRemoteXbeeTemp(data, callback){
   // console.log('storing new data in db...')
-  db.all('SELECT id, status FROM sensors WHERE xbee_id=? LIMIT 1', data.temperature_record[0].xbee_id, function(err,row){
+  db.all('SELECT id, status FROM sensors WHERE type = ? AND uid=? LIMIT 1', ['XBee S1', data.temperature_record[0].uid], function(err,row){
     if(err){
       return callback(err);
     }
     if(row.length==0){ //New remote sensor! Just Insert it in the sensor table and mark it's status as disabled. The user has first to set location and enable
-      db.run("INSERT INTO sensors (type, name, xbee_id, status, preset) VALUES ('Xbee S1 Temperature Sensor','NEW', ?, 0, 0)",data.temperature_record[0].xbee_id, function(err){
+      var name = "DS18B20-XBee-ID"+data.temperature_record[0].xbee_id;
+      db.run("INSERT INTO sensors (type, name, uid, status, preset) VALUES ('XBee S1',?, ?, 0, 0)",[name, data.temperature_record[0].uid], function(err){
        if (err){
          callback(err);
        }
-       console.log("We have a new temp sensor online with xbee id: "+data.temperature_record[0].xbee_id+" which is now registered (but disabled) with id: "+this.lastID);
+       console.log("We have a new temp sensor online with xbee id: "+data.temperature_record[0].uid+" which is now registered (but disabled) with id: "+this.lastID);
      });
     }
     else //existing sensor

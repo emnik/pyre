@@ -1,0 +1,70 @@
+Installing Mosquitto Broker
+---------------------------
+wget http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key
+sudo apt-key add mosquitto-repo.gpg.key
+cd /etc/apt/sources.list.d/
+sudo wget http://repo.mosquitto.org/debian/mosquitto-jessie.list
+sudo apt-get update
+sudo apt-get install mosquitto
+mosquitto -v 
+[should be >= version 1.4]
+
+Configuring Mosquitto Broker
+----------------------------
+*The installation will create a mosquitto user. (We could check with the command:
+cut -d: -f1 /etc/passwd)
+
+1.Create a password file with the username mosquitto: 
+mosquitto_passwd -c /etc/mosquitto/pwfile mosquitto
+you will be prompted to enter a password.
+
+2.Check if the directory where persistence db files will be stored is already created and if not create it:
+sudo mkdir /var/lib/mosquitto/
+
+3.Change owner of db file and log to mosquitto:
+sudo chown mosquitto:mosquitto /var/lib/mosquitto/ -R
+sudo chown mosquitto:mosquitto /var/log/mosquitto/ -R
+
+4.Check if the config file /etc/mosquitto/mosquitto.conf already exists and if not create it by copying the example file:
+cp /etc/mosquitto/mosquitto.conf.example /etc/mosquitto/mosquitto.conf
+
+5. Add the following lines if they are not already there!
+listener 8883 <yourIP>
+persistence true
+persistence_location /var/lib/mosquitto/
+persistence_file mosquitto.db
+log_dest syslog
+log_dest stdout
+log_dest topic
+log_type error
+log_type warning
+log_type notice
+log_type information
+connection_messages true
+log_timestamp true
+allow_anonymous false
+password_file /etc/mosquitto/pwfile
+
+
+6. Finally be sure to run:
+sudo /sbin/ldconfig
+
+
+7. Run/Test Mosquitto
+Run the mosquitto server with this command:
+sudo mosquitto -c /etc/mosquitto/mosquitto.conf
+
+In another terminal run the following command to subscribe to a topic named 'mosquitto':
+mosquitto_sub -h 10.185.9.113 -p 1883 -v -t 'mosquitto/#' -u mosquitto -P pyre2017
+
+In another terminal run the following command to publish the message "hello mosquito":
+mosquitto_pub -t 'mosquitto' -m "hello!" -u mosquitto -P pyre2017 -h 10.185.9.113 -p 1883
+
+You should see the message appear to the terminal that we subscribed to the topic 'mosquitto' 
+
+
+Enable mosquitto server on boot!
+--------------------------------
+systemctl start mosquitto [Start the systemd service.]
+systemctl enable mosquitto [Enable the systemd service to run on boot.]
+

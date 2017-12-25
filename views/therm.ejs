@@ -441,8 +441,40 @@
 			console.log(data.newtemp);
 			if ($('#targetTemp').text()!=data.newtemp){
 				$('#targetTemp').text(data.newtemp);
+// [TODO]:
+// propably instead of calling manage() again I should send the current state to all clients so that they
+//  even if they need to call manage() they wont call a relay action without being needed!!!
+				// window.setTimeout(function(){
+				// 	var t = $('#temp>h1>span').text();
+				// 	var ft =parseFloat(t);
+				// 	manage(ft);
+				// },3000);
 			}
 		});
+
+		socket.on('state_update', function(data){
+			console.log(data);
+			// if (curstate != data.curstate){
+			// 	prevstate = curstate;
+			// 	curstate = data.curstate;
+			// 	console.log(curstate);
+			// 	console.log(prevstate);
+			// 	//the status is: paused
+			// 	if(curstate == "Paused"){
+			// 		$("#status>h4>span").removeClass("label-success label-danger label-default");
+			// 		$("#status>h4>span").addClass("label-info");
+			// 		$("#status>h4>span").text("Paused");
+			// 	}
+			// 	else
+			// 	{
+			// 		//the status is: working
+			// 		$("#status>h4>span").removeClass("label-success label-danger label-default");
+			// 		$("#status>h4>span").addClass("label-success");
+			// 		$("#status>h4>span").text("Working");
+			// 	}
+			// }
+		})
+
 
 		socket.on('disconnect', function(){
 			console.log('SOCKET DISCONNECTED!'); //the server is propably down
@@ -589,6 +621,9 @@
 					console.log(rdata.result);
 					if (rdata.result==="ok"){
 						prevstate = curstate;
+						//let the other clients know the new states!
+						// var data_info={curstate:curstate};
+						// socket.emit('state_update', data_info);
 					}
 				},
 				dataType: "json" // dataType is what you're expecting back from the server: json, html, text,

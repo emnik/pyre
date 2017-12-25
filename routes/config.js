@@ -14,7 +14,7 @@ function isRequestLocal(req, res, next){
   var request_ip = req.connection.remoteAddress.split('.');
   var isLocal=true;
   for(i=1;i<=2;i++){
-  	//I compare the second and third part of the ips so that 
+  	//I compare the second and third part of the ips so that
   	//even if there is an IPv4 and an IPv6-IPv4-mapped address this would work!
     if(rpi_ip[i]!==request_ip[i]){
       isLocal=false;
@@ -118,7 +118,7 @@ router.post('/update_timewindows', function(req, res, next){
 								console.error(err);
 								return next(err);
 							}
-						}); 
+						});
 					}
 				};
 			})
@@ -147,7 +147,7 @@ router.post('/update_sensors', function(req, res, next){
 		// console.log(data);
 		for (var i = data.length - 1; i >= 0; i--) {
 			db.serialize(function(){
-				db.run("UPDATE sensors SET type=?, location=?, name=?, xbee_id=?, status=?, preset=? WHERE id=?",[data[i].type, data[i].location, data[i].name, data[i].xbee, data[i].status, data[i].preset, data[i].id], function(err){
+				db.run("UPDATE sensors SET type=?, location=?, name=?, uid=?, status=?, preset=? WHERE id=?",[data[i].type, data[i].location, data[i].name, data[i].uid, data[i].status, data[i].preset, data[i].id], function(err){
 					if(err){
 						console.error(err);
 						return next(err);
@@ -183,7 +183,7 @@ router.post('/archive_database', get_data_to_archive, function(req, res, next){
 	console.log(req.body.action);
 	console.log(req.need_to_archive);
 	//if there are more than 20000 records unarchived then it has a point to manually archive
-	if (req.need_to_archive<20000 && req.body.action!=='force'){ 
+	if (req.need_to_archive<20000 && req.body.action!=='force'){
 		console.log("there is no need to archive manually!");
 		return res.send({result:'no need'}); //using return to exit the function
 	}
@@ -196,7 +196,7 @@ router.post('/archive_database', get_data_to_archive, function(req, res, next){
 		{
 			res.send({result:'ok'});
 		}
-	})		
+	})
 })
 
 
@@ -237,7 +237,7 @@ router.post('/export_database', get_history_data_to_export, get_latest_sensor_da
 	var data_to_export = req.history_data_to_export;
 	var hist=req.history_data_to_export;
 	var lat=req.latest_sensor_data_to_export;
-	
+
 	for (var i = lat.length - 1; i >= 0; i--) {
 		var j=hist.length - 1;
 		var found=false;
@@ -255,7 +255,7 @@ router.post('/export_database', get_history_data_to_export, get_latest_sensor_da
 	};
 	//generate the csv file for the user to download.
 	csv
-	.writeToPath("/home/pi/apps/pyre/public/files/sensor_data.csv", 
+	.writeToPath("/home/pi/apps/pyre/public/files/sensor_data.csv",
     	data_to_export, {headers: true})
     .on("finish", function(){
 	  res.send({result:'ok'});
@@ -292,14 +292,14 @@ router.post('/change_credentials', function(req, res, next){
 		else
 		{
 			res.status(200).send({result:'noConfirm'});
-		}	
+		}
 	}
 	else
 	{
 		res.status(200).send({result:'all_required'});
 	}
-	
-}) 
+
+})
 
 //end of account account functions
 
@@ -311,22 +311,22 @@ router.get('/:section', isRequestLocal, isAuthenticated, get_timetables, get_sen
   	res.render('config/'+req.params.section, {timetables:req.timetables, sensors:req.sensors, base_url:base_url, isLocal:req.isLocal, show_edit:show_edit});
   }
   else if(req.params.section === 'sensors'){
-  	res.render('config/'+req.params.section, {sensors:req.sensors, base_url:base_url, isLocal:req.isLocal, show_edit:show_edit});	
+  	res.render('config/'+req.params.section, {sensors:req.sensors, base_url:base_url, isLocal:req.isLocal, show_edit:show_edit});
   }
   else if(req.params.section === 'database'){
-  	res.render('config/'+req.params.section, {base_url:base_url, isLocal:req.isLocal, show_edit:show_edit});	
+  	res.render('config/'+req.params.section, {base_url:base_url, isLocal:req.isLocal, show_edit:show_edit});
   }
   else if(req.params.section === 'settings'){
-  	res.render('config/'+req.params.section, {base_url:base_url, isLocal:req.isLocal});	
-  }  
+  	res.render('config/'+req.params.section, {base_url:base_url, isLocal:req.isLocal});
+  }
   else if(req.params.section === 'account'){
   	if(req.isAuthenticated()){
-  		res.render('config/'+req.params.section, {base_url:base_url, isLocal:req.isLocal, show_edit:show_edit});		
+  		res.render('config/'+req.params.section, {base_url:base_url, isLocal:req.isLocal, show_edit:show_edit});
   	}
   	else
   	//if is not authenticated we present a login form for the user to login so he can change the credentials!
   	{
-		res.render('config/login', {base_url:base_url, isLocal:req.isLocal, show_edit:show_edit});	
+		res.render('config/login', {base_url:base_url, isLocal:req.isLocal, show_edit:show_edit});
   	}
   }
 })
