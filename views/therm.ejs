@@ -530,7 +530,7 @@
 				var fl = parseFloat(tempC);
 				myVar = window.setInterval(function(){
 					fl = Math.round(fl*10+1)/10;
-					if (fl<=MAXTEMP){
+					if (fl<=parseFloat(tempC)+1){
 						$('#targetTemp').text(fl);
 					}
 				}, 200);
@@ -561,7 +561,7 @@
 				var fl = parseFloat(tempC);
 				myVar = window.setInterval(function(){
 					fl = Math.round(fl*10-1)/10;
-					if (fl>=MINTEMP) {
+					if (fl>=parseFloat(tempC)-1) {
 						$('#targetTemp').text(fl);
 					}
 				}, 200);

@@ -1,6 +1,6 @@
 var util = require('util'),
     events = require('events'),
-    _ = require("underscore");
+    _ = require("../node_modules/underscore"); //is this needed?
 
 
 var prohibitedMethods = [
@@ -33,7 +33,7 @@ var lockMethods = {
  * var db = new TransactionDatabase(new require("node-sqlite3").Database(...));
  * db.beginTransaction(function(err, tr) {
  *     if (err) return console.log(err);
- *     
+ *
  *     tr.run(...);
  *     tr.run(...);
  *     tr.commit(function(err) {
@@ -47,11 +47,11 @@ var lockMethods = {
  * This wrapper needs to know how to execute SQL statements on the database. The default
  * command is database.exec(statement, callback). If you want to use different method
  * pass in argument exec(database, statement, callback) and call the method yourself.
- * 
+ *
  *
  * @param {Object} database Some database, tested with node-sqlite3
- * @param {Function} exec(database, statement, callback) 
- * 
+ * @param {Function} exec(database, statement, callback)
+ *
  */
 function TransactionDatabase(database, exec) {
 	this._lock = 0;
@@ -198,7 +198,7 @@ TransactionDatabase.prototype._runQueue = function() {
 
 		if (item.type=='lock')
 			this._lock++;
-		
+
 		item.object[item.method].apply(item.object, item.args);
 
 		if (item.type=='transaction')
@@ -221,7 +221,7 @@ TransactionDatabase.prototype._runQueue = function() {
  *
  * db.beginTransaction(function(err, tr) {
  *   if (err) return console.log(err);
- *   
+ *
  *   // use the tr object to run statements in the transaction
  *   tr.run("INSERT ....");
  *
@@ -244,7 +244,7 @@ TransactionDatabase.prototype.beginTransaction = function(callback) {
 		});
 		return;
 	}
-	
+
 	// Prepare the transaction object.
 	var tr = self.db;
 	var finished = false;
@@ -288,7 +288,6 @@ TransactionDatabase.prototype.beginTransaction = function(callback) {
 			callback(null, tr);
 		});
 	});
-	
-	
-};
 
+
+};

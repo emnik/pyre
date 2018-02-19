@@ -4,153 +4,159 @@
  * Module dependencies.
  */
 
-var app = require('../app');
-var debug = require('debug')('myapp:server');
-var http = require('http');
+// loading the express and http framework
+var app = require('../app')
+var http = require('http')
+// var debug = require('debug')('myapp:server');
 
-//load module schedule responsible for scheduling the db backup every night
-require('../my_modules/later');
-//load module ds1820 responsible for getting and storing the temperature from the on board sensor
-require('../my_modules/ds1820');
-//load module ds1820_xbee responsible for getting and storing the temperature from the xbee sensors
-require('../my_modules/ds1820_xbee');
-//load module mqtt responsible for getting and storing the temperature from the mqtt sensors
-require('../my_modules/mqtt');
-//load module temperature responsible for getting the average temperature of each sensor from the database
-var temperature = require('../my_modules/temperature');
-//load module exit_handlers responsible exiting the app in case of error or just quiting!
-var exit_handlers = require("../my_modules/exit_handlers");
-
+// load module schedule responsible for scheduling the db backup every night
+require('../my_modules/later')
+// load module ds1820 responsible for getting and storing the temperature from the on board sensor
+require('../my_modules/ds1820')
+// load module ds1820_xbee responsible for getting and storing the temperature from the xbee sensors
+require('../my_modules/ds1820_xbee')
+// load module mqtt responsible for getting and storing the temperature from the mqtt sensors
+require('../my_modules/mqtt')
+// load module alexa responsible for the amazon alexa support, powered via sinric smart home skill
+require('../my_modules/alexa')
+// load module temperature responsible for getting the average temperature of each sensor from the database
+var temperature = require('../my_modules/temperature')
+// load module exit_handlers responsible exiting the app in case of error or just quitting!
+var exitHandlers = require('../my_modules/exitHandlers')
 
 /**
- * Get port from environment and store in Express.
+ * Set the port.
  */
 
-var port = normalizePort(process.env.PORT || '3000');
-app.set('port', port);
+var port = normalizePort(process.env.PORT || '3000')
+app.set('port', port)
 
 /**
  * Create HTTP server.
  */
 
-var server = http.createServer(app);
+var server = http.createServer(app)
 
 /**
  * Listen on provided port, on all network interfaces.
  */
 
-//server.listen(port); // use the next line instead as we need socket.io
-var io = require('socket.io').listen(server.listen(port));
-server.on('error', onError);
-server.on('listening', onListening);
+// server.listen(port); // use the next line instead as we need socket.io
+var io = require('socket.io').listen(server.listen(port))
+server.on('error', onError)
+server.on('listening', onListening)
 
 /**
  * Normalize a port into a number, string, or false.
  */
 
-function normalizePort(val) {
-  var port = parseInt(val, 10);
+function normalizePort (val) {
+  var port = parseInt(val, 10)
 
   if (isNaN(port)) {
     // named pipe
-    return val;
+    return val
   }
-
   if (port >= 0) {
     // port number
-    return port;
+    return port
   }
-
-  return false;
+  return false
 }
 
 /**
  * Event listener for HTTP server "error" event.
  */
 
-function onError(error) {
+function onError (error) {
   if (error.syscall !== 'listen') {
-    throw error;
+    throw error
   }
 
   var bind = typeof port === 'string'
     ? 'Pipe ' + port
-    : 'Port ' + port;
+    : 'Port ' + port
 
   // handle specific listen errors with friendly messages
   switch (error.code) {
     case 'EACCES':
-      console.error(bind + ' requires elevated privileges');
-      process.exit(1);
-      break;
+      console.error(bind + ' requires elevated privileges')
+      process.exit(1)
     case 'EADDRINUSE':
-      console.error(bind + ' is already in use');
-      process.exit(1);
-      break;
+      console.error(bind + ' is already in use')
+      process.exit(1)
     default:
-      throw error;
+      throw error
   }
 }
-
 
 /**
  * Event listener for HTTP server "listening" event.
  */
 
-function onListening() {
-  var addr = server.address();
+function onListening () {
+  var addr = server.address()
   var bind = typeof addr === 'string'
     ? 'pipe ' + addr
-    : 'port ' + addr.port;
-  debug('Listening on ' + bind);
-
+    : 'port ' + addr.port
+  // debug('Listening on ' + bind);
+  console.log('Listening on ' + bind)
 
   // Send a message to console
-  console.log('Server up and running!');
+  console.log('Server up and running!')
 }
-
 
 /**
  * use sockets.io to emit current temperatures every 1min to anyone who wants it!
  */
 
-io.sockets.on('connection', function(socket){
+io.sockets.on('connection', function (socket) {
+  // get temperature data on an interval and broadcast them to all clients
+  setInterval(function () {
+    var duration = 300 // the last x seconds of temperature data that we want to retrieve from the database
+    temperature.get_temp_data(duration, function (err, result) {
+      if (err) {
+        console.error(err)
+      };
+      socket.emit('temperatures', result)
+    })
+  }, 60000) // repeat every 1 min
 
-    //get temperature data on an interval and broadcast them to all clients
-    setInterval(function(){
-      var duration = 300; //the last x seconds of temperature data that we want to retrieve from the database
-      temperature.get_temp_data(duration, function(err,result){
-        if(err){
-          console.error(err);
-        };
-        socket.emit('temperatures', result);
-      });
-    }, 60000); //repeat every 1 min
+  socket.on('working_data', function (data) { // If a client sends working data to the server
+    // console.log("Server got update on the working profile data. The current profile is: "+data.profile);
+    // console.log("Current window data: id="+data.id+" on_time="+data.on+" off_time="+data.off+" sensors="+data.sensors+" temp="+data.temp);
+    // console.log("Next window data: id=",data.next_id+" on_time="+data.next_on+" off_time="+data.next_off+" sensors="+data.next_sensors+" temp="+data.next_temp);
+    // the server broadcasts the data back to all other clients!
+    console.log('server got an update on the current data - will broadcast to all clients')
+    socket.broadcast.emit('check_data', {
+      id: data.id,
+      on: data.on,
+      off: data.off,
+      sensors: data.sensors,
+      temp: data.temp,
+      next_id: data.next_id,
+      next_on: data.next_on,
+      next_off: data.next_off,
+      next_sensors: data.next_sensors,
+      next_temp: data.next_temp
+    })
+  })
 
-    socket.on('working_data', function(data){ //If a client sends working data to the server
-        //console.log("Server got update on the working profile data. The current profile is: "+data.profile);
-        //console.log("Current window data: id="+data.id+" on_time="+data.on+" off_time="+data.off+" sensors="+data.sensors+" temp="+data.temp);
-        //console.log("Next window data: id=",data.next_id+" on_time="+data.next_on+" off_time="+data.next_off+" sensors="+data.next_sensors+" temp="+data.next_temp);
-        //the server broadcasts the data back to all other clients!
-        console.log('server got an update on the current data - will broadcast to all clients');
-        socket.broadcast.emit('check_data', {id:data.id, on:data.on, off:data.off, sensors:data.sensors, temp:data.temp, next_id:data.next_id, next_on:data.next_on, next_off:data.next_off, next_sensors:data.next_sensors, next_temp:data.next_temp});
-    });
+  socket.on('newtemp', function (data) {
+    console.log('server got an update of target temp - will broadcast to all clients')
+    socket.broadcast.emit('new_target', {
+      newtemp: data.newtemp
+    })
+  })
 
-    socket.on('newtemp', function(data){
-      console.log('server got an update of target temp - will broadcast to all clients');
-      socket.broadcast.emit('new_target',{newtemp:data.newtemp});
-    });
-
-    // socket.on('state_update', function(data){
-    //   console.log('server got an update of status - will broadcast to all clients');
-    //   socket.broadcast.emit('state_update',{curstate:data.curstate});
-    // });
-
-});
-
+  // socket.on('state_update', function(data){
+  //   console.log('server got an update of status - will broadcast to all clients');
+  //   socket.broadcast.emit('state_update',{curstate:data.curstate});
+  // });
+})
 
 /**
  * Exit functions
  */
 
-process.on('SIGINT', exit_handlers.gracefulExit).on('SIGTERM', exit_handlers.gracefulExit).on('uncaughtException', exit_handlers.gracefulExit);
+process.on('SIGINT', exitHandlers.gracefulExit).on('SIGTERM', exitHandlers.gracefulExit).on('uncaughtException', exitHandlers.gracefulExit)
