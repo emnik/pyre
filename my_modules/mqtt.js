@@ -67,7 +67,7 @@ function insertMqttTemp (data, callback) {
       return callback(err)
     }
     if (row.length === 0) { // New remote sensor! Just Insert it in the sensor table and mark it's status as disabled. The user has first to set location and enable
-      var name = 'WeMosD1mini-ID' + data.temperature_record[0].xbee_id
+      var name = 'WeMosD1mini-ID' + data.temperature_record[0].uid
       db.run("INSERT INTO sensors (type, name, uid, status, preset) VALUES ('WeMos D1mini',?, ?, 0, 0)", [name, data.temperature_record[0].uid], function (err) {
         if (err) {
           callback(err)

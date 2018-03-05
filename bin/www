@@ -122,37 +122,18 @@ io.sockets.on('connection', function (socket) {
     })
   }, 60000) // repeat every 1 min
 
-  socket.on('working_data', function (data) { // If a client sends working data to the server
-    // console.log("Server got update on the working profile data. The current profile is: "+data.profile);
-    // console.log("Current window data: id="+data.id+" on_time="+data.on+" off_time="+data.off+" sensors="+data.sensors+" temp="+data.temp);
-    // console.log("Next window data: id=",data.next_id+" on_time="+data.next_on+" off_time="+data.next_off+" sensors="+data.next_sensors+" temp="+data.next_temp);
-    // the server broadcasts the data back to all other clients!
-    console.log('server got an update on the current data - will broadcast to all clients')
-    socket.broadcast.emit('check_data', {
-      id: data.id,
-      on: data.on,
-      off: data.off,
-      sensors: data.sensors,
-      temp: data.temp,
-      next_id: data.next_id,
-      next_on: data.next_on,
-      next_off: data.next_off,
-      next_sensors: data.next_sensors,
-      next_temp: data.next_temp
-    })
+  socket.on('working_data', function (data) {
+    // a client sent working data to the server so we broadcast to others to check their status!
+    // console.log('server got an update on the current data - will broadcast to all clients')
+    socket.broadcast.emit('check_data', data)
   })
 
   socket.on('newtemp', function (data) {
-    console.log('server got an update of target temp - will broadcast to all clients')
+    // console.log('server got an update of target temp - will broadcast to all clients')
     socket.broadcast.emit('new_target', {
       newtemp: data.newtemp
     })
   })
-
-  // socket.on('state_update', function(data){
-  //   console.log('server got an update of status - will broadcast to all clients');
-  //   socket.broadcast.emit('state_update',{curstate:data.curstate});
-  // });
 })
 
 /**

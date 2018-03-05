@@ -230,6 +230,7 @@
 <script src="/javascripts/Chart.js"></script>
 <script src="/select2/js/select2.min.js"></script>
 <script src="/javascripts/custom.js"></script>
+<script src="/object-hash/object_hash.js"></script>
 
 <script>
 	var MINTEMP = 10;
@@ -263,19 +264,26 @@
 		}
 
 		//send all the working profile data to server to inform the other connected clients!
-		data_info={
-			id:'<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].id%><%};%>',
-			on:'<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].on_time%><%};%>',
-			off:'<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].off_time%><%};%>',
-			sensors:'<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].sensor_ids%><%};%>',
-			temp: '<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].temp%><%};%>',
-			next_id:'<%if (Object.keys(time_window_next).length!==0)%><%=time_window_next.id%>',
-			next_on:'<%if (Object.keys(time_window_next).length!==0)%><%=time_window_next.on_time%>',
-			next_off:'<%if (Object.keys(time_window_next).length!==0)%><%=time_window_next.off_time%>',
-			next_sensors:'<%if (Object.keys(time_window_next).length!==0)%><%=time_window_next.sensor_ids%>',
-			next_temp:'<%if (Object.keys(time_window_next).length!==0)%><%=time_window_next.temp%>'};
-		// console.log(data_info);
-		socket.emit('working_data', data_info);
+		var dataInfo = {};
+		<%if(typeof time_window_data[0]!=="undefined"){%>
+			dataInfo['id'] = '<%=time_window_data[0].id%>';
+			dataInfo['on'] = '<%=time_window_data[0].on_time%>';
+			dataInfo['off'] = '<%=time_window_data[0].off_time%>';
+			dataInfo['sensors'] = '<%=time_window_data[0].sensor_ids%>';
+		<%};%>
+		<%if(Object.keys(time_window_next).length!==0){%>
+			dataInfo['next_id'] = '<%=time_window_next.id%>';
+			dataInfo['next_on'] = '<%=time_window_next.on_time%>';
+			dataInfo['next_off'] = '<%=time_window_next.off_time%>';
+			dataInfo['next_sensors'] = '<%=time_window_next.sensor_ids%>';
+			dataInfo['next_temp'] = '<%=time_window_next.temp%>';
+		<%};%>
+		// console.log('sending working data...');
+		// console.log(dataInfo);
+		var hash = objectHash.sha1(dataInfo);
+		// console.log(hash);
+		// socket.emit('working_data', data_info);
+		socket.emit('working_data', hash);
 
 
 	//Get the initial data and get started...
@@ -418,62 +426,39 @@
 			//compare our data with those, that the server just send us!
 			//If there is a difference reload to get the updated data!
 			// console.log(data);
-			if (
-					(	("<%if (typeof time_window_data[0]!=='undefined'){%><%=time_window_data[0].id%><%};%>" != data.id) ||
-						("<%if (typeof time_window_data[0]!=='undefined'){%><%=time_window_data[0].on_time%><%};%>" != data.on) ||
-						("<%if (typeof time_window_data[0]!=='undefined'){%><%=time_window_data[0].off_time%><%};%>" != data.off) ||
-						("<%if (typeof time_window_data[0]!=='undefined'){%><%=time_window_data[0].sensor_ids%><%};%>" != data.sensors) ||
-						// ("<%if (typeof time_window_data[0]!=='undefined'){%><%=time_window_data[0].temp%><%};%>"!=data.temp) ||
-						("<%if (Object.keys(time_window_next).length!==0)%><%=time_window_next.id%>" != data.next_id) ||
-						("<%if (Object.keys(time_window_next).length!==0)%><%=time_window_next.on_time%>" != data.next_on) ||
-						("<%if (Object.keys(time_window_next).length!==0)%><%=time_window_next.off_time%>" != data.next_off) ||
-						("<%if (Object.keys(time_window_next).length!==0)%><%=time_window_next.sensor_ids%>" != data.next_sensors) ||
-						("<%if (Object.keys(time_window_next).length!==0)%><%=time_window_next.temp%>" != data.next_temp)
-					) ||
-					( ("<%if (typeof time_window_data[0]!=='undefined'){%><%=time_window_data[0].temp%><%};%>"!=data.temp) && ($('#targetTemp').text()!=data.temp))
-				)
-				{
-					setTimeout(function() { location.href = location.href; },2000); //use 2 seconds delay to give time to the server to respond...
-				}
+			var localData = {};
+			<%if(typeof time_window_data[0]!=='undefined'){%>
+				localData['id'] = '<%=time_window_data[0].id%>';
+				localData['on'] = '<%=time_window_data[0].on_time%>';
+				localData['off'] = '<%=time_window_data[0].off_time%>';
+				localData['sensors'] = '<%=time_window_data[0].sensor_ids%>';
+			<%};%>
+			<%if(Object.keys(time_window_next).length!==0){%>
+				localData['next_id'] = '<%=time_window_next.id%>';
+				localData['next_on'] = '<%=time_window_next.on_time%>';
+				localData['next_off'] = '<%=time_window_next.off_time%>';
+				localData['next_sensors'] = '<%=time_window_next.sensor_ids%>';
+				localData['next_temp'] = '<%=time_window_next.temp%>';
+			<%};%>
+			// console.log('receiving working data...');
+			// console.log(localData);
+			var hash = objectHash.sha1(localData);
+			// console.log(hash);
+			if (hash !== data) {
+				console.log('Data mismatch - Request update...')
+				setTimeout(function() { location.href = location.href; },2000); //use 2 seconds delay to give time to the server to respond...
+			}
+			else {
+				console.log('Data check: successfull!')
+			}
 		});
 
 		socket.on('new_target', function(data){
 			console.log(data.newtemp);
 			if ($('#targetTemp').text()!=data.newtemp){
 				$('#targetTemp').text(data.newtemp);
-// [TODO]:
-// propably instead of calling manage() again I should send the current state to all clients so that they
-//  even if they need to call manage() they wont call a relay action without being needed!!!
-				// window.setTimeout(function(){
-				// 	var t = $('#temp>h1>span').text();
-				// 	var ft =parseFloat(t);
-				// 	manage(ft);
-				// },3000);
 			}
 		});
-
-		socket.on('state_update', function(data){
-			console.log(data);
-			// if (curstate != data.curstate){
-			// 	prevstate = curstate;
-			// 	curstate = data.curstate;
-			// 	console.log(curstate);
-			// 	console.log(prevstate);
-			// 	//the status is: paused
-			// 	if(curstate == "Paused"){
-			// 		$("#status>h4>span").removeClass("label-success label-danger label-default");
-			// 		$("#status>h4>span").addClass("label-info");
-			// 		$("#status>h4>span").text("Paused");
-			// 	}
-			// 	else
-			// 	{
-			// 		//the status is: working
-			// 		$("#status>h4>span").removeClass("label-success label-danger label-default");
-			// 		$("#status>h4>span").addClass("label-success");
-			// 		$("#status>h4>span").text("Working");
-			// 	}
-			// }
-		})
 
 
 		socket.on('disconnect', function(){
@@ -586,16 +571,6 @@
 	}); //end of $(document).ready
 
 
-	// function changeBackground(curstate){
-	// 	if (curstate=="Working"){
-	// 		$('html').css("background-image", "url(../images/flames_2.jpg)");
-	// 	}
-	// 	else if (curstate=="Paused")
-	// 	{
-	// 		$('html').css("background-image", "url(../images/blue_flames_2.jpg)");
-	// 	}
-	// }
-
 	function getCurTime(){
 		var d = new Date();
 		var n = d.getDay();
@@ -609,7 +584,6 @@
 
 	function setRelay(){
 		if (curstate != prevstate){
-			//changeBackground(curstate);
 			$.ajax({
 				type: "POST",
 				contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
@@ -622,9 +596,6 @@
 					console.log(rdata.result);
 					if (rdata.result==="ok"){
 						prevstate = curstate;
-						//let the other clients know the new states!
-						// var data_info={curstate:curstate};
-						// socket.emit('state_update', data_info);
 					}
 				},
 				dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
@@ -666,7 +637,6 @@
 
 				}
 				else if (prevstate==="Paused"){
-					// if(curTemp+0.5 < '<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].temp%><%};%>'){
 					if(curTemp+0.5 < parseFloat(t)){
 						//the status is: working
 						$("#status>h4>span").removeClass("label-info label-danger label-default");

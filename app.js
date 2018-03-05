@@ -56,6 +56,7 @@ app.use('/bootstrap-toggle', express.static(path.join(__dirname, '/node_modules/
 app.use('/bootstrap-touchspin', express.static(path.join(__dirname, '/node_modules/bootstrap-touchspin/dist/')))
 app.use('/select2', express.static(path.join(__dirname, '/node_modules/select2/dist/')))
 app.use('/pickadate', express.static(path.join(__dirname, '/node_modules/pickadate/lib/')))
+app.use('/object-hash', express.static(path.join(__dirname, '/node_modules/object-hash/dist/')))
 
 // passport config
 var account = require('./my_modules/account')
