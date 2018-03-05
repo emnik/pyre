@@ -14,7 +14,7 @@ const options = {
 const ws = new WebSocket('ws://iot.sinric.com', options)
 
 ws.on('open', function open () {
-  console.log('Connected. waiting for commands..')
+  console.log('Connected to sinric. Waiting for amazon alexa\'s commands..')
 })
 
 ws.on('message', function incoming (data) {

@@ -12,11 +12,11 @@ var mqttclient = mqtt.connect({
 })
 
 mqttclient.on('offline', function () {
-  console.error('the MQTT server is offline!')
+  console.error('The MQTT server is offline!')
 })
 
 mqttclient.on('reconnect', function () {
-  console.log('trying to reconnect to mqtt server...')
+  console.log('Trying to reconnect to mqtt server...')
 })
 
 mqttclient.on('error', function () {
@@ -24,13 +24,13 @@ mqttclient.on('error', function () {
 })
 
 mqttclient.on('connect', function (connack) {
-  console.log(connack)
+  // console.log(connack)
   mqttclient.subscribe('pyre/#', function (err, granded) {
     if (err) {
       console.error(err)
     } else {
       console.log(granded)
-      mqttclient.publish('pyre', 'pyre connected to mqtt server!')
+      mqttclient.publish('pyre', 'Pyre connected to the MQTT broker!')
     }
   })
 })

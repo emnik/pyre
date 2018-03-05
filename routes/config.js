@@ -258,10 +258,22 @@ router.post('/export_database', get_history_data_to_export, get_latest_sensor_da
   }
   // generate the csv file for the user to download.
   // console.log(data_to_export)
-  var writer = fs.createWriteStream('/home/pi/apps/pyre/public/files/export.csv')
-  writer.pipe(jsonexport(data_to_export))
-  res.send({result: 'ok'})
-  // console.log(csv)
+  var wstream = fs.createWriteStream('/home/pi/apps/pyre/public/files/sensor_data.csv')
+  // node.js is async so we set a trigger event for the wstream end...
+  wstream.on('finish', function () {
+    console.log('The export file (sensor_data.csv) has been written successfully!')
+    return res.send({result: 'ok'})
+  })
+  jsonexport(data_to_export, function (err, csv) {
+    if (err) {
+      console.log(err)
+      return res.send({result: 'error'})
+    } else {
+      // console.log(csv)
+      wstream.write(csv)
+      wstream.end()
+    }
+  })
 })
 
 // end of database functions
