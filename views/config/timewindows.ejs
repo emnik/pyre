@@ -136,19 +136,19 @@ var latest_saved_data=[];
 		});
 
 		$("input[name='setTargetTemp']").change(function(){
-			$("#savebtn").removeProp('disabled');
+			$("#savebtn").prop('disabled',false);
 			$("#savebtn").empty();
 			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 		})
 
 		$('.timepicker').change(function(){
-			$("#savebtn").removeProp('disabled');
+			$("#savebtn").prop('disabled',false);
 			$("#savebtn").empty();
 			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 		})
 
 		$("[name='sensors']").change(function(){
-			$("#savebtn").removeProp('disabled');
+			$("#savebtn").prop('disabled',false);
 			$("#savebtn").empty();
 			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 		})
@@ -230,7 +230,7 @@ var latest_saved_data=[];
 							$("#savebtn").empty();
 							$("#savebtn").append('Save <span class="glyphicon glyphicon-ok"</span>');
 							$("#savebtn").prop('disabled', true);
-							$("#resetbtn").removeProp('disabled');
+							$("#resetbtn").prop('disabled',false);
 							latest_saved_data = arr;
 						}
 						else if(action=="reset"){
@@ -256,7 +256,7 @@ var latest_saved_data=[];
 		$("#"+id).parent().remove();
 		var cur_data=get_form_data();
 		if(!compare_arrays_of_obj(cur_data, latest_saved_data)){
-			$("#savebtn").removeProp('disabled');
+			$("#savebtn").prop('disabled',false);
 			$("#savebtn").empty();
 			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 		}
@@ -349,25 +349,25 @@ var latest_saved_data=[];
 			    	var $searchfield = $(this).parent().find('.select2-search__field');
 			    	$searchfield.prop('disabled', true);
 					});
-					$("#savebtn").removeProp('disabled');
+					$("#savebtn").prop('disabled',false);
 					$("#savebtn").empty();
 					$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 
 					//the following .change functions seem to be needed again for the new timewindow...
 					$("input[name='setTargetTemp']").change(function(){
-						$("#savebtn").removeProp('disabled');
+						$("#savebtn").prop('disabled',false);
 						$("#savebtn").empty();
 						$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 					})
 
 					$('.timepicker').change(function(){
-						$("#savebtn").removeProp('disabled');
+						$("#savebtn").prop('disabled',false);
 						$("#savebtn").empty();
 						$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 					})
 
 					$("[name='sensors']").change(function(){
-						$("#savebtn").removeProp('disabled');
+						$("#savebtn").prop('disabled',false);
 						$("#savebtn").empty();
 						$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 					})

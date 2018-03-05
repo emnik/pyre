@@ -166,7 +166,7 @@ var prevtimewindows=[];
 							$("#savebtn").prop('disabled',true);}
 						else {
 							$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
-							$("#savebtn").removeProp('disabled');}
+							$("#savebtn").prop('disabled',false);}
 					}
 					else
 					{
@@ -222,7 +222,7 @@ var prevtimewindows=[];
 			$("#savebtn").prop('disabled',true);}
 		else {
 			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
-			$("#savebtn").removeProp('disabled');}
+			$("#savebtn").prop('disabled',false);}
 	}
 
 	function get_current_timewindows(){
@@ -252,7 +252,7 @@ var prevtimewindows=[];
 						$("#savebtn").empty();
 						$("#savebtn").append('Save <span class="glyphicon glyphicon-ok"</span>');
 						$("#savebtn").prop("disabled", true);
-						$("#resetbtn").removeProp('disabled');
+						$("#resetbtn").prop('disabled',false);
 					}
 					else if(action=="reset"){
 						location.reload(true);

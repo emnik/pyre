@@ -163,13 +163,15 @@
 	$("input[name='setTargetTemp']").change(function(){
 		$("#savebtn").empty();
 		$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
-		$("#savebtn").removeProp('disabled');
+		// $("#savebtn").removeProp('disabled');
+		$("#savebtn").prop('disabled',false);
 	})
 
 	$('#sensors').change(function(){
 		$("#savebtn").empty();
 		$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
-		$("#savebtn").removeProp('disabled');
+		// $("#savebtn").removeProp('disabled');
+		$("#savebtn").prop('disabled',false);
 	})
 
 

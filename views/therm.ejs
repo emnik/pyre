@@ -582,6 +582,7 @@
 			<%};%>
 		});
 
+		update_graph();
 	}); //end of $(document).ready
 
 
@@ -811,13 +812,12 @@
 	//Update graph selections
 	$('#graph_sensor').change(function(){update_graph()});
 	$('#graph_duration').change(function(){
-		if($(this).val()!=1){ //if not LIVE the user can choose the sensor
-			$('#graph_sensor').select2('enable', true);
-		}
-		else //if LIVE the sensor defaults to the one used!
-		{
+		if($(this).val()!=='1'){ //if not LIVE the user can choose the sensor
+			$('#graph_sensor').prop("disabled", false);
+		} else {
+			//if LIVE the sensor defaults to the one used!
 			$('#graph_sensor').val("<%=sensors%>").trigger('change.select2');
-			$('#graph_sensor').select2('enable', false);
+			$('#graph_sensor').prop("disabled", true);
 		}
 		update_graph();
 	});

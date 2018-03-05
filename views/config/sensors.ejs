@@ -124,31 +124,31 @@ var latest_saved_data=[];
 		<%}%>
 
 		$("[name='sensortype']").change(function(){
-			$("#savebtn").removeProp('disabled');
+			$("#savebtn").prop('disabled',false);
 			$("#savebtn").empty();
 			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 		})
 
 		$("[name='sensorlocation']").change(function(){
-			$("#savebtn").removeProp('disabled');
+			$("#savebtn").prop('disabled',false);
 			$("#savebtn").empty();
 			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 		})
 
 		$("[name='sensorname']").change(function(){
-			$("#savebtn").removeProp('disabled');
+			$("#savebtn").prop('disabled',false);
 			$("#savebtn").empty();
 			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 		})
 
 		$("[name='sensoruid']").change(function(){
-			$("#savebtn").removeProp('disabled');
+			$("#savebtn").prop('disabled',false);
 			$("#savebtn").empty();
 			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 		})
 
 		$("[name='sensorstatus']").change(function(){
-			$("#savebtn").removeProp('disabled');
+			$("#savebtn").prop('disabled',false);
 			$("#savebtn").empty();
 			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 		})
@@ -216,7 +216,7 @@ var latest_saved_data=[];
 			$(id).find("[name='sensorpreset']").removeClass("glyphicon-star-empty");
 			$(id).find("[name='sensorpreset']").addClass("glyphicon-star").css("color","green");
 
-			$("#savebtn").removeProp('disabled');
+			$("#savebtn").prop('disabled',false);
 			$("#savebtn").empty();
 			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 
@@ -239,7 +239,7 @@ var latest_saved_data=[];
 							$("#savebtn").empty();
 							$("#savebtn").append('Save <span class="glyphicon glyphicon-ok"</span>');
 							$("#savebtn").prop('disabled', true);
-							$("#resetbtn").removeProp('disabled');
+							$("#resetbtn").prop('disabled',false);
 							latest_saved_data = arr;
 						}
 						else if(action=="reset"){

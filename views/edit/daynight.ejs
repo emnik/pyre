@@ -180,13 +180,11 @@
 							$("#savebtn").empty();
 							$("#savebtn").append('Save <span class="glyphicon glyphicon-ok"</span>');
 							$("#savebtn").prop('disabled', true);
-							// $("#resetbtn").removeProp('disabled');
 						}
 						if (action=='reset'){
 							$("#savebtn").empty();
 							$("#savebtn").append('Save');
 							$("#savebtn").prop('disabled', true);
-							// $("#resetbtn").prop('disabled', true);
 						}
 
 					}
@@ -235,25 +233,25 @@
 	$("input[name='setDayTargetTemp']").change(function(){
 		$("#savebtn").empty();
 		$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
-		$("#savebtn").removeProp('disabled');
+		$("#savebtn").prop('disabled',false);('disabled');
 	})
 
 	$("input[name='setNightTargetTemp']").change(function(){
 		$("#savebtn").empty();
 		$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
-		$("#savebtn").removeProp('disabled');
+		$("#savebtn").prop('disabled',false);('disabled');
 	})
 
 	$('#nightsensors').change(function(){
 		$("#savebtn").empty();
 		$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
-		$("#savebtn").removeProp('disabled');
+		$("#savebtn").prop('disabled',false);('disabled');
 	})
 
 	$('#daysensors').change(function(){
 		$("#savebtn").empty();
 		$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
-		$("#savebtn").removeProp('disabled');
+		$("#savebtn").prop('disabled',false);('disabled');
 	})
 
 	$('#setbtn').click(function(){

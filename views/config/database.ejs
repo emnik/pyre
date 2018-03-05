@@ -45,7 +45,7 @@
 				<p style="color:white;padding-top:8px;">Archive sensor data to history</p>
 			</div>
 		</div>
-		<div class="row" style="margin-top:15px;">		
+		<div class="row" style="margin-top:15px;">
 			<div class="col-xs-2 col-sm-1">
 				<button id="export" type="button" class="btn btn-front" onclick="exportcsv();">
 					<span class="glyphicon glyphicon-download-alt"></span>
@@ -87,7 +87,7 @@
 					$('.modal-body>p').text('No need to archive. Aborted!');
 					$('.modal-footer').prepend('<button onclick="forcearchive();" name="forcebtn" type="button" class="btn btn-danger">Force archive</button>')
 					$('#myModal').modal('show');
-				}					
+				}
 			},
 			dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
 		});
@@ -108,7 +108,7 @@
 		$('#myModal').modal('hide');
 		setTimeout(function(){
 			archive('force');
-			}, 1000)				
+			}, 1000)
 	};
 
 
@@ -128,7 +128,7 @@
 								'</a>'+
 							'</div>' +
 						'</div>';
-						$('#body').append(downloadbtn);				
+						$('#body').append(downloadbtn);
 					}
 					else if (rdata.result==="error"){
 						$('.modal-body>p').text('The export of sensor data to csv file failed!');
