@@ -1,15 +1,21 @@
 var mqtt = require('mqtt')
+var config = require('../config.json')
 var sqlite3 = require('sqlite3').verbose()
 var db = new sqlite3.cached.Database('/home/pi/apps/pyre/sensor-data.sqlite')
 
 // MQTT setup
-var mqttclient = mqtt.connect({
-  host: '10.185.9.113',
-  port: 1883,
-  username: 'mosquitto',
-  password: 'pyre2017',
-  reconnectPeriod: 5000
-})
+const options = config.mqtt
+options.reconnectPeriod = 5000
+
+var mqttclient = mqtt.connect(options)
+
+// var mqttclient = mqtt.connect({
+//   host: '192.168.1.5',
+//   port: 1883,
+//   username: 'mosquitto',
+//   password: 'pyre2017',
+//   reconnectPeriod: 5000
+// })
 
 mqttclient.on('offline', function () {
   console.error('The MQTT server is offline!')
@@ -62,17 +68,17 @@ mqttclient.on('message', function (topic, message) {
 
 function insertMqttTemp (data, callback) {
   // console.log('storing new data in db...')
-  db.all('SELECT id, status FROM sensors WHERE type = ? AND uid=? LIMIT 1', ['WeMos D1mini', data.temperature_record[0].uid], function (err, row) {
+  db.all('SELECT id, status FROM sensors WHERE type = ? AND uid=? LIMIT 1', ['MQTT', data.temperature_record[0].uid], function (err, row) {
     if (err) {
       return callback(err)
     }
     if (row.length === 0) { // New remote sensor! Just Insert it in the sensor table and mark it's status as disabled. The user has first to set location and enable
-      var name = 'WeMosD1mini-ID' + data.temperature_record[0].uid
-      db.run("INSERT INTO sensors (type, name, uid, status, preset) VALUES ('WeMos D1mini',?, ?, 0, 0)", [name, data.temperature_record[0].uid], function (err) {
+      var name = 'MQTT-' + data.temperature_record[0].uid
+      db.run("INSERT INTO sensors (type, name, uid, status, preset) VALUES ('MQTT',?, ?, 0, 0)", [name, data.temperature_record[0].uid], function (err) {
         if (err) {
           callback(err)
         }
-        console.log('We have a new temp sensor online with WeMos id: ' + data.temperature_record[0].uid + ' which is now registered (but disabled) with id: ' + this.lastID)
+        console.log('We have a new temp sensor online with id: ' + data.temperature_record[0].uid + ' which is now registered (but disabled) with id: ' + this.lastID)
       })
     } else { // existing sensor
       if (row[0].status === 1) { // if the existing sensor is enabled (status=1), then we store the data. else we ignore them!!!

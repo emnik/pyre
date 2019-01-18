@@ -14,33 +14,14 @@
 	</style>
 <body>
 		<header>
-			<nav class="navbar navbar-inverse navbar-static-top">
-			  <div class="container-fluid">
-			    <!-- Brand and toggle get grouped for better mobile display -->
-			    <div class="navbar-header">
-			      <a class="navbar-brand" href="#" onclick="window.location = document.referrer;">
-			        <span class="glyphicon glyphicon-chevron-left" aria-hidden="true">
-			        </span> back
-			      </a>
-			    </div>
-			    <!-- Collect the nav links, forms, and other content for toggling -->
-			    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-			      <ul class="nav navbar-nav navbar-right">
-			        <%if(!isLocal){%>
-			        <li><a href="http://<%=base_url%>/logout">Logout</a></li>
-			        <%}%>
-			      </ul>
-			    </div><!-- /.navbar-collapse -->
-			    <hr style="margin:0px;">
-			  </div><!-- /.container-fluid -->
-			</nav>
+				<% include ./partials/header_edits %>
 		</header>
 
 		<div class="container-fluid"  >
 			<div class="row">
 				<div class="col-xs-12">
 			        <h1 class="text-center" style="margin-top:10px;">
-			            <a style="color:white;text-decoration: none;" href="http://<%=base_url%>/therm">
+			            <a style="color:white;text-decoration: none;" href="http://<%=base_url%>/">
 				    		<span class="glyphicon glyphicon-fire" aria-hidden="true"></span>
 				        	Pyre
 				        </a>
@@ -49,7 +30,7 @@
 			        <p class="text-center" style="margin-top:20px;">Nikiforakis Manos (nikiforakis.m@gmail.com)</p>
 			        <p class="text-center">
 			        	<a style="text-decoration: none;" href="https://opensource.org/licenses/MIT">MIT Licence</a> Copyright
-			        	&copy; 2015 - 2017
+			        	&copy; 2015 - 2019
 			        </p>
 				</div>
 			</div>
@@ -58,3 +39,18 @@
 </body>
 
 <% include ./partials/javascript.ejs %>
+<script src="/javascripts/custom.js"></script>
+
+<script type="text/javascript">
+	function backButton() {
+	    var value = readCookie('backUrl');
+		eraseCookie('backUrl');
+		if(value != null){
+			document.location.href = value;
+		}
+		else {
+			document.location.href='/'
+		}
+	    
+	}
+</script>

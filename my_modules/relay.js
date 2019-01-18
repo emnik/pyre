@@ -9,7 +9,7 @@
  */
 
 var gpio = require('pi-gpio')
-var config = require('../my_modules/config')
+var config = require('../config.json')
 var pin = config.pin
 
 gpio.open(pin.thermostat, 'output', function (err) {
@@ -74,8 +74,19 @@ function act (pin, state, callback) {
   })
 }
 
+function close_pins(){
+  const obj = config.pin
+  for (var key in obj){
+    // console.log(key)
+    // console.log(obj[key])
+    console.log('closing ' + key + ' in gpio:' + obj[key] + '...')
+    gpio.close(obj[key])
+  }
+}
+
 // module.exports.get = get;
 // module.exports.on = on;
 // module.exports.off = off;
 // module.exports.toggle = toggle;
 module.exports.act = act
+module.exports.close_pins = close_pins

@@ -16,6 +16,10 @@
 				padding-top: 3px;
 				padding-left: 15px;
 			}
+			.large-panel-heading {
+				padding-top: 10px;
+			}
+
 
 		</style>
 		<% include ../partials/head %>
@@ -26,23 +30,46 @@
 		<% include ../partials/header_edits %>
 	</header>
 
+	<div id="myModal" class="modal fade">
+		<div class="modal-dialog">
+		  <div class="modal-content">
+			<div class="modal-header">
+			  <h4 class="modal-title">Delete sensor</h4>
+			</div>
+			<div class="modal-body">
+			  <p>You are about to delete a sensor. <b>This will also delete all the corresponding data from the sensors history tables!</b></p>
+			  <p>If you want these data you should first backup and download the sensor hostory data from the <a href="/config/database">settings/database page</a>!</p>
+			  <p>Do you want to procceed with the deletion?</p>
+			</div>
+			<div class="modal-footer">
+			  <button name="yesbtn" type="button" class="btn btn-primary" data-dismiss="modal"> Proceed</button>
+			  <button name="nobtn" type="button" class="btn btn-danger" data-dismiss="modal"> Cancel</button>
+			</div>
+		  </div><!-- /.modal-content -->
+		</div><!-- /.modal-dialog -->
+	  </div><!-- /.modal -->
+
 	<div class="container-fluid">
 		<div class="row">
 			<%sensors.forEach(function(sensor){%>
-			<div class="col-xs-12 col-md-6 col-lg-4">
-				<div class="panel panel-default" id='<%=sensor.id%>'>
+			<div class="col-xs-12 col-sm-6 col-md-4 col-lg-4">
+				<div class="panel <%if(sensor.preset=='1'){%> panel-default <% } else { %> panel-default <%}%>" id='<%=sensor.id%>'>
 				  <!-- Default panel contents -->
-				  <div class="panel-heading">
-				  	<span><%=sensor.name%></span>
+				  <div class="panel-heading" style="padding-bottom:40px;padding-top:10px;">
+					<span class="pull-left glyphicon glyphicon-trash remove-sensor" onclick="remove_sensor_confirm(<%=sensor.id%>);"></span>  
+					<span class="pull-left large-panel-heading"><%=sensor.name%></span>
 				  	<%if(sensor.preset=='1'){%>
-				  	<span name="sensorpreset" class="pull-right glyphicon glyphicon-star" style="color:green;cursor:pointer;" onclick="change_default('#<%=sensor.id%>');"></span>
+				  	<span name="sensorpreset" class="pull-left glyphicon glyphicon-star" style="color:green;cursor:pointer; padding-left: 10px;padding-top: 10px;" onclick="change_default('#<%=sensor.id%>');"></span>
 				  	<%}
 				  	else
 				  	{%>
-				  	<span name="sensorpreset" class="pull-right glyphicon glyphicon-star-empty" style="color:gray;cursor:pointer;" onclick="change_default('#<%=sensor.id%>');"></span>
-				  	<%}%>
+				  	<span name="sensorpreset" class="pull-left glyphicon glyphicon-star-empty" style="color:gray;cursor:pointer;padding-left: 10px;padding-top: 10px;" onclick="change_default('#<%=sensor.id%>');"></span>
+					  <%}%>
+					<span class="pull-right">
+							<input type="checkbox" data-size="small" data-onstyle="info" data-on="Enabled" data-off="Disabled" class="form-control"  id="sensorstatus<%=sensor.id%>"  name="sensorstatus">
+					</span>
 				  </div>
-				  <div class="panel-body" id="<%=sensor.id%>">
+				  <div class="panel-body <%if(sensor.status==0) {%> hidden <%}%> " id="<%=sensor.id%>">
 					<form class="form-horizontal">
 						<div class="form-group">
 							<label class="col-sm-2 control-label" for="sensortype<%=sensor.id%>">Type</label>
@@ -72,13 +99,21 @@
 							</div>
 						</div>
 						<div class="form-group">
-							<label class="col-sm-2 control-label <%if (sensor.uid==''){%>hidden<%};%>" for="sensor<%=sensor.id%>">uID</label>
-						    <div class="col-sm-4 <%if (sensor.uid==''){%>hidden<%};%>">
+							<label class="col-xs-12 col-sm-2 control-label <%if (sensor.uid==''){%>hidden<%};%>" for="sensor<%=sensor.id%>">uID</label>
+						    <div class="col-xs-12 col-sm-4 <%if (sensor.uid==''){%>hidden<%};%>">
 						    	<input type="text" class="form-control" name="sensoruid" id="sensor<%=sensor.id%>" value="<%=sensor.uid%>">
 							</div>
-							<label class="col-sm-2 control-label" for="sensorstatus<%=sensor.id%>">Status</label>
-						    <div class="col-sm-4">
-						    	<input type="checkbox"  data-onstyle="success" data-on="Enabled" data-off="Disabled" class="form-control"  id="sensorstatus<%=sensor.id%>"  name="sensorstatus">
+						</div>
+						<div class="form-group">
+							<label class="col-xs-12 col-sm-2 control-label" for="sensorPriority<%=sensor.id%>">Priority</label>
+						    <div class="col-xs-12 col-sm-4">
+								<select class="form-control" style="width:100%;" id="sensorPriority<%=sensor.id%>" name="sensorPriority">
+						    		<option value="1">1</option>
+						    		<option value="2">2</option>
+						    		<option value="3">3</option>
+						    		<option value="4">4</option>
+						    		<option value="5">5</option>
+						    	</select>
 							</div>
 						</div>
 					</form>
@@ -110,6 +145,7 @@
 <script>
 var reset_data = [];
 var latest_saved_data=[];
+var deleteID=null;
 
 
 	$( document ).ready(function() {
@@ -121,7 +157,24 @@ var latest_saved_data=[];
 				placeholder: "Select location",
 				tags: true
 			}).val("<%=sensors[i].location%>").trigger('change');
+
+			$('#sensorPriority<%=sensors[i].id%>').select2({
+				minimumResultsForSearch: Infinity,
+				tags: false
+			}).val("<%=sensors[i].priority%>").trigger('change');
+
 		<%}%>
+
+		$('input[type="checkbox"]').change(function(){
+			if($(this).prop('checked')){
+				($(this).parent().parent().parent().next('.panel-body')).removeClass('hidden')
+			} else {
+				($(this).parent().parent().parent().next('.panel-body')).addClass('hidden')
+			}
+			$("#savebtn").prop('disabled',false);
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		})
 
 		$("[name='sensortype']").change(function(){
 			$("#savebtn").prop('disabled',false);
@@ -130,6 +183,12 @@ var latest_saved_data=[];
 		})
 
 		$("[name='sensorlocation']").change(function(){
+			$("#savebtn").prop('disabled',false);
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		})
+
+		$("[name='sensorPriority']").change(function(){
 			$("#savebtn").prop('disabled',false);
 			$("#savebtn").empty();
 			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
@@ -156,11 +215,12 @@ var latest_saved_data=[];
 		$("#resetbtn").prop('disabled', true);
 		$("#savebtn").prop('disabled', true);
 
+
 		reset_data=get_form_data();
 		latest_saved_data = get_form_data();
 
 	}) //end of ( document ).ready(function()
-
+	
 
 	$('#savebtn').click(function(){
 			var arr=get_form_data();
@@ -199,6 +259,7 @@ var latest_saved_data=[];
 			var sn = new Object();
 			sn.type=$(this).find("[name='sensortype']").val();
 			sn.location=$(this).find("[name='sensorlocation']").select2().val();
+			sn.priority=$(this).find("[name='sensorPriority']").select2().val();
 			sn.name=$(this).find("[name='sensorname']").val();
 			sn.uid=$(this).find("[name='sensoruid']").val();
 			sn.status=($(this).find("[name='sensorstatus']").prop('checked') ? "1" : "0");
@@ -256,6 +317,39 @@ var latest_saved_data=[];
 				dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
 		});
 	}
+
+	function remove_sensor(id){
+		$.ajax({
+				type: "POST",
+				contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
+				url: '/config/remove_sensor',
+				data: JSON.stringify({data:id}),
+				success: function(rdata) { //rdata = remote data that the server sends as feedback...
+					// console.log(rdata.result);
+					if (rdata.result==="ok"){
+						console.log("success");
+						location.reload(true);
+					}
+				},
+				dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
+		});
+	}
+
+	function remove_sensor_confirm(id){
+		deleteID = id;
+		$('#myModal').modal('show');
+	}
+
+	$("[name='yesbtn']").click(function(){
+		// $('#myModal').modal('hide');
+		remove_sensor(deleteID)
+	});
+
+	$("[name='nobtn']").click(function(){
+		// $('#myModal').modal('hide');
+		console.log('Sensor deletion canceled!')
+	});
+
 
 	$("#resetbtn").click(function(){
 		var cur_data=get_form_data();

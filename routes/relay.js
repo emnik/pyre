@@ -4,7 +4,7 @@ var router = express.Router()
 /* Require the <config module> for the pin numbers and the <relay module> for the functions that control
 the relays via the gpios. */
 
-var config = require('../my_modules/config')
+var config = require('../config.json')
 var relay = require('../my_modules/relay')
 
 var status = require('../my_modules/status')
@@ -53,7 +53,6 @@ router.post('/actions', isRequestLocal, isAuthenticated, function (req, res, nex
       }
     })
   }
-
   // save the working status in the memory database
   status.set_status(req.body.status, function (err) {
     if (err) {

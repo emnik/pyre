@@ -10,9 +10,10 @@ var LocalStrategy = require('passport-local').Strategy
 
 var routes = require('./routes/index')
 var relay = require('./routes/relay')
-var therm = require('./routes/therm')
+// var therm = require('./routes/therm')
 var edit = require('./routes/edit')
 var config = require('./routes/config')
+var pyre = require('./routes/pyre')
 
 var app = express()
 
@@ -42,8 +43,9 @@ app.use(partials())
 app.use('/', routes)
 app.use('/relay', relay)
 app.use('/edit', edit)
-app.use('/therm', therm)
+// app.use('/therm', therm)
 app.use('/config', config)
+app.use('/pyre', pyre)
 
 /* Usually, you don't want to expose any of your internal paths for how your server is structured
 to the outside world. What you can is make a /scripts static route in your server that fetches its
@@ -54,6 +56,7 @@ app.use('/bootstrap', express.static(path.join(__dirname, '/node_modules/bootstr
 app.use('/jquery', express.static(path.join(__dirname, '/node_modules/jquery/dist/')))
 app.use('/bootstrap-toggle', express.static(path.join(__dirname, '/node_modules/bootstrap-toggle/')))
 app.use('/bootstrap-touchspin', express.static(path.join(__dirname, '/node_modules/bootstrap-touchspin/dist/')))
+app.use('/bootstrap-slider', express.static(path.join(__dirname, '/node_modules/bootstrap-slider/dist/')))
 app.use('/select2', express.static(path.join(__dirname, '/node_modules/select2/dist/')))
 app.use('/pickadate', express.static(path.join(__dirname, '/node_modules/pickadate/lib/')))
 app.use('/object-hash', express.static(path.join(__dirname, '/node_modules/object-hash/dist/')))
@@ -94,5 +97,6 @@ app.use(function (err, req, res, next) {
     error: {}
   })
 })
+
 
 module.exports = app

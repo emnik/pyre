@@ -1,11 +1,7 @@
 var express = require('express')
 var router = express.Router()
-
-var temperature = require('../my_modules/temperature')
-var sqlite3 = require('sqlite3').verbose()
-var db = new sqlite3.cached.Database('/home/pi/apps/pyre/sensor-data.sqlite')
-
-var status = require('../my_modules/status')
+var chart = require('../my_modules/chart_data')
+var init = require('../my_modules/initiate')
 
 function isRequestLocal (req, res, next) {
   var rpi_ip = req.hostname.split('.')
@@ -34,315 +30,32 @@ function isAuthenticated (req, res, next) {
   }
 }
 
-function get_profiles (req, res, next) {
-  // var db = new sqlite3.Database('./sensor-data.sqlite');
-  db.all('SELECT * FROM profile', function (err, rows) {
-    if (err) {
-      console.error(err)
-      return next(err)
-    }
-    req.profiles = rows
-    console.log(rows)
-    // db.close()
-    next()
+  router.post('/update_graph', async function (req, res) {
+    var graph_data = await chart.get_graph_data(req)
+    // console.log(graph_data)
+    res.contentType('json')
+    res.send({
+      result: 'ok',
+      graph_data: graph_data
+    })
   })
-}
+  
 
-function get_time_window_data (req, res, next) {
-  // get current daynum: 0=Sunday,... 6=Saturday
-  var d = new Date()
-  var n = d.getDay()
-  var h = d.getHours()
-  var m = d.getMinutes()
-  if (h < 10) h = '0' + h
-  if (m < 10) m = '0' + m
-  var curtime = h + ':' + m
-  req.curtime = curtime
-  console.log(curtime)
-  var getdata = [] // get the current time window data (if exists)
-  var nextdata = [] // get the next time window for the current day - if exists a next one!
+  async function render_therm (req, res) {
+    var data = await init.run()
+    var base_url = req.headers.host
+    
+    data.base_url = base_url
+    data.isLocal = req.isLocal
 
-  db.each('SELECT time_window.* FROM time_window JOIN timetable ON time_window.id = timetable.time_window_id WHERE timetable.schedule_id IN (SELECT schedule.id FROM schedule JOIN profile ON schedule.profile_id = profile.id WHERE profile.status=1 AND (schedule.daynum="*" OR schedule.daynum=?))', n, function (suberr, subrows) {
-    // the time must be set in 24 hour mode
-    if (suberr) {
-      console.error(suberr)
-      return next(err)
-    }
-    if (curtime >= subrows.on_time && curtime < subrows.off_time) { // Get the current time window data:
-      getdata.push({
-        id: subrows.id,
-        name: subrows.name,
-        on_time: subrows.on_time,
-        off_time: subrows.off_time,
-        sensor_ids: subrows.sensor_ids,
-        temp: subrows.temp
-      })
-    } else { // Get all other time window data:
-      nextdata.push({
-        id: subrows.id,
-        name: subrows.name,
-        on_time: subrows.on_time,
-        off_time: subrows.off_time,
-        sensor_ids: subrows.sensor_ids,
-        temp: subrows.temp
-      })
-    }
-  }, function () {
-    req.time_window_data = getdata
-    console.log(getdata)
-    // console.log(nextdata.sort(compare));
-    nextdata.sort(compare) // sort all other time windows by the on_time property
-    /*
-     * arr.sort([compareFunction])
-     * compareFunction Optional.
-     * If compareFunction is supplied, the array elements are sorted according to the return value of the compare function. If a and b are two elements being compared, then:
-     * If compareFunction(a, b) is less than 0, sort a to a lower index than b, i.e. a comes first.
-     * If compareFunction(a, b) returns 0, leave a and b unchanged with respect to each other, but sorted with respect to all different elements. Note: the ECMAscript standard does not guarantee this behaviour, and thus not all browsers (e.g. Mozilla versions dating back to at least 2003) respect this.
-     * If compareFunction(a, b) is greater than 0, sort b to a lower index than a.
-     * compareFunction(a, b) must always return the same value when given a specific pair of elements a and b as its two arguments. If inconsistent results are returned then the sort order is undefined
-     * MY COMPARE FUNCTION IS THE NEXT FUNCTION!!!
-     */
-
-    // Find the next time window
-    if (nextdata.length > 0) {
-      var found = false
-      var i = 0
-      while (found === false && i <= nextdata.length - 1) {
-        if (nextdata[i].on_time > curtime) {
-          found = true
-        } else {
-          i++
-        }
-      }
-      if (found === true) {
-        console.log(nextdata[i])
-        req.time_window_next = nextdata[i]
-      } else {
-        console.log(nextdata[0])
-        req.time_window_next = nextdata[0]
-      }
-    } else {
-      req.time_window_next = {} // empty object...
-    }
-    next() // next should be called once!
-  })
-};
-
-function compare (a, b) {
-  if (a.on_time < b.on_time) {
-    return -1
-  }
-  if (a.on_time > b.on_time) {
-    return 1
-  }
-  return 0
-}
-
-function set_status (req, res, next) {
-  if (req.time_window_data.length === 0) {
-    // console.log('We are not in a working time window.Send PAUSE signal!')
-    req.state = {
-      err: 'No_time_window'
-    }
-  } else if (req.time_window_data.length > 1) {
-    // console.log('There is an overlap in time windows.Send PAUSE signal and FIX IT!')
-    req.state = {
-      err: 'Overlap'
-    }
-  } else {
-    req.state = {
-      err: ''
-    }
-  }
-  next()
-}
-
-function get_default_sensor (req, res, next) {
-  db.all('SELECT id FROM sensors WHERE preset=1 LIMIT 1;', function (err, rows) {
-    if (err) {
-      console.error(err)
-      return next(err)
-    }
-    req.default_sensor = rows[0].id
-    next()
-  })
-}
-
-function get_sensors (req, res, next) {
-  if (req.state.err === '') {
-    var sensors_arr = req.time_window_data[0].sensor_ids.split(',')
-  } else {
-    // in overlap or no timewindow the default sensor is used to show the temperature.
-    sensors_arr = []
-    sensors_arr.push(req.default_sensor)
-  }
-  req.sensors = sensors_arr
-
-  // console.log(req.sensors)
-
-  var sensors = sensors_arr.map(function (p) {
-    return '"' + p + '"'
-  }).join(',') // needed to put it inside the IN(...) in the sql
-  db.all('SELECT id, location FROM sensors WHERE id IN (' + sensors + ')', function (err, rows) {
-    if (err) {
-      console.error(err)
-      return next(err)
-    };
-    req.locations = rows
-    // console.log(rows)
-    next()
-  })
-}
-
-function get_therm_data (req, res, next) {
-  /* Get the initial temperature data for the view */
-  temperature.get_temp_data(240, function (err, result) {
-    if (err) {
-      console.error(err)
-      return next(err)
-    }
-    console.log(result)
-    req.tempdata = result
-    next()
-  })
-}
-
-function get_graph_data (req, res, next) {
-  // this function is used either at start, or when I need to update the graph data
-  var interval
-  var labels = []
-  var temps = []
-  var options = []
-  req.graph_data = {}
-
-  if (req.body.sensor !== 'undefined' && req.body.sensor != null) {
-    var selected_sensors = req.body.sensor
-  } else {
-    var sensors = req.sensors.map(function (p) {
-      return '"' + p + '"'
-    }).join(',')
-    selected_sensors = sensors
-  }
-  // console.log(selected_sensors)
-  var duration = ((req.body.duration !== 'undefined' && req.body.duration !== null) ? req.body.duration : '1') // in hours
-
-  if (duration <= 24) {
-    var sql = "SELECT datetime((timestamp/1000)/?*?, 'unixepoch', 'localtime') as localtime, " +
-      "date((timestamp/1000)/?*?, 'unixepoch', 'localtime') as date, " +
-      "strftime('%H:%M', (timestamp/1000)/?*?, 'unixepoch', 'localtime') as time, " +
-      'ROUND(avg(value),2) as temp ' +
-      // 'sensor_id '+
-      'FROM sensor_data ' +
-      "WHERE timestamp/1000 >= ((strftime('%s', 'now') - strftime('%S', 'now') + strftime('%f', 'now'))-3600*?) " +
-      'AND sensor_id IN (' + selected_sensors + ') ' +
-      'GROUP BY localtime ' +
-      'ORDER BY localtime ASC;'
-
-    if (duration === 1) {
-      interval = 120
-    } else {
-      interval = duration * 150
-    }
-
-    for (var i = 1; i <= 6; i++) {
-      options.push(interval)
-    }
-    options.push(duration)
-  } else {
-    interval = 24 * 3600
-
-    sql = 'SELECT date, ' +
-      'ROUND(avg(value),2) as temp ' +
-      'FROM sensor_history ' +
-      "WHERE date >= date('now',?) " +
-      'AND sensor_id IN (' + selected_sensors + ') ' +
-      'GROUP BY date ' +
-      'ORDER BY date ASC;'
-
-    options.push('-' + duration / 24 + ' day')
+    res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate')
+    res.header('Expires', '-1')
+    res.header('Pragma', 'no-cache')
+    res.render('therm', data)
   }
 
-  db.each(sql, options, function (err, row) {
-    if (err) {
-      console.error(err)
-      return next(err)
-    }
 
-    if (duration > 24) {
-      labels.push(row.date)
-    } else {
-      labels.push(row.time)
-    }
-    temps.push(row.temp)
-  }, function () {
-    req.graph_data.labels = labels
-    req.graph_data.temps = temps
-    next()
-  })
-}
+router.use('/', isRequestLocal, isAuthenticated, render_therm)
 
-router.post('/update_graph', get_graph_data, function (req, res) {
-  res.contentType('json')
-  res.send({
-    result: 'ok',
-    graph_data: req.graph_data
-  })
-})
 
-function render_therm (req, res) {
-  var base_url = req.headers.host
-  // console.log(req.graph_data)
-  res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate')
-  res.header('Expires', '-1')
-  res.header('Pragma', 'no-cache')
-  res.render('therm', {
-    tempdata: req.tempdata,
-    profiles: req.profiles,
-    sensors: req.sensors,
-    sensor_location: req.locations,
-    default_sensor: req.default_sensor,
-    time_window_data: req.time_window_data,
-    state: req.state,
-    time_window_next: req.time_window_next,
-    graph_data: req.graph_data,
-    base_url: base_url,
-    isLocal: req.isLocal,
-    curtime: req.curtime,
-    status: req.workstatus
-  })
-}
-
-// When I used the GET method to send the select box data to /therm I had as a first callback function
-// in the following line the set_profile function
-// *I use router.use (instead of router.get()) to catch both GET and POST requests
-
-router.use('/', isRequestLocal, isAuthenticated, get_profiles, get_time_window_data, set_status, get_default_sensor, get_sensors, get_therm_data, get_graph_data, get_status, render_therm)
-
-// GET therm page with one sqlite query
-// router.get('/therm', function(req, res) {
-// var db = new sqlite3.Database('./sensor-data.sqlite');
-// db.all("SELECT * FROM profile", function(err, rows){
-//   var profiles = req.param('profiles', rows);
-//   res.render('therm', {profiles: profiles});
-//   db.close();
-// });
-// })
-
-function get_status (req, res, next) {
-  /* get the working status from the memory database */
-  req.workstatus = ''
-  status.get_status(function (err, result) {
-    if (err) {
-      console.error(err)
-      next(err)
-    }
-    if (result) {
-      req.workstatus = result.status
-    }
-
-    console.log('FROM index route > the current status is: ' + req.workstatus)
-    next()
-  })
-}
-
-module.exports = router
+module.exports = router;

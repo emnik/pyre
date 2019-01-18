@@ -1,140 +1,30 @@
-#!/usr/bin/env node
-
 /**
  * Module dependencies.
  */
 
-// loading the express and http framework
-var app = require('../app')
-var http = require('http')
-// var debug = require('debug')('myapp:server');
+const config = require('../config.json')
 
 // load module schedule responsible for scheduling the db backup every night
 require('../my_modules/later')
 // load module ds1820 responsible for getting and storing the temperature from the on board sensor
 require('../my_modules/ds1820')
-// load module ds1820_xbee responsible for getting and storing the temperature from the xbee sensors
-require('../my_modules/ds1820_xbee')
-// load module mqtt responsible for getting and storing the temperature from the mqtt sensors
-require('../my_modules/mqtt')
-// load module alexa responsible for the amazon alexa support, powered via sinric smart home skill
-require('../my_modules/alexa')
-// load module temperature responsible for getting the average temperature of each sensor from the database
-var temperature = require('../my_modules/temperature')
+
+if(config.modules.xbee === 'enabled'){
+    // load module ds1820_xbee responsible for getting and storing the temperature from the xbee sensors
+    require('../my_modules/ds1820_xbee')
+}
+
+if(config.modules.mqtt === 'enabled'){
+    // load module mqtt responsible for getting and storing the temperature from the mqtt sensors
+    require('../my_modules/mqtt')
+}
+
 // load module exit_handlers responsible exiting the app in case of error or just quitting!
 var exitHandlers = require('../my_modules/exitHandlers')
 
-/**
- * Set the port.
- */
+//load the main module that is responsible for operating the thermostat!
+var main = require('../my_modules/main')
 
-var port = normalizePort(process.env.PORT || '3000')
-app.set('port', port)
-
-/**
- * Create HTTP server.
- */
-
-var server = http.createServer(app)
-
-/**
- * Listen on provided port, on all network interfaces.
- */
-
-// server.listen(port); // use the next line instead as we need socket.io
-var io = require('socket.io').listen(server.listen(port))
-server.on('error', onError)
-server.on('listening', onListening)
-
-/**
- * Normalize a port into a number, string, or false.
- */
-
-function normalizePort (val) {
-  var port = parseInt(val, 10)
-
-  if (isNaN(port)) {
-    // named pipe
-    return val
-  }
-  if (port >= 0) {
-    // port number
-    return port
-  }
-  return false
-}
-
-/**
- * Event listener for HTTP server "error" event.
- */
-
-function onError (error) {
-  if (error.syscall !== 'listen') {
-    throw error
-  }
-
-  var bind = typeof port === 'string'
-    ? 'Pipe ' + port
-    : 'Port ' + port
-
-  // handle specific listen errors with friendly messages
-  switch (error.code) {
-    case 'EACCES':
-      console.error(bind + ' requires elevated privileges')
-      process.exit(1)
-    case 'EADDRINUSE':
-      console.error(bind + ' is already in use')
-      process.exit(1)
-    default:
-      throw error
-  }
-}
-
-/**
- * Event listener for HTTP server "listening" event.
- */
-
-function onListening () {
-  var addr = server.address()
-  var bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port
-  // debug('Listening on ' + bind);
-  console.log('Listening on ' + bind)
-
-  // Send a message to console
-  console.log('Server up and running!')
-}
-
-/**
- * use sockets.io to emit current temperatures every 1min to anyone who wants it!
- */
-
-io.sockets.on('connection', function (socket) {
-  // get temperature data on an interval and broadcast them to all clients
-  setInterval(function () {
-    var duration = 300 // the last x seconds of temperature data that we want to retrieve from the database
-    temperature.get_temp_data(duration, function (err, result) {
-      if (err) {
-        console.error(err)
-      };
-      socket.emit('temperatures', result)
-    })
-  }, 60000) // repeat every 1 min
-
-  socket.on('working_data', function (data) {
-    // a client sent working data to the server so we broadcast to others to check their status!
-    // console.log('server got an update on the current data - will broadcast to all clients')
-    socket.broadcast.emit('check_data', data)
-  })
-
-  socket.on('newtemp', function (data) {
-    // console.log('server got an update of target temp - will broadcast to all clients')
-    socket.broadcast.emit('new_target', {
-      newtemp: data.newtemp
-    })
-  })
-})
 
 /**
  * Exit functions

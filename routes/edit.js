@@ -4,6 +4,8 @@ var router = express.Router()
 var sqlite3 = require('sqlite3').verbose()
 var db = new sqlite3.cached.Database('/home/pi/apps/pyre/sensor-data.sqlite')
 
+var main = require('../my_modules/main') // for updating the target temp of the current running profile
+
 function isRequestLocal (req, res, next) {
   var rpi_ip = req.hostname.split('.')
   var request_ip = req.connection.remoteAddress.split('.')
@@ -96,6 +98,7 @@ router.post('/update_temp', get_timewindows_name_ids, function (req, res) {
             res.send({
               result: 'ok'
             })
+            console.log("updating twid="+index.id)
           } else {
             // if the query is successfull, then this object contains the following -as an example.
             // { sql: 'UPDATE time_window SET temp=?, sensor_ids=? WHERE id=?',lastID: 0,changes: 1 }

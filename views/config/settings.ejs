@@ -41,7 +41,7 @@
 			        <span class="icon-bar"></span>
 			        <span class="icon-bar"></span>
 			      </button>
-			      <a class="navbar-brand" href="http://<%=base_url%>/therm">
+			      <a class="navbar-brand" href="http://<%=base_url%>/">
 			        <span class="glyphicon glyphicon-chevron-left" aria-hidden="true">
 			        </span> back
 			      </a>
@@ -50,7 +50,10 @@
 			    <!-- Collect the nav links, forms, and other content for toggling -->
 			    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 			      <ul class="nav navbar-nav navbar-right">
-			        <li><a href="http://<%=base_url%>/about">About</a></li> 
+			        <li>
+						<!-- <a href="http://<%=base_url%>/about">About</a> -->
+						<a href="#" onclick="openSettings('about');">About</a>
+					</li> 
 			        <%if(!isLocal){%>
 			        <li><a href="http://<%=base_url%>/logout">Logout</a></li> 
 			        <%}%>
@@ -100,13 +103,13 @@
 					</p>	
 				</div>
 				<div class="col-xs-6 text-center">
-					<a href="#" onclick="openSettings('timewindows');">
+					<a href="#" onclick="openSettings('system');">
 						<!-- <h3><i class="fa fa-lock"></i></h3> -->
-						<h3><span class="glyphicon glyphicon glyphicon-th-large"></span></h3>
-						<p>Time windows</p>
+						<h3><span class="glyphicon glyphicon-wrench"></span></h3>
+						<p>System</p>
 					</a>
 					<p class="hidden-xs">
-						<i>In <b>Time windows</b> the user can change the preset timewindows and add or delete new custom timewindows that are used in both <b>Weekly mode</b> and <b>Custom mode</b>.</i>
+						<i>In <b>System</b> the user can adjust various thermostat's settings and modules regarding various functionalities (mqtt sensors, xbee sensors, amazon alexa support, ...) </b>.</i>
 					</p>	
 				</div>				
 			</div>
@@ -135,6 +138,14 @@
 			var name='backUrl_edit';
 			var setUrl = "http://<%=base_url%>/config/timewindows";
 		}
+		else if (page==='system'){
+			var name='backUrl';
+			var setUrl = "http://<%=base_url%>/config/system";
+		}
+		else if (page==='about'){
+			var name='backUrl';
+			var setUrl = "http://<%=base_url%>/about";
+		}		
 		createCookie(name, window.location.href);
 		window.location.href = setUrl;
 	}

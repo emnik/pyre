@@ -2,27 +2,71 @@
 var sqlite3 = require('sqlite3').verbose()
 var ds18b20 = require('ds18b20')
 var db = new sqlite3.Database('/home/pi/apps/pyre/sensor-data.sqlite')
+var fs = require('fs')
+const config = require('../config.json')
 
-// Start local temperature logging
-var msecs = (60 * 0.5) * 1000 // log interval duration in milliseconds - Now is set in 30000msec = 30sec = 1/2 min
-logLocalTemp(msecs, function (err) {
-  if (err) {
-    console.error(err)
+var id = config.localSensorID;
+console.log("local sensor ID = "+id);
+console.log('checking local sensor ID configuration...');
+checkSensorID(id);
+
+async function checkSensorID(localID){
+  var sensorID = await getSensorID();
+  if (localID==undefined || localID!=sensorID[0]){
+    if (localID==undefined){
+      console.log('local sensor configuration is not found!');
+    }
+    else {
+      console.log('local sensorID mismatch detected!'); //this will happen if the user change/replace the on board temp sensor.
+    }
+    var data = config;
+    data.localSensorID = sensorID[0];
+    try {
+      fs.writeFileSync('/home/pi/apps/pyre/config.json',  JSON.stringify(data), 'utf8');
+      console.log('local sensor configuration updtated successfully!')
+      }
+    catch(e) {
+      console.error(e);
+      console.error('local sensor configuration FAILED');
+      }   
   }
-})
+}
+
+function getSensorID(){
+  return new Promise(function(resolve, reject){
+    ds18b20.sensors(function (err, id) {
+      if (err){
+        console.error(err);
+        reject(err);
+      }
+      else {
+        sensorID = id;
+        resolve(sensorID);
+      }
+    });
+  })
+}
+
+
+  // Start local temperature logging
+if (id!=undefined && id!=null){
+  var msecs = (60 * 0.5) * 1000 // log interval duration in milliseconds - Now is set in 30000msec = 30sec = 1/2 min
+  logLocalTemp(msecs, function (err) {
+    if (err) {
+      console.error(err)
+    }
+  })
+}
 
 // Read current temperature from local sensor
 function readLocalTemp (insertfunc, callback) {
-  ds18b20.temperature('28-000006b3513e', function (err, value) {
-    // ds18b20.temperature('28-00000704830c', function (err, value) {
+  ds18b20.temperature(id, function (err, value) {
     if (err) {
       return callback(err)
     }
     var data = {
-      // temperature_record:[{
       unix_time: Date.now(),
       celsius: Math.round(value * 10) / 10 // round temperature to 1 decimal digit
-      // }]
     }
 
     // Send data to callback named insertfunc - actually insertLocalTemp!
@@ -36,7 +80,6 @@ function readLocalTemp (insertfunc, callback) {
 
 // Write a single temperature record in JSON format to database table.
 function insertLocalTemp (data, callback) {
-  // db.run("INSERT INTO sensor_data (timestamp, sensor_id, value) VALUES (?, 1, ?)",[data.temperature_record[0].unix_time, data.temperature_record[0].celsius], function(error){
   db.run('INSERT INTO sensor_data (timestamp, sensor_id, value) VALUES (?, 1, ?)', [data.unix_time, data.celsius], function (error) {
     if (error) {
       callback(error)

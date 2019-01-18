@@ -3,15 +3,16 @@ var SerialPort = require('serialport')
 var xbee_api = require('xbee-api')
 var sqlite3 = require('sqlite3').verbose()
 var db = new sqlite3.cached.Database('/home/pi/apps/pyre/sensor-data.sqlite')
+var config = require('../config.json')
 
 var xbeeAPI = new xbee_api.XBeeAPI({
   api_mode: 2, // ATAP1 -with escape characters
   module: '802.15.4'
 })
 
-var serialport = new SerialPort('/dev/ttyAMA0', {
+var serialport = new SerialPort(config.xbee.serial, { // using '/dev/ttyAMA0',
   // baudrate: 9600, //changed to baudRate in serialport v.4
-  baudRate: 9600,
+  baudRate: parseInt(config.xbee.baudrate),
   parser: xbeeAPI.rawParser()
 })
 

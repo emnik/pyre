@@ -1,14 +1,16 @@
 var express = require('express')
 var router = express.Router()
-var archive_db = require('../my_modules/archive_db')
+
+
 var sqlite3 = require('sqlite3').verbose()
 var db = new sqlite3.cached.Database('/home/pi/apps/pyre/sensor-data.sqlite')
+
+var archive_db = require('../my_modules/archive_db')
 var jsonexport = require('jsonexport')
 var fs = require('fs')
 var passport = require('passport')
 var crypto = require('crypto')
-var http = require('http')
-var url = require('url')
+var config = require('../config.json')
 
 function isRequestLocal(req, res, next) {
   var rpi_ip = req.hostname.split('.')
@@ -141,7 +143,7 @@ router.post('/update_sensors', function(req, res, next) {
   // console.log(data);
   for (var i = data.length - 1; i >= 0; i--) {
     db.serialize(function() {
-      db.run('UPDATE sensors SET type=?, location=?, name=?, uid=?, status=?, preset=? WHERE id=?', [data[i].type, data[i].location, data[i].name, data[i].uid, data[i].status, data[i].preset, data[i].id], function(err) {
+      db.run('UPDATE sensors SET type=?, location=?, name=?, uid=?, status=?, priority=?, preset=? WHERE id=?', [data[i].type, data[i].location, data[i].name, data[i].uid, data[i].status, data[i].priority, data[i].preset, data[i].id], function(err) {
         if (err) {
           console.error(err)
           return next(err)
@@ -150,6 +152,24 @@ router.post('/update_sensors', function(req, res, next) {
     })
   }
   res.contentType('json')
+  res.send({
+    result: 'ok'
+  })
+})
+
+router.post('/remove_sensor', function(req, res, next) {
+  var id = req.body.data
+  console.log(id);
+  res.contentType('json')
+  db.run('DELETE FROM sensors WHERE id=?', id, function(err) {
+    if (err) {
+      console.error(err)
+      res.send({
+        result: 'error'
+      })
+      return next(err)
+    }
+  })
   res.send({
     result: 'ok'
   })
@@ -278,6 +298,21 @@ router.post('/export_database', get_history_data_to_export, get_latest_sensor_da
 
 // end of database functions
 
+// update configuration functions
+router.post('/update_config', function(req, res, next){
+  res.contentType('json')
+  var data = JSON.stringify(req.body.data[0])
+  try {
+    fs.writeFileSync('/home/pi/apps/pyre/config.json', data, 'utf8')
+    return res.send({result: 'ok'})
+    }
+  catch(e) {
+    console.error(e)
+    return res.send({result: 'error'})
+    }   
+})
+
+
 // configure account account functions
 
 function hashPassword(password, salt) {
@@ -344,6 +379,13 @@ router.get('/:section', isRequestLocal, isAuthenticated, get_timetables, get_sen
       base_url: base_url,
       isLocal: req.isLocal,
       show_edit: show_edit
+    })
+  } else if (req.params.section === 'system') {
+    res.render('config/' + req.params.section, {
+      base_url: base_url,
+      isLocal: req.isLocal,
+      show_edit: show_edit,
+      config: config
     })
   } else if (req.params.section === 'settings') {
     res.render('config/' + req.params.section, {

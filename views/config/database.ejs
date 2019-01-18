@@ -17,7 +17,7 @@
 	  <div class="modal-dialog">
 	    <div class="modal-content">
 	      <div class="modal-header">
-	        <h4 class="modal-title">function result</h4>
+	        <h4 class="modal-title">Archive sensor data to history</h4>
 	      </div>
 	      <div class="modal-body">
 	        <p>The operation succeded!</p>
@@ -31,32 +31,36 @@
 
 	<div id="body" class="container-fluid">
 		<div class="row">
-			<div class="col-xs-12">
-				<h4 style="margin-top:0px;margin-bottom:15px;color:white;">Database functions</h4>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-xs-2 col-sm-1">
-				<button id="archive" type="button" class="btn btn-front" onclick="archive();">
-					<span class="glyphicon glyphicon-compressed"></span>
-				</button>
-			</div>
-			<div class="col-xs-10 col-sm-11">
-				<p style="color:white;padding-top:8px;">Archive sensor data to history</p>
-			</div>
-		</div>
-		<div class="row" style="margin-top:15px;">
-			<div class="col-xs-2 col-sm-1">
-				<button id="export" type="button" class="btn btn-front" onclick="exportcsv();">
-					<span class="glyphicon glyphicon-download-alt"></span>
-				</button>
-			</div>
-			<div class="col-xs-10 col-sm-11">
-				<p style="color:white;padding-top:8px;">Export sensor data to a csv file</p>
-			</div>
+			<div class="col-xs-12 col-sm-6 col-lg-4">
+				<div class="panel panel-primary">
+					<!-- Default panel contents -->
+					<div class="panel-heading">
+						Database functions
+					</div>
+					<div class="panel-body" id="panel">
+						<div class="row">
+							<div class="col-xs-2 col-sm-4">
+								<button class="btn btn-default" type="button" id="archive" onclick="archive();">
+										<span class="glyphicon glyphicon-compressed"></span>
+										<!-- Archive -->
+								</button>
+							</div>
+							<div class="col-xs-10 col-sm-8" style="padding-top:10px;font-weight: bold;">Archive sensor data to history</div>
+						</div>
+						<div class="row" style="margin-top:15px;">
+							<div class="col-xs-2 col-sm-4">
+									<button class="btn btn-default" type="button" id="export" onclick="exportcsv();">
+											<span class="glyphicon glyphicon-download-alt"></span>
+											<!-- Export -->
+									</button>
+								</div>
+								<div class="col-xs-10 col-sm-8" style="padding-top:10px;font-weight: bold;">Export sensor data to a csv file</div>
+							</div>
+						</div>
+				</div>
+			</div>	
 		</div>
 	</div>
-
 </body>
 
 <% include ../partials/javascript.ejs %>
@@ -84,7 +88,7 @@
 					$('#myModal').modal('show');
 				}
 				else if (rdata.result==="no need"){
-					$('.modal-body>p').text('No need to archive. Aborted!');
+					$('.modal-body>p').text('Sensor data have already been archived through an automated process within the last 24 hours. There is no need to archive. Aborted!');
 					$('.modal-footer').prepend('<button onclick="forcearchive();" name="forcebtn" type="button" class="btn btn-danger">Force archive</button>')
 					$('#myModal').modal('show');
 				}
@@ -128,7 +132,7 @@
 								'</a>'+
 							'</div>' +
 						'</div>';
-						$('#body').append(downloadbtn);
+						$('#panel').append(downloadbtn);
 					}
 					else if (rdata.result==="error"){
 						$('.modal-body>p').text('The export of sensor data to csv file failed!');

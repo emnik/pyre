@@ -5,13 +5,14 @@ db.configure('busyTimeout', 2000)
 function get_temp_data (duration, callback) {
   var sensors = []
 
-  db.each('SELECT sensor_id AS id, AVG(value) as average FROM sensor_data WHERE timestamp >= ? GROUP BY sensor_id;', (Date.now() - duration * 1000), function (err, row) {
+  db.each('SELECT sensor_data.sensor_id AS id, sensors.priority AS priority, AVG(sensor_data.value) as average FROM sensor_data LEFT JOIN sensors ON sensor_data.sensor_id = sensors.id WHERE sensor_data.timestamp >= ? GROUP BY sensor_data.sensor_id;', (Date.now() - duration * 1000), function (err, row) {
     if (err) {
       console.error(err)
       return callback(err, null)
     };
     sensors.push({
       id: row.id,
+      priority: row.priority,
       average: (Math.round(row.average * 10) / 10)
     })
   }, function () {

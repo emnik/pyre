@@ -21,7 +21,8 @@ function isRequestLocal (req, res, next) {
 /* GET home page. */
 router.get('/', isRequestLocal, function (req, res, next) {
   if (req.isLocal) {
-    return res.redirect('/therm')
+    // return res.redirect('/therm')
+    return res.redirect('/pyre')
   }
   var base_url = req.headers.host
   res.render('index', {
@@ -31,7 +32,8 @@ router.get('/', isRequestLocal, function (req, res, next) {
 
 /* Handle Login POST */
 router.post('/login', passport.authenticate('local', {
-  successRedirect: '/therm',
+  // successRedirect: '/therm',
+  successRedirect: '/pyre',
   failureRedirect: '/'
 }))
 
@@ -49,7 +51,8 @@ router.get('/about', isRequestLocal, function (req, res, next) {
   res.render('about', {
     base_url: base_url,
     isLocal: req.isLocal,
-    version: ver
+    version: ver,
+    show_edit: false
   })
 })
 
