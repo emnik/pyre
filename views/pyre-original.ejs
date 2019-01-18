@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="/select2/css/select2.css">
+		<link rel="stylesheet" type="text/css" href="/stylesheets/select2-frontpage-fix.css">
+		<link rel="stylesheet" type="text/css" href="/stylesheets/font-awesome.min.css">
+		<% include ./partials/head %>
+	</head>
+<style type="text/css">
+	.offline {
+		text-decoration: line-through;
+	}
+
+
+	
+</style>
+
+<script type="text/javascript">
+	//we need to disable the right click context menu as to be able to handle both mouse and touch events for lowering and raising the temperature.
+	document.addEventListener('contextmenu', event => event.preventDefault());
+</script>
+
+<body class="noselect">
+	<header>
+		<nav class="navbar navbar-inverse navbar-static-top">
+		  <div class="container-fluid">
+		    <!-- Brand and toggle get grouped for better mobile display -->
+		    <div class="navbar-header">
+		      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+		        <span class="sr-only">Toggle navigation</span>
+		        <span class="icon-bar"></span>
+		        <span class="icon-bar"></span>
+		        <span class="icon-bar"></span>
+		      </button>
+		      <a class="navbar-brand" href="http://<%=base_url%>/">
+		        <span class="glyphicon glyphicon-fire" aria-hidden="true">
+		        </span> pyre
+		      </a>
+		    </div>
+
+		    <!-- Collect the nav links, forms, and other content for toggling -->
+		    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+		      <ul class="nav navbar-nav navbar-right">
+				<!-- <li><a href="#" onclick="openPage('config')">Config</a></li> -->
+				<li><a href="#" onclick="openPage('settings')">Settings</a></li>
+				<li><a href="#" onclick="openPage('about')">About</a></li>
+		        <!-- <li><a href="http://<%=base_url%>/about">About</a></li> -->
+				<li><a id="awayOrNot" href="#" onclick="toggleAway()">Away</a></li>  
+				<%if(!isLocal){%>
+		        <li><a href="http://<%=base_url%>/logout">Logout</a></li>
+		        <%}%>
+		      </ul>
+		    </div><!-- /.navbar-collapse -->
+		    <hr style="margin:0px;">
+		  </div><!-- /.container-fluid -->
+		</nav>
+	</header>
+
+
+	<div id="errModal" class="modal fade">
+	  <div class="modal-dialog">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h4 class="modal-title">Overlap Error</h4>
+	      </div>
+	      <div class="modal-body">
+	        <p>There is an overlap in time windows for the current time. Please edit the profile to fix it.<br/>
+	        Until then the status is set to <strong>Paused</strong>.</p>
+	      </div>
+	      <div class="modal-footer">
+	        <button name="okerr" type="button" class="btn btn-primary">OK</button>
+	      </div>
+	    </div><!-- /.modal-content -->
+	  </div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
+
+
+
+	<div class="container-fluid">
+
+		<div class="row">
+			<div class="col-xs-12 col-sm-6 col-md-6" > <!-- Main panel visible allways-->
+
+				<div class="row">
+		    		<div id="temp" class="col-xs-8" style="color:white;">
+		    			<h1 style="margin-top:0px;">
+								<i class="fa fa-thermometer-half" aria-hidden="true"></i>
+		    				<span>
+								...
+		    				</span>&deg;C
+		    			</h1>
+		    		</div>
+		    		<div id="status" onclick="toggleAway()" class="col-xs-4 text-right" style="color:#F6F4EC;">
+						<h4 style="margin-top:10px;">
+							<% if (state.err==="") {%>
+								<% if (status ==="Working") {%> 
+									<span class="label label-success">
+										Working
+									</span>
+								<% } else if (status ==="Paused") {%> 
+									<span class="label label-info">
+											Paused
+										</span>
+								<% } else if (status ==="Away") {%> 
+									<span class="label label-default">
+											Away
+									</span>											
+								<% } else {%> 
+									<span class="label label-default">
+										...
+									</span>
+								<% }
+							}; %> 
+						</h4>
+		    			<!-- status can be either: Working / Paused / Overlap-->
+		    		</div>
+				</div>
+				<div class="row" style="color:white;">
+					<div class="col-xs-8" style="margin-top:5px;">
+						<p style="font-size:16px;">Target Temp: <strong><span  id="targetTemp"><% if (state.err==="") {%><%=time_window_data[0].temp%><% } else {%> - <%}%> </span> &deg C </strong>
+						</p>
+					</div>
+					<div class="col-xs-4">
+						<div class="btn-group" style="float:right;">
+						  <button type="button" id="lowerTempBtn" class="btn btn-default" style="padding:0px 7px 0px 7px;font-size:20px;">
+									<i class="fa fa-arrow-down" aria-hidden="true"></i>
+							</button>
+						  <button type="button" id="raiseTempBtn" class="btn btn-default"  style="padding:0px 7px 0px 7px;font-size:20px;">
+									<i class="fa fa-arrow-up" aria-hidden="true"></i>
+							</button>
+						</div>
+						<!-- </div> -->
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-xs-12" style="color:white;margin-top:5px;">
+						<p>Sensors:
+							<span id="sensorslist" class="label-group">
+							<% sensor_location.forEach(function(i){%>
+								<span id="sensor<%=i.id%>"class="label label-success">
+									<%=i.location;%>
+								</span>
+							<%})%>
+							</span>
+						</p>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="hidden-xs" style="margin-top:100px;">
+						<!-- vertical whitespace when NOT in extra small screens!-->
+					</div>
+				</div>
+
+
+				<div class="row">
+						<div class="col-xs-12" style="margin-top:20px;color:white;">
+								<p>
+									<span class="label-group" id='profiles'>
+										<% profiles.forEach(function(item){ %>
+										<a onClick="return openPage('/edit/<%=item.id%>')" class="label <%if (item.status==1){%>label-success<%} else {%>label-default <%};%>">
+												<%= item.name %>
+										</a>
+									 	<%});%>
+									</span>
+								</p>
+						</div>
+				</div>
+
+
+
+				<div class="row">
+					<div class="col-xs-12" style="color:white;" id="details">
+						<%if (typeof time_window_data[0]!=="undefined" && Object.keys(time_window_next).length!==0){%>
+						<p id="info" style="color:lightblue;font-size:small;">
+							<span class="glyphicon glyphicon-bell" style="padding-right:5px;"></span>
+							 <%if (time_window_next.on_time === time_window_data[0].off_time) {%>
+							 At <%=time_window_next.on_time%> target temp is scheduled to <%=time_window_next.temp%>&degC
+							<%} else if(time_window_data[0].off_time<time_window_next.on_time){%>
+							 There is no schedule between <%=time_window_data[0].off_time%> to <%=time_window_next.on_time%>
+							 <%} else if (time_window_data[0].off_time!=='24:00'){%>
+							There is no schedule after <%=time_window_data[0].off_time%>
+							<%} else {%>
+							The schedule will be updated at 24:00
+							<%}%>
+						</p>
+						<%}else if (typeof time_window_data[0]!=="undefined" && Object.keys(time_window_next).length===0){%>
+						<p id="info" style="color:lightblue;font-size:small;">
+							<span class="glyphicon glyphicon-bell" style="padding-right:5px;"></span>
+							<%if (time_window_data[0].off_time!=='24:00'){%>
+							 There is no schedule after <%=time_window_data[0].off_time%>
+							 <%} else {%>
+							 The schedule will be updated at 24:00
+							 <%}%>
+						</p>
+						<%}else if (typeof time_window_data[0]==="undefined" && Object.keys(time_window_next).length===0){%>
+						<p id="info" style="color:lightblue;font-size:small;">
+							<span class="glyphicon glyphicon-bell" style="padding-right:5px;" ></span>
+							 There is no schedule for today!
+						</p>
+						<%} else if (typeof time_window_data[0]==="undefined" && Object.keys(time_window_next).length!==0){%>
+						<p id="info" style="color:lightblue;font-size:small;">
+							<span class="glyphicon glyphicon-bell"  style="padding-right:5px;"></span>
+							<%if (time_window_next.on_time>curtime){%>
+							 At <%=time_window_next.on_time%> target temp is scheduled to <%=time_window_next.temp%>&degC
+							<%} else {%>
+							There is no schedule from now on for today!
+							<%}%>
+						</p>
+						<%}%>
+					</div>
+				</div>
+				<div class="pitft-hide" style="padding-top:65px;">
+						<!-- vertical whitespace when IN extra small screens!-->
+				</div>
+			</div>
+
+			<div class="col-xs-12 col-sm-6 col-md-6 pitft-hide">
+				<div class="row">
+					<div class="col-xs-12" style="max-height:300px; ">
+						<div class="chartTitle">Temperature chart</div>
+						<canvas id="MyChart" style="max-height: 220px;"></canvas>
+						<div class="row" style="padding-bottom:20px;">
+								<div class="col-xs-5">
+									<select id="graph_duration" name="graph_duration" class="form-control" style="width:100%">
+										<option value="1" selected="selected">Live</option>
+										<option value="12">Last 12 hours</option>
+										<option value="24">Last day (24h)</option>
+										<option value="168">Last week</option>
+										<option value="672">Last month</option>
+									</select>
+								</div>
+								<div class="col-xs-5">
+									<select disabled id="graph_sensor" name="graph_sensor" class="form-control" style="width:100%">
+									<% sensor_location.forEach(function(i){%>
+										<option value="<%=i.id%>"><%=i.location%></option>
+									<%})%>
+									<%if(sensors.length>1){%>
+											<option value="<%=sensors%>" selected="selected">All locations (average)</option>
+									<%}%>
+									</select>
+								</div>
+								<div class="col-xs-2">
+									<button id="graph_refresh" type="button" class="pull-right btn btn-front"><span class="glyphicon glyphicon-refresh"></span></button>
+								</div>
+							</div>						
+					</div>
+				</div>
+
+
+
+			</div> 
+		</div> <!-- end of first row -->
+	</div>
+</body>
+
+<% include ./partials/javascript.ejs %>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/javascripts/Chart.js"></script>
+<script src="/select2/js/select2.min.js"></script>
+<script src="/javascripts/custom.js"></script>
+<script src="/object-hash/object_hash.js"></script>
+
+<script>
+	// var MINTEMP = 10;
+	// var MAXTEMP = 30;
+	var curdate = new Date();
+	var curday = curdate.getDay();
+	var infomsg=""; //to revert to the initial message when a sensor becomes available again!
+	var myVar; //used for the timing of raising and lowering the temperature
+	var socket;
+	$( document ).ready(function(){
+		infomsg = $('#info').clone();
+		socket = io.connect();
+
+		var selected_profile=$('#profiles>a.label.label-success').text().trim();
+		if (selected_profile=="DAYNIGHT"){
+			$('#info').remove();
+			infomsg =   '<p id="info" style="color:lightblue;font-size:small;">'+
+						'<span class="glyphicon glyphicon-bell" style="padding-right:5px;"></span>'+
+						' At <%=time_window_next.on_time%> target temp is scheduled to <%=time_window_next.temp%>&degC'
+			$('#details').append(infomsg);
+		}
+		else if(selected_profile=="CONSTANT"){
+			$('#info').remove();
+			infomsg =   '<p id="info" style="color:lightblue;font-size:small;">'+
+						'<span class="glyphicon glyphicon-wrench" style="padding-right:5px;"></span>'+
+						'To edit a schedule choose <b>menu > Config</b>'
+			$('#details').append(infomsg);
+		}
+
+		//send all the working profile data to server to inform the other connected clients!
+		var dataInfo = {};
+		<%if(typeof time_window_data[0]!=="undefined"){%>
+			dataInfo['id'] = '<%=time_window_data[0].id%>';
+			dataInfo['on'] = '<%=time_window_data[0].on_time%>';
+			dataInfo['off'] = '<%=time_window_data[0].off_time%>';
+			dataInfo['sensors'] = '<%=time_window_data[0].sensor_ids%>';
+		<%};%>
+		<%if(Object.keys(time_window_next).length!==0){%>
+			dataInfo['next_id'] = '<%=time_window_next.id%>';
+			dataInfo['next_on'] = '<%=time_window_next.on_time%>';
+			dataInfo['next_off'] = '<%=time_window_next.off_time%>';
+			dataInfo['next_sensors'] = '<%=time_window_next.sensor_ids%>';
+			dataInfo['next_temp'] = '<%=time_window_next.temp%>';
+		<%};%>
+		console.log('sending working data...');
+		// console.log(dataInfo);
+		var hash = objectHash.sha1(dataInfo);
+		// console.log(hash);
+		// socket.emit('working_data', data_info);
+		socket.emit('working_data', hash);
+
+
+	//Get the initial data and get started...
+		<%
+		var allfound=0;
+		var sumtemp=0;
+		var prioritySum=0;
+		for (var i = sensors.length - 1; i >= 0; i--){
+			var sensor_found=0;
+			for (var j = tempdata.length - 1; j >= 0; j--) {
+				if(tempdata[j].id === default_sensor){
+					var default_temp = tempdata[j].average;
+				}
+				if(sensors[i] == tempdata[j].id){
+					allfound=allfound+1;
+					sensor_found=1;
+					prioritySum+=tempdata[j].priority;
+					sumtemp = sumtemp + tempdata[j].average*tempdata[j].priority;
+				}
+			}
+			if(sensor_found===0)
+			{%>
+				$('#sensor'+<%=sensors[i]%>).removeClass('label-success');
+				$('#sensor'+<%=sensors[i]%>).addClass('label-danger');
+				$('#sensor'+<%=sensors[i]%>).addClass('offline');
+			<%}
+			else
+			{%>
+				$('#sensor'+<%=sensors[i]%>).removeClass('offline');
+				$('#sensor'+<%=sensors[i]%>).removeClass('label-danger');
+				$('#sensor'+<%=sensors[i]%>).addClass('label-success');
+			<%}
+		}
+
+
+		if(sumtemp!=0){
+			var avgtemp = Math.round(sumtemp / prioritySum * 10)/10;
+		}
+
+		if(allfound==0){var noData=true;} else {var noData=false;}
+		%>
+
+		if(<%=noData%>){ //true if no therm data comes for the selected sensors...
+			console.log("No therm data from any off the sensors!!! Either Offline, or disabled!");
+			$("#status>h4>span").removeClass("label-default");
+			$("#status>h4>span").addClass("label-info");
+			$("#status>h4>span").text("Paused");
+			$('#temp>h1>span').text(<%=default_temp%>); //this is the first attempt... If the sensors are all remote, we might get data in a while...
+			var msg='<p id="info" style="color:lightblue;font-size:small;">'+
+				'<span class="glyphicon glyphicon-warning-sign" style="padding-right:5px;"></span>'+
+				' Paused until a sensor becomes online.'+
+				'</p>'
+			$('#info').remove();
+			$('#details').append(msg);
+		}
+		else
+		{
+			// manage(<%=avgtemp%>);
+			$('#temp>h1>span').text(<%=avgtemp%>);
+		}
+
+
+		socket.on('temperatures', function(data){
+			checkTimeWindow(); //when I get new data I check if I am in the right time window!!!
+			console.log(data);
+			var allfound=0;
+			var sumtemp=0;
+			var prioritySum=0;
+			var sensors = "<%=sensors%>".split(',');
+			for (var i = sensors.length - 1; i >= 0; i--) {
+				var sensor_found=0;
+				for (var j = data.length - 1; j >= 0; j--) {
+					if(data[j].id === <%=default_sensor%>){
+						var default_temp = data[j].average;
+					}
+					if(sensors[i]==data[j].id){
+						allfound=allfound+1;
+						sensor_found=1;
+						prioritySum+=data[j].priority;
+						sumtemp = sumtemp + data[j].average*data[j].priority;
+					}
+				}
+				if(sensor_found===0)
+				{
+					$('#sensor'+sensors[i]).removeClass('label-success');
+					$('#sensor'+sensors[i]).addClass('label-danger');
+					$('#sensor'+sensors[i]).addClass('offline');
+				}
+				else
+				{
+					$('#sensor'+sensors[i]).removeClass('offline');
+					$('#sensor'+sensors[i]).removeClass('label-danger');
+					$('#sensor'+sensors[i]).addClass('label-success');
+				}
+			}
+
+			if(sumtemp!=0){
+				var avgtemp = Math.round(sumtemp/prioritySum*10)/10;
+			}
+
+			if(allfound==0){ //true if no therm data comes for the selected sensors...
+				console.log("No therm data from any off the sensors!!! Either Offline, or disabled!");
+				$("#status>h4>span").removeClass("label-default");
+				$("#status>h4>span").addClass("label-info");
+				$("#status>h4>span").text("Paused");
+				$('#temp>h1>span').text(default_temp); //If the sensors are all remote, we will get data when / if they become available... Until then we just use the default sensor to show the temperature. We don't use this value though for managing the thermostat.
+				var msg='<p id="info" style="color:lightblue;font-size:small;">'+
+					'<span class="glyphicon glyphicon-warning-sign" style="padding-right:5px;"></span>'+
+					' Paused until a sensor becomes online.'+
+					'</p>'
+				$('#info').remove();
+				$('#details').append(msg);
+			}
+			else
+			{
+				// manage(avgtemp);
+				$('#temp>h1>span').text(avgtemp);
+
+				$('#info').remove();
+				$('#details').append(infomsg);
+
+
+				//update live graph with new data if <Live graph> is selected.
+			
+				var duration=$('#graph_duration').val();
+				if (duration=='1'){ //Live graph
+					update_live_graph(avgtemp);
+				}
+
+			}
+
+		});
+
+
+		socket.on('check_data', function(data){
+			//compare our data with those, that the server just send us!
+			//If there is a difference reload to get the updated data!
+			// console.log(data);
+			var localData = {};
+			<%if(typeof time_window_data[0]!=='undefined'){%>
+				localData['id'] = '<%=time_window_data[0].id%>';
+				localData['on'] = '<%=time_window_data[0].on_time%>';
+				localData['off'] = '<%=time_window_data[0].off_time%>';
+				localData['sensors'] = '<%=time_window_data[0].sensor_ids%>';
+			<%};%>
+			<%if(Object.keys(time_window_next).length!==0){%>
+				localData['next_id'] = '<%=time_window_next.id%>';
+				localData['next_on'] = '<%=time_window_next.on_time%>';
+				localData['next_off'] = '<%=time_window_next.off_time%>';
+				localData['next_sensors'] = '<%=time_window_next.sensor_ids%>';
+				localData['next_temp'] = '<%=time_window_next.temp%>';
+			<%};%>
+			// console.log('receiving working data...');
+			// console.log(localData);
+			var hash = objectHash.sha1(localData);
+			// console.log(hash);
+			if (hash !== data) {
+				console.log('Data mismatch - Request update...')
+				setTimeout(function() { location.href = location.href; },2000); //use 2 seconds delay to give time to the server to respond...
+			}
+			else {
+				console.log('Data check: successfull!')
+			}
+		});
+
+		socket.on('new_target', function(data){
+			console.log(data.newtemp);
+			if ($('#targetTemp').text()!=data.newtemp){
+				$('#targetTemp').text(data.newtemp);
+			}
+		});
+
+		socket.on('curstate', function(data){
+			console.log(data.curstate);
+			if(data.curstate ==="Paused"){
+				$("#status>h4>span").removeClass("label-success label-info label-danger label-default");
+				$("#status>h4>span").addClass("label-info");
+				$("#status>h4>span").text("Paused");
+			}
+			else if(data.curstate==="Working"){
+				$("#status>h4>span").removeClass("label-success label-info label-danger label-default");
+				$("#status>h4>span").addClass("label-success");
+				$("#status>h4>span").text("Working");
+			}
+			else if(data.curstate==="Away"){
+				$("#status>h4>span").removeClass("label-success label-info label-danger label-default");
+				$("#status>h4>span").addClass("label-default");
+				$("#status>h4>span").text("Away");
+			}
+
+		});
+
+		socket.on('disconnect', function(){
+			console.log('SOCKET DISCONNECTED!'); //the server is propably down
+			//I could trigger a 404error page with location reload but that would be a problem when
+			//forever is running and will get the server up again...
+		})
+
+
+		$("[name='okerr']").click(function(){
+			$('#errModal').modal('hide');
+		});
+
+
+		if (<%=(state.err==="Overlap")%>) //true if there is an overlap
+		{
+			$("#status>h4>span").removeClass("label-default");
+			$("#status>h4>span").addClass("label-danger");
+			$("#status>h4>span").text("Overlap");
+			$('#errModal').modal('show');
+		}
+		else if (<%=(state.err==="No_time_window")%>) //true if not in a time window
+		{
+			$("#status>h4>span").removeClass("label-default");
+			$("#status>h4>span").addClass("label-info");
+			$("#status>h4>span").text("Paused");
+		}
+		else if (<%=tempdata==={}%>) //no error -we are in a time window... but no initial temp data - this should not happen...
+		{
+			// $("#status>h4>span").css({"color":"#F6F4EC", "font-size":"80%"});
+			$("#status>h4>span").removeClass("label-default");
+			$("#status>h4>span").addClass("label-info");
+			$("#status>h4>span").text("Waiting data...");
+		}
+
+		$('[name="graph_duration"]').select2({
+			minimumResultsForSearch: Infinity
+		});
+		$('[name="graph_sensor"]').select2({
+			minimumResultsForSearch: Infinity
+		});
+
+
+		$("#raiseTempBtn").on('mousedown touchstart', function(){
+			<%if(typeof time_window_data[0]!=="undefined"){%>
+				tempC = $('#targetTemp').text();
+				var fl = parseFloat(tempC);
+				myVar = window.setInterval(function(){
+					fl = Math.round(fl*10+1)/10;
+					if (fl<=parseFloat(tempC)+1){
+						$('#targetTemp').text(fl);
+					}
+				}, 200);
+			<%};%>
+			return false;
+		});
+
+
+		$("#raiseTempBtn").on('mouseup touchend', function(){
+			<%if(typeof time_window_data[0]!=="undefined"){%>
+				tempC = $('#targetTemp').text();
+				window.clearInterval(myVar);
+				var t = parseFloat(tempC);
+				// var name = "<%if(typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].name%><%};%>";
+				// var sensor_ids = "<%if(typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].sensor_ids%><%};%>".split(',');
+				// setTemp(t, name, sensor_ids);
+				setTemp(t);
+			<% }
+			else { %>
+				console.log("Nothing to do! There is not target temp!");
+			<% };%>
+			return false;
+		});
+
+
+		$("#lowerTempBtn").on('mousedown touchstart', function(){
+			<%if(typeof time_window_data[0]!=="undefined"){%>
+				tempC = $('#targetTemp').text();
+				var fl = parseFloat(tempC);
+				myVar = window.setInterval(function(){
+					fl = Math.round(fl*10-1)/10;
+					if (fl>=parseFloat(tempC)-1) {
+						$('#targetTemp').text(fl);
+					}
+				}, 200);
+			<%};%>
+			});
+
+		$("#lowerTempBtn").on('mouseup touchend', function(){
+			<%if(typeof time_window_data[0]!=="undefined"){%>
+				tempC = $('#targetTemp').text();
+				window.clearInterval(myVar);
+				var t = parseFloat(tempC);
+				// var name = "<%if(typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].name%><%};%>";
+				// var sensor_ids = "<%if(typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].sensor_ids%><%};%>".split(',');
+				// setTemp(t, name, sensor_ids);
+				setTemp(t);
+			<%}
+			else {%>
+					console.log("Nothing to do! There is not target temp!");
+			<%};%>
+		});
+
+		update_graph();
+	}); //end of $(document).ready
+
+
+	function getCurTime(){
+		var d = new Date();
+		var n = d.getDay();
+		var h = d.getHours();
+		var m = d.getMinutes();
+		if (h<10) h="0"+h;
+		if (m<10) m="0"+m;
+		var curtime = h+":"+m;
+		return {time:curtime, day:n};
+	}
+
+	function checkTimeWindow(){
+		var cur = getCurTime();
+		if (<%=(state.err==="")%>) //true if there is no error so we are in a time window...
+		{
+			if (!(cur.time >= '<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].on_time%><%};%>' && cur.time < '<%if (typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].off_time%><%};%>'))
+			{
+				//we just went off the time window so we refresh to get new data
+				//console.log('refresh');
+				location.reload(true);
+			}
+		}
+		else if (<%=(state.err==="No_time_window")%>) //true if we are not in a time window...
+		{
+			console.log("Not in a time window...");
+			if (<%=(Object.keys(time_window_next).length!==0)%>) //true if there is a following time window...
+			{
+				console.log("There is a following time window. Waiting...");
+				//when we get in this following time window we refresh to update our data...
+				if (cur.time >= '<%if (Object.keys(time_window_next).length!==0)%><%=time_window_next.on_time%>' && cur.time < '<%if (Object.keys(time_window_next).length!==0)%><%=time_window_next.off_time%>') {
+				location.reload(true);
+				//console.log('refresh on new time window!!!');
+				}
+				console.log("Or maybe the next day comes first!");
+				// console.log(cur.day, curday);
+				if (cur.day > curday)
+				{
+					//console.log("refresh on new day!!!");
+					location.reload(true);
+				}
+			}
+			else //there is not a time window neither a following one so we refresh for new data on the next day!!!
+			{
+				console.log("There isn't a time window following. Will refresh on next day! Waiting...");
+				if (cur.day > curday)
+				{
+					//console.log("refresh on new day!!!");
+					location.reload(true);
+				}
+			}
+		}
+		else //there is an Overlap!!!
+		{
+			console.log("Do nothing - wait for the user to fix the overlap!!!");
+		}
+	}
+
+/*
+	//Some calculations about the y-axis scale I should use:
+
+*/
+	var ctx = $("#MyChart").get(0).getContext("2d");
+
+	//Update graph selections
+	$('#graph_sensor').change(function(){
+		chart.destroy();
+		update_graph()
+	});
+
+	$('#graph_duration').change(function(){
+		if($(this).val()!=='1'){ //if not LIVE the user can choose the sensor
+			$('#graph_sensor').prop("disabled", false);
+		} else {
+			//if LIVE the sensor defaults to the one used!
+			$('#graph_sensor').val("<%=sensors%>").trigger('change.select2');
+			$('#graph_sensor').prop("disabled", true);
+		}
+		chart.destroy();
+		update_graph();
+	});
+
+	$('#graph_refresh').click(function(){
+		chart.destroy();
+		update_graph()
+		});
+
+
+	function update_graph(){
+		var duration=$('#graph_duration').val();
+		var sensor=$('#graph_sensor').val();
+		$.ajax({
+				type: "POST",
+				contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
+				url: "/pyre/update_graph",
+				data: JSON.stringify({sensor:sensor,duration:duration}),
+				success: function(rdata) {
+					console.log(rdata);
+					if (rdata.result==="success"){
+						var data = rdata.graph_data;
+						// console.log(Math.max.apply(null,data.temps));
+						// console.log(Math.min.apply(null,data.temps));
+						var newtemp_range = Math.max.apply(null,data.temps)-Math.min.apply(null,data.temps);
+						if (newtemp_range<=3){
+							var newscaleWidth = 0.5;
+							var newscaleStart = Math.min.apply(null,data.temps)-1;
+							var newscaleStep = Math.round((newtemp_range)*2+4);
+						}
+						else // if (newtemp_range>3)...
+						{
+							var newscaleWidth = 1;
+							var newscaleStart = Math.min.apply(null,data.temps)-2
+							var newscaleStep = Math.round(newtemp_range+4);
+						}
+						// console.log({newscaleStart:newscaleStart, newscaleWidth:newscaleWidth, newscaleStep:newscaleStep});
+						
+						//chart.destroy();
+						
+						myLineChart = new Chart(ctx);
+						chart = myLineChart.Line({ //the first object is data
+							    labels: data.labels,
+							    datasets: [
+							        {
+							            label: "Average temperature",
+							            //fillColor: "rgba(220,220,220,0.2)",
+							            fillColor: "rgba(151,187,205,0.2)",
+							            strokeColor: "rgba(220,220,220,1)",
+							            pointColor: "rgba(220,220,220,1)",
+							            pointStrokeColor: "#fff",
+							            data: data.temps
+							        }
+							    ]
+							},
+							{
+								maintainAspectRatio: false,
+								responsive: true,
+								scaleShowGridLines : false,
+								pointDotRadius : 3,
+								pointHitDetectionRadius : 5,
+								scaleOverride : true,
+						        scaleSteps : newscaleStep,
+						        scaleStepWidth : newscaleWidth,
+						        scaleStartValue : newscaleStart
+							});
+					}
+				},
+				dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
+			});
+	}
+
+
+	function update_live_graph(temp){
+
+		var min_y=chart.options.scaleStartValue;
+		var max_y=chart.options.scaleStartValue+chart.options.scaleSteps*chart.options.scaleStepWidth;
+		// console.log("min y="+min_y);
+		// console.log("max y="+max_y);
+		if (temp<=min_y || temp>=max_y){
+			console.log("live data are out of the y axis range so we trigger a graph update!");
+			chart.destroy();
+			update_graph();
+		}
+		else
+		{
+			var label=getCurTime().time;
+			//remove datapoints only if there are more than 24 of them esle just add
+			if (chart.datasets[0].points.length>24){
+				chart.removeData();
+			}
+			chart.addData([temp], label);
+		}
+	}
+
+
+	function openPage(page){
+		// if(page==='config'){
+		// 	createCookie('backUrl', window.location.href);
+		// 	var setUrl= "/edit/mode";
+		// }
+		if(page==='about'){
+			createCookie('backUrl', window.location.href);
+			var setUrl= "/about";
+		}
+		else if(page==='settings'){
+			createCookie('backUrl', window.location.href);
+			var setUrl = "/config/settings";
+		}
+		else { //the target URL is passed as 'page'
+			createCookie('backUrl', window.location.href);
+			var setUrl = page;
+		}
+		window.location.href = setUrl;
+	}
+
+var mtc; //for handling possible multiple successfull tenperature changes!
+function setTemp(t){
+	var name = "<%if(typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].name%><%};%>";
+	var sensor_ids = "<%if(typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].sensor_ids%><%};%>".split(',');
+	var twid = "<%if(typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].id%><%};%>";
+	if (sensor_ids!=null){
+		$.ajax({
+			type: "POST",
+			contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
+			url: "/pyre/update_temp",
+			data: JSON.stringify({twid:twid, newtemp:t, name:name, sensor_ids:sensor_ids}),
+			/*JavaScript Object Notation is a way to share data between applications in object format.
+			However, you cannot send an object over an HTTP request without first turning it into a string
+			and sending it as a single variable. The functions JSON.parse() and JSON.stringify() do this for us.*/
+			success: function(rdata) { //rdata = remote data that the server sends as feedback...
+				// console.log(rdata.result);
+				if (rdata.result==="ok"){
+					console.log("success");
+					//send the new target to server to broadcast to all other clients!
+					var temp_info= {newtemp:t};
+					var status_info = {curstate:rdata.status}
+					socket.emit('newtemp', temp_info);
+					socket.emit('newstatus', status_info)
+					if (rdata.status ==='Away') {
+						$("#status>h4>span").removeClass("label-success label-info label-danger label-default");
+						$("#status>h4>span").addClass("label-default");
+						$("#status>h4>span").text("Away");
+						$('#awayOrNot').text("I'm back");
+					}
+					else if (rdata.status == 'Paused'){
+						$("#status>h4>span").removeClass("label-success label-info label-danger label-default");
+						$("#status>h4>span").addClass("label-info");
+						$("#status>h4>span").text("Paused");
+						$('#awayOrNot').text('Away');						
+					}
+					else if (rdata.status == 'Working'){
+						$("#status>h4>span").removeClass("label-success label-info label-danger label-default");
+						$("#status>h4>span").addClass("label-success");
+						$("#status>h4>span").text("Working");
+						$('#awayOrNot').text('Away');						
+					}	
+					//if the temperarure change was successfull then trigger an update to check if the target is reached!
+					window.clearTimeout(mtc); //first clear any previous trigger timers
+					mtc =window.setTimeout(function(){ //set the current trigger timer for manage()
+						var t = $('#temp>h1>span').text();
+					},3000);
+				}
+				else
+				{
+					console.log('error');
+				}
+			},
+			dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
+		});
+	}
+	else
+	{
+		console.log('Something is wrong! No timewindow?');
+	}
+}
+
+function toggleAway(){
+	$.ajax({
+			type: "POST",
+			contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
+			url: "/pyre/away",
+			success: function(rdata) { //rdata = remote data that the server sends as feedback...
+				// console.log(rdata.result);
+				if (rdata.result==="ok"){
+					console.log("success")
+					var status_info={curstate:rdata.status}
+					socket.emit('newstatus', status_info)
+					if (rdata.status ==='Away') {
+						$("#status>h4>span").removeClass("label-success label-info label-danger label-default");
+						$("#status>h4>span").addClass("label-default");
+						$("#status>h4>span").text("Away");
+						$('#awayOrNot').text("I'm back");
+					}
+					else if (rdata.status == 'Paused'){
+						$("#status>h4>span").removeClass("label-success label-info label-danger label-default");
+						$("#status>h4>span").addClass("label-info");
+						$("#status>h4>span").text("Paused");
+						$('#awayOrNot').text('Away');						
+					}
+					else if (rdata.status == 'Working'){
+						$("#status>h4>span").removeClass("label-success label-info label-danger label-default");
+						$("#status>h4>span").addClass("label-success");
+						$("#status>h4>span").text("Working");
+						$('#awayOrNot').text('Away');						
+					}					
+				}
+				else
+				{
+					console.log('error');
+				}
+			},
+			dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
+		})
+	}
+</script>

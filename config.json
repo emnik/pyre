@@ -1,0 +1,31 @@
+{
+    "pin": {
+        "thermostat": "38",
+        "power": "40"
+    },
+    "hysteresis": "0.5",
+    "mqtt": {
+        "host": "192.168.1.5",
+        "port": "1883",
+        "username": "mosquitto",
+        "password": "pyre2017"
+    },
+    "xbee": {
+        "serial": "/dev/ttyAMA0",
+        "baudrate": "9600"
+    },
+    "sinric": {
+        "token": "3786e9ec-2ba1-43ce-85cc-02637f0c5223",
+        "thermostatID": "5c30dc7fe6424805d251e4ad"
+    },
+    "modules": {
+        "mqtt": "enabled",
+        "xbee": "disabled",
+        "sinric": "enabled"
+    },
+    "tempRange": {
+        "min":"0",
+        "max":"30"
+    },
+    "localSensorID": "28-00000704830c"
+}

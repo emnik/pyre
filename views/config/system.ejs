@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html>
+	<head>
+
+		<link rel="stylesheet" type="text/css" href="/bootstrap-toggle/css/bootstrap-toggle.min.css">
+		<link rel="stylesheet" type="text/css" href="/select2/css/select2.css" >
+		<link rel="stylesheet" type="text/css" href="/stylesheets/select2-width-fix.css">
+		<% include ../partials/head %>
+	</head>
+
+	<style>
+		.form-horizontal .control-label {
+			text-align: left;
+		}
+		.panel-heading {
+    		padding-bottom: 40px;
+    		padding-top: 10px;
+		}
+		.large-panel-heading {
+			padding-top: 10px;
+		}
+	</style>
+
+<body>
+	<header>
+		<% include ../partials/header_edits %>
+	</header>
+
+	<div id="myModal" class="modal fade">
+			<div class="modal-dialog">
+			  <div class="modal-content">
+				<div class="modal-header">
+				  <h4 class="modal-title">Saving configuration</h4>
+				</div>
+				<div class="modal-body">
+				  <p>Saving the new configuration will cause a restart of the thermostat. Do you want to continue?</p>
+				</div>
+				<div class="modal-footer">
+				  <button name="yesbtn" type="button" class="btn btn-primary">Yes</button>
+				  <button name="nobtn" type="button" class="btn btn-danger">No</button>
+				</div>
+			  </div><!-- /.modal-content -->
+			</div><!-- /.modal-dialog -->
+		  </div><!-- /.modal -->
+
+	<div id="body" class="container-fluid">
+		<div class="row">
+			<div class="col-xs-12 col-sm-6 col-lg-4">
+				<div class="panel panel-primary">
+					<!-- Default panel contents -->
+					<div class="panel-heading">
+						<span class="pull-left large-panel-heading">Relay configuration</span>
+					</div>
+					<div class="panel-body" id="relayConfig">
+						<form class="form-horizontal">
+							<div class="form-group">
+								<label for="thermostatIOPin" class="col-xs-12 col-sm-8 control-label">Thermostat's relay physical PIN number</label>
+								<div class="col-xs-12 col-sm-4">
+									<input type="text" class="form-control" id="thermostatIOPin" placeholder="" <% if(config.pin.thermostat!=undefined){ %> value=<%=config.pin.thermostat%> <%}%> >
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="powerIOPin" class="col-xs-12 col-sm-8 control-label">Power relay physical PIN number</label>
+								<div class="col-xs-12 col-sm-4">
+									<input type="text" class="form-control" id="powerIOPin" placeholder="" <% if(config.pin.power!=undefined){ %> value=<%=config.pin.power%> <%}%> >
+								</div>
+							</div>		
+							<i>Proposed (for RPi): </i>
+							<span class="pull-right">
+								<button class="btn btn-default btn-xs" type="Button" id="setLowPinsBtn">Low at boot</button>
+								<button class="btn btn-default btn-xs" type="Button" id="setHighPinsBtn">High at boot</button>
+							</span>
+						</form>
+					</div>
+				</div>
+			</div>
+			<div class="col-xs-12 col-sm-6 col-lg-4">
+				<div class="panel panel-primary">
+					<!-- Default panel contents -->
+					<div class="panel-heading">
+						<span class="pull-left large-panel-heading">Thermostat configuration</span>
+					</div>
+					<div class="panel-body" id="OnOffControlSystemConfig">
+						<form class="form-horizontal">
+							<div class="form-group">
+								<label for="hysteresis" class="col-xs-12 col-sm-9 control-label">On/Off differential (hysteresis)</label>
+								<div class="col-xs-12 col-sm-3">
+									<input type="text" class="form-control" id="hysteresis" placeholder="" <% if(config.hysteresis!=undefined){ %> value=<%=config.hysteresis%> <%}%> >
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="tempRangeMin" class="col-xs-12 col-sm-6 control-label">Temperature Range (Min/Max)</label>
+								<div class="col-xs-6 col-sm-3">
+									<input type="text" class="form-control" id="tempRangeMin" placeholder="Min" <% if(config.tempRange.min!=undefined){ %> value=<%=config.tempRange.min%> <%}%> >
+								</div>
+								<div class="col-xs-6 col-sm-3">
+									<input type="text" class="form-control" id="tempRangeMax" placeholder="Max" <% if(config.tempRange.max!=undefined){ %> value=<%=config.tempRange.max%> <%}%> >
+								</div>								
+							</div>							
+						</form>
+					</div>
+				</div>
+			</div>
+			<div class="col-xs-12 col-sm-6 col-lg-4">
+				<div class="panel panel-primary">
+					<!-- Default panel contents -->
+					<div class="panel-heading">
+						<i class="pull-left large-panel-heading glyphicon glyphicon-info-sign"></i>
+						<span class="pull-left large-panel-heading" style="padding-left:10px;">On board temp sensor</span>
+					</div>
+					<div class="panel-body" id="OnBoardTempSensorConfig">
+						<form class="form-horizontal">
+							<div class="form-group">
+								<label for="OnBoardTempSensor" class="col-xs-12 col-sm-5 control-label">Ds18b20 sensor ID</label>
+								<div class="col-xs-12 col-sm-7">
+									<input disabled type="text" class="form-control" id="OnBoardTempSensor" placeholder="" <% if(config.localSensorID !=undefined){ %> value=<%=config.localSensorID%> <%}%> >
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>			
+		<div class="row">			
+			<div class="col-xs-12 col-sm-6 col-lg-4">
+				<div class="panel panel-default">
+					<!-- Default panel contents -->
+					<div class="panel-heading">
+						<span class="pull-left large-panel-heading">MQTT Support</span>
+						<span class="pull-right">
+							<input type="checkbox" data-size="small" data-onstyle="info" data-on="Enabled" data-off="Disabled" class="form-control"  id="mqttToggle"  name="mqttToggleBtn">
+						</span>
+					</div>
+					<div class="panel-body <% if(config.modules.mqtt!=='enabled'){%> hidden <%}%>" id="mqttConfig">
+						<form class="form-horizontal">	
+							<div class="form-group">
+								<label for="mqttHost" class="col-xs-12 col-sm-4 control-label">Server IP </label>
+								<div class="col-xs-12 col-sm-8">
+									<input type="url" class="form-control" id="mqttHost" placeholder="ex: 192.168.1.5" <% if(config.mqtt.host!=undefined){ %> value=<%=config.mqtt.host%> <%}%> >
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="mqttPort" class="col-xs-12 col-sm-4 control-label">Port </label>
+								<div class="col-xs-12 col-sm-8">
+									<input type="text" class="form-control" id="mqttPort" placeholder="ex: 1883"  <% if(config.mqtt.port!=undefined){ %> value=<%=config.mqtt.port%> <%}%> >
+								</div>
+							</div>													
+							<div class="form-group">
+								<label for="mqttUser" class="col-xs-12 col-sm-4 control-label">Username </label>
+								<div class="col-xs-12 col-sm-8">
+									<input type="text" class="form-control" id="mqttUser" placeholder="ex: mosquitto"  <% if(config.mqtt.username!=undefined){ %> value=<%=config.mqtt.username%> <%}%> >
+								</div>
+							</div>	
+							<div class="form-group">
+								<label for="mqttPass" class="col-xs-12 col-sm-4 control-label">Password </label>
+								<div class="col-xs-12 col-sm-8">
+									<input type="password" class="form-control" id="mqttPass"  <% if(config.mqtt.password!=undefined){ %> value=<%=config.mqtt.password%> <%}%> >
+								</div>
+							</div>	
+						</form>
+					</div>
+				</div>
+			</div>
+			<div class="col-xs-12 col-sm-6 col-lg-4">
+				<div class="panel panel-default">
+					<!-- Default panel contents -->
+					<div class="panel-heading">
+						<span class="pull-left large-panel-heading">Xbee (Series 1) Support</span>
+						<span class="pull-right">
+							<input type="checkbox" data-size="small" data-onstyle="info" data-on="Enabled" data-off="Disabled" class="form-control"  id="xbeeToggle"  name="xbeeToggleBtn">
+						</span>
+					</div>
+					<div class="panel-body <% if(config.modules.xbee!=='enabled'){%> hidden <%}%>" id='xbeeConfig'>
+						<form class="form-horizontal">
+							<div class="form-group">
+								<label for="serialPort" class="col-xs-12 col-sm-4 control-label">Serial device</label>
+								<div class="col-xs-12 col-sm-8">
+									<input type="text" class="form-control" id="serialPort" placeholder="ex: /dev/ttyAMA0"  <% if(config.xbee.serial!=undefined){ %> value=<%=config.xbee.serial%> <%}%> >
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="serialBaudRate" class="col-xs-12 col-sm-4 control-label">BaudRate</label>
+								<div class="col-xs-12 col-sm-8">
+									<input type="text" class="form-control" id="serialBaudRate" placeholder="ex: 9600"  <% if(config.xbee.baudrate!=undefined){ %> value=<%=config.xbee.baudrate%> <%}%> >
+								</div>
+							</div>
+
+						</form>
+					</div>
+				</div>
+			</div>
+			<div class="col-xs-12 col-sm-6 col-lg-4">
+				<div class="panel panel-default">
+					<!-- Default panel contents -->
+					<div class="panel-heading">
+						<span class="pull-left large-panel-heading">Amazon Alexa support</span>
+						<span class="pull-right">
+							<input type="checkbox" data-size="small" data-onstyle="info" data-on="Enabled" data-off="Disabled" class="form-control"  id="sinricToggle"  name="alexaToggleBtn">
+						</span>
+					</div>
+					<div class="panel-body <% if(config.modules.sinric!=='enabled'){%> hidden <%}%>" id="alexaConfig">
+						<form class="form-horizontal">
+							<div class="form-group">
+								<label for="sinricToken" class="col-xs-12 col-sm-4 control-label"> Sinric Token </label>
+								<div class="col-xs-12 col-sm-8">
+									<input type="text" class="form-control" id="sinricToken" placeholder="from https://sinric.com" <% if(config.sinric.token!=undefined){ %> value=<%=config.sinric.token%> <%}%> >
+								</div>
+							</div>	
+							<div class="form-group">
+								<label for="sinricThermostatID" class="col-xs-12 col-sm-4 control-label"> Thermostat sinric device ID </label>
+								<div class="col-xs-12 col-sm-8">
+									<input type="text" class="form-control" id="sinricThermostatID" placeholder="from https://sinric.com" <% if(config.sinric.thermostatID!=undefined){ %> value=<%=config.sinric.thermostatID%> <%}%> >
+								</div>
+							</div>								
+						</form>
+					</div>
+				</div>
+			</div>			
+		</div>
+		<div class="row" id="buttons" style="padding-bottom:20px;">
+			<div class="col-xs-12 col-md-12 col-lg-12">
+				<div class="btn-group pull-left">
+					<button id="refreshbtn" type="button" class="btn btn-danger" onclick="location.reload(true);"><span class="glyphicon glyphicon-refresh"></span></button>
+				</div>
+				<div class="btn-group pull-right">
+					<button id="savebtn" type="button" class="btn btn-success">Save</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</body>
+
+<% include ../partials/javascript.ejs %>
+<script src="/javascripts/custom.js"></script>
+<script src="/bootstrap-toggle/js/bootstrap-toggle.min.js"></script>
+
+<script>
+	var latest_saved_data=[];
+
+	$( document ).ready(function() {
+		<%for (keys in config.modules) {%>
+			$('#<%=keys%>'+'Toggle').bootstrapToggle('<%=config.modules[keys]%>'=='enabled'?'on':'off');
+		<%}%>
+
+
+		$('input[type="checkbox"]').change(function(){
+			if($(this).prop('checked')){
+				($(this).parent().parent().parent().next('.panel-body')).removeClass('hidden')
+			} else {
+				($(this).parent().parent().parent().next('.panel-body')).addClass('hidden')
+			}
+			$("#savebtn").prop('disabled',false);
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		})
+
+		$("#savebtn").prop('disabled', true);
+
+		$("#setLowPinsBtn").click(function(){
+			$("#thermostatIOPin").val("38")
+			$("#powerIOPin").val("40")
+			$("#savebtn").prop('disabled',false);
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		})
+
+		$("#setHighPinsBtn").click(function(){
+			$("#thermostatIOPin").val("29")
+			$("#powerIOPin").val("31")
+			$("#savebtn").prop('disabled',false);
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		})
+		
+		$("#thermostatIOPin").change(function(){
+			$("#savebtn").prop('disabled',false);
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		})
+
+		$("#powerIOPin").change(function(){
+			$("#savebtn").prop('disabled',false);
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		})
+
+		$("#hysteresis").change(function(){
+			$("#savebtn").prop('disabled',false);
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		})
+
+		$("#mqttHost").change(function(){
+			$("#savebtn").prop('disabled',false);
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		})
+
+		$("#mqttPort").change(function(){
+			$("#savebtn").prop('disabled',false);
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		})
+
+		$("#mqttUser").change(function(){
+			$("#savebtn").prop('disabled',false);
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		})
+
+		$("#mqttPass").change(function(){
+			$("#savebtn").prop('disabled',false);
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		})
+
+		$("#serialPort").change(function(){
+			$("#savebtn").prop('disabled',false);
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		})
+
+		$("#serialBaudRate").change(function(){
+			$("#savebtn").prop('disabled',false);
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		})
+
+		$("#sinricToken").change(function(){
+			$("#savebtn").prop('disabled',false);
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		})
+
+		$("#sinricThermostatID").change(function(){
+			$("#savebtn").prop('disabled',false);
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		})
+
+		$("#tempRangeMax").change(function(){
+			$("#savebtn").prop('disabled',false);
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		})
+		$("#tempRangeMin").change(function(){
+			$("#savebtn").prop('disabled',false);
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		})
+
+		latest_saved_data=get_form_data();
+	})
+
+
+	$("[name='yesbtn']").click(function(){
+		$('#myModal').modal('hide');
+		var arr=get_form_data();
+		update_config(arr);
+	});
+
+	$("[name='nobtn']").click(function(){
+		$('#myModal').modal('hide');
+		location.reload(true);
+	});
+
+	$('#savebtn').click(function(){
+		var arr=get_form_data();
+		if(!isEqual(arr, latest_saved_data)){
+			$('#myModal').modal('show');
+			// update_config(arr);
+			}
+			else
+			{
+				console.log("No need to save. There are no changes.")
+				$("#savebtn").empty();
+				$("#savebtn").append('Save');
+				$("#savebtn").prop('disabled', true);
+			}
+	})
+
+	function get_form_data(){
+		var arr=[];
+		var sn = new Object();
+		sn.pin = {}
+		sn.pin.thermostat = $("#thermostatIOPin").val();
+		sn.pin.power = $("#powerIOPin").val();
+		sn.hysteresis = $('#hysteresis').val();
+		sn.mqtt = {}
+		sn.mqtt.host=$("#mqttHost").val();
+		sn.mqtt.port=$("#mqttPort").val();
+		sn.mqtt.username=$("#mqttUser").val();
+		sn.mqtt.password=$("#mqttPass").val();
+		sn.xbee = {}
+		sn.xbee.serial = $("#serialPort").val();
+		sn.xbee.baudrate = $("#serialBaudRate").val();
+		sn.sinric = {}
+		sn.sinric.token = $("#sinricToken").val();
+		sn.sinric.thermostatID = $("#sinricThermostatID").val();
+		sn.modules = {}
+		sn.modules.mqtt = $("#mqttToggle").prop('checked') ? "enabled" : "disabled"
+		sn.modules.xbee = $("#xbeeToggle").prop('checked') ? "enabled" : "disabled"
+		sn.modules.sinric = $("#sinricToggle").prop('checked') ? "enabled" : "disabled"
+		sn.localSensorID = $("OnBoardTempSensor").val();
+		sn.tempRange={}
+		sn.tempRange.min=$("tempRangeMin").val();
+		sn.tempRange.max=$("tempRangeMax").val();
+		arr.push(sn);
+		return arr;
+	}
+
+
+
+function update_config(arr) {
+	$.ajax({
+			type: "POST",
+			contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
+			url: "/config/update_config",
+			data: JSON.stringify({data:arr}),
+			success: function(rdata) { //rdata = remote data that the server sends as feedback...
+				// console.log(rdata.result);
+				if (rdata.result==="ok"){
+					console.log("success");
+					// reset_data=get_form_data();
+					$("#savebtn").empty();
+					$("#savebtn").append('Save <span class="glyphicon glyphicon-ok"</span>');
+					$("#savebtn").prop('disabled', true);
+					$("#resetbtn").prop('disabled',false);
+					latest_saved_data = arr;
+				}
+				else
+				{
+					console.log('error');
+					$("#savebtn").empty();
+					$("#savebtn").append('Error <span class="glyphicon glyphicon-alert"</span>');
+				}
+			},
+			dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
+	});
+}
+
+</script>
+
+<script type="text/javascript">
+	function backButton() {
+	    var value = readCookie('backUrl');
+	    eraseCookie('backUrl');
+	    document.location.href = value;
+	}
+</script>
