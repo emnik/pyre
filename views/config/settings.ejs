@@ -1,16 +1,22 @@
 <!DOCTYPE html>
 <html>
 	<head>
+	<link rel="stylesheet" type="text/css" href="/stylesheets/font-awesome.min.css">
 	<% include ../partials/head %>
 	</head>
 	<style type="text/css">
 		p {
-			color:lightblue;
+			color:lightcyan;
 			margin-right: 80px;
 			margin-left: 80px;
 		}
-		a>p,h3 {
-			color: white;
+		a>p {
+			font-weight: bold;
+			font-size: 15px;
+			color: lightcyan;
+		}
+		a>h3 {
+			color: rgb(17, 103, 184);
 		}
 		a:hover {
 			color:white;
@@ -67,10 +73,8 @@
 		<div class="container-fluid" style="margin-top:-10px;">
 			<div class="row">
 				<div class="col-xs-6 text-center">
-					<!-- <div class="config_btn"> -->
 					<a href="#" onclick="openSettings('sensors');">
-						<!-- <h3><i class="fa fa-share-alt"></i></h3> -->
-						<h3><span class="glyphicon glyphicon-eye-open"></span></h3>
+						<h3><span class="fa fa-2x fa-bullseye"></span></h3>
 						<p>Sensors settings</p>
 					</a>
 					<!-- </div> -->
@@ -80,8 +84,7 @@
 				</div>
 				<div class="col-xs-6 text-center">
 					<a href="#" onclick="openSettings('database');">
-						<!-- <h3><i class="fa fa-database"></i></h3> -->
-						<h3><span class="glyphicon glyphicon-transfer"></span></h3>
+						<h3><span class="fa fa-2x fa-database"></span></h3>
 						<p>Database functions</p>
 					</a>
 					<p class="hidden-xs" >
@@ -94,8 +97,7 @@
 			<div class="row">
 				<div class="col-xs-6 text-center">
 					<a href="#" onclick="openSettings('account');">
-						<!-- <h3><i class="fa fa-lock"></i></h3> -->
-						<h3><span class="glyphicon glyphicon-user"></span></h3>
+						<h3><span class="fa fa-2x fa-user"></span></h3>
 						<p>Login account</p>
 					</a>
 					<p class="hidden-xs">
@@ -104,8 +106,7 @@
 				</div>
 				<div class="col-xs-6 text-center">
 					<a href="#" onclick="openSettings('system');">
-						<!-- <h3><i class="fa fa-lock"></i></h3> -->
-						<h3><span class="glyphicon glyphicon-wrench"></span></h3>
+						<h3><span class="fa fa-2x fa-sliders"></span></h3>
 						<p>System</p>
 					</a>
 					<p class="hidden-xs">

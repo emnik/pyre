@@ -49,7 +49,7 @@ var init = require('../my_modules/initiate')
 the relays via the gpios. */
 const config = require('../config.json')
 const pin = config.pin
-const hysteresis = parseFloat(config.hysteresis)
+const hysteresis = parseFloat(config.thermostat.hysteresis)
 
 var relay = require('../my_modules/relay')
 var status = require('../my_modules/status')
@@ -169,6 +169,7 @@ function onData (tempdata) {
         }
     }
     else {
+        console.log("Away is set!!!")
         curstate = "Away"
         status.set_status(curstate)
         setRelay(curstate)
@@ -244,7 +245,6 @@ function getCurTime() {
 
 
 function manage(curTemp){
-    console.log('prevstate='+prevstate)
     var cur = getCurTime();
     if (data.state.err==="") //true if there is no error so we are in a time window...
     {
@@ -326,7 +326,7 @@ function manage(curTemp){
 }
 
 function updateTarget(target, callback){ // callback(status)
-    data.time_window_data[0].temp = target
+    data.time_window_data[0].temp = parseFloat(target)
     console.log('new temp target set: ' + target)
     curstate = onData(latestTempData)
     if (callback!= null && callback!=undefined){

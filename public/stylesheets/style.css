@@ -3,21 +3,22 @@ html {
 	be heavy on rendering and doesn't look that good...
 	*/
 
-	/*height:100%;
-	background: url(../images/flames_mono_2.jpg) no-repeat center center fixed;
+	height:100%;
+	/* background: url(../images/flames_mono_2.jpg) no-repeat center center fixed;
   	-webkit-background-size: cover;
   	-moz-background-size: cover;
   	-o-background-size: cover;
-  	background-size: cover;*/
+  	background-size: cover; */
 }
 
 body {
   font: 14px LatoWeb;
   /* background-color: #002B36; */
-  background-color: rgb(31,32,35)
+  background-color: rgb(31,32,35);
   /*background-color: inherit; if I decide to have a background image...*/
-  /* margin: 0px 0px 0px 0px; */
-  /* height:100%; */
+  /* margin: 0px 0px 0px 0px;
+  padding: 0px 0px 0px 0px; */
+  height: 100%;
 }
 
 /*this disables the user text selection!*/
@@ -31,6 +32,11 @@ body {
                                   supported by Chrome and Opera */
 }
 
+.center-block {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+  }
 
 /*Grouping labels*/
 
@@ -107,6 +113,13 @@ a.navbar-brand {
 	height:1px;
 }
 
+/* Changing modal's header color */
+#infoModal .modal-header{
+	background-color:lightblue;
+}
+#infoModal .modal-content {
+   overflow:hidden;
+}
 
 /*Changing navbar's color style*/
 
@@ -235,6 +248,9 @@ hr{
     box-shadow: none;
 }
 
+.btn-primary.outline:disabled, .btn-primary.outline.disabled {
+	opacity: 1;
+}
 
 .select2-container--default .select2-results__option--highlighted[aria-selected]{
 	background-color: #434857!important;
@@ -276,20 +292,6 @@ hr{
 	}
 }
 
-/* .chartTitle {
-	color:white;
-	background-color:#1e4754;
-	padding-top:8px;
-	padding-bottom:12px;
-	padding-left:5px;
-	text-align:center;
-	border-radius:4px;
-	margin-top: 10px;
-	font-size: inherit;
-	font-weight: normal;
-	margin-bottom: 15px;
-} */
-
 .circle
     {
     width:70px;
@@ -308,7 +310,7 @@ hr{
 
 /* Timeline */
 #content {
-	margin-top: 20px;
+	margin-top: 40px;
 	margin-left:10px;
 	text-align: left;  
   }
@@ -319,7 +321,7 @@ hr{
 	border-top-right-radius: 4px;    
 	background: rgba(255, 255, 255, 0.03);
 	color: rgba(255, 255, 255, 0.8);
-	margin: 10px 10px 10px 120px;  
+	margin: 15px 10px 10px 120px;  
 	letter-spacing: 0.5px;   
 	position: relative;
 	line-height: 1.4em;
@@ -378,4 +380,107 @@ hr{
 		top: 4px;
 	  }
 	
-  }
+.status {
+	font-size:40px;  
+	color:rgb(10,10,10); 
+	/* text-shadow: -1px 0 goldenrod, 0 1px goldenrod, 1px 0 goldenrod, 0 -1px goldenrod; */
+}
+.status.working {
+	text-shadow: -1px 0 goldenrod, 0 1px goldenrod, 1px 0 goldenrod, 0 -1px goldenrod;
+} 
+
+.status.paused {
+	text-shadow: -1px 0 rgb(130, 155, 238), 0 1px rgb(130, 155, 238), 1px 0 rgb(130, 155, 238), 0 -1px rgb(130, 155, 238);
+} 
+
+.status.away {
+	text-shadow: -1px 0 lightgray, 0 1px lightgray, 1px 0 lightgray, 0 -1px lightgray;
+} 
+
+.status.default {
+	text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white;
+} 
+
+.status-pitft.working {
+	color:goldenrod;
+}
+
+.status-pitft.paused{
+	color: rgb(130, 155, 238);
+}
+
+.status.pitft.away {
+	color: lightgray;
+}
+
+.status-pitft.default{
+	color:lightseagreen;
+}
+
+
+.offline {
+	text-decoration: line-through;
+}
+
+.card-main {
+	background-color: rgb(10, 10, 10);
+	border: solid;
+	border-width: 1px;
+	border-color: rgb(10, 10, 10);
+	border-radius: 5px;
+	color: white;
+	margin-bottom: 10px;
+}
+
+.card-main-xs {
+	background-color: rgb(10, 10, 10);
+	color: white;
+	padding-top: 10px;
+	height: 100%;
+	display: flex;
+	flex-flow: column;
+}
+
+.card-main>p {
+	color: white;
+	font-weight: lighter;
+	font-size: medium;
+	padding-left: 15px;
+	padding-top: 10px;
+}
+
+.card-secondary {
+	background-color: rgb(30, 37, 42);
+	border: solid;
+	border-width: 1px;
+	border-color: rgb(30, 37, 42);
+	border-radius: 5px;
+	color: white;
+	margin-bottom: 10px;
+}
+
+.card-secondary>p {
+	color: white;
+	font-weight: lighter;
+	font-size: medium;
+	padding-left: 15px;
+	padding-top: 10px;
+}
+
+.card-extra {
+	background-color: rgb(45, 50, 53);
+	border: solid;
+	border-width: 1px;
+	border-color: rgb(45, 50, 53);
+	border-radius: 5px;
+	color: white;
+	margin-bottom: 10px;
+}
+
+.card-extra>p {
+	color: white;
+	font-weight: lighter;
+	font-size: medium;
+	padding-left: 15px;
+	padding-top: 10px;
+}

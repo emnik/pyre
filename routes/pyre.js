@@ -107,8 +107,10 @@ async function render_pyre (req, res) {
     var base_url = req.headers.host
     data.base_url = base_url
     data.isLocal = req.isLocal
-    data.minTemp = config.tempRange.min
-    data.maxTemp = config.tempRange.max
+    data.minTemp = config.thermostat.min
+    data.maxTemp = config.thermostat.max
+    data.stepTemp = config.thermostat.step
+    // console.log(data)
 
     res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate')
     res.header('Expires', '-1')

@@ -80,21 +80,27 @@
 					<div class="panel-heading">
 						<span class="pull-left large-panel-heading">Thermostat configuration</span>
 					</div>
-					<div class="panel-body" id="OnOffControlSystemConfig">
+					<div class="panel-body" id="thermostatConfig">
 						<form class="form-horizontal">
 							<div class="form-group">
 								<label for="hysteresis" class="col-xs-12 col-sm-9 control-label">On/Off differential (hysteresis)</label>
 								<div class="col-xs-12 col-sm-3">
-									<input type="text" class="form-control" id="hysteresis" placeholder="" <% if(config.hysteresis!=undefined){ %> value=<%=config.hysteresis%> <%}%> >
+									<input type="text" class="form-control" id="hysteresis" placeholder="" <% if(config.thermostat!=undefined){ %> value=<%=config.thermostat.hysteresis%> <%}%> >
 								</div>
 							</div>
 							<div class="form-group">
+								<label for="tempStep" class="col-xs-12 col-sm-9 control-label">Temperature increment/decrement step</label>
+								<div class="col-xs-12 col-sm-3">
+									<input type="text" class="form-control" id="tempStep" placeholder="" <% if(config.thermostat!=undefined){ %> value=<%=config.thermostat.step%> <%}%> >
+								</div>
+							</div>							
+							<div class="form-group">
 								<label for="tempRangeMin" class="col-xs-12 col-sm-6 control-label">Temperature Range (Min/Max)</label>
 								<div class="col-xs-6 col-sm-3">
-									<input type="text" class="form-control" id="tempRangeMin" placeholder="Min" <% if(config.tempRange.min!=undefined){ %> value=<%=config.tempRange.min%> <%}%> >
+									<input type="text" class="form-control" id="tempRangeMin" placeholder="Min" <% if(config.thermostat.min!=undefined){ %> value=<%=config.thermostat.min%> <%}%> >
 								</div>
 								<div class="col-xs-6 col-sm-3">
-									<input type="text" class="form-control" id="tempRangeMax" placeholder="Max" <% if(config.tempRange.max!=undefined){ %> value=<%=config.tempRange.max%> <%}%> >
+									<input type="text" class="form-control" id="tempRangeMax" placeholder="Max" <% if(config.thermostat.max!=undefined){ %> value=<%=config.thermostat.max%> <%}%> >
 								</div>								
 							</div>							
 						</form>
@@ -349,6 +355,11 @@
 			$("#savebtn").empty();
 			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
 		})
+		$("#tempStep").change(function(){
+			$("#savebtn").prop('disabled',false);
+			$("#savebtn").empty();
+			$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+		})
 
 		latest_saved_data=get_form_data();
 	})
@@ -386,7 +397,6 @@
 		sn.pin = {}
 		sn.pin.thermostat = $("#thermostatIOPin").val();
 		sn.pin.power = $("#powerIOPin").val();
-		sn.hysteresis = $('#hysteresis').val();
 		sn.mqtt = {}
 		sn.mqtt.host=$("#mqttHost").val();
 		sn.mqtt.port=$("#mqttPort").val();
@@ -403,9 +413,11 @@
 		sn.modules.xbee = $("#xbeeToggle").prop('checked') ? "enabled" : "disabled"
 		sn.modules.sinric = $("#sinricToggle").prop('checked') ? "enabled" : "disabled"
 		sn.localSensorID = $("OnBoardTempSensor").val();
-		sn.tempRange={}
-		sn.tempRange.min=$("tempRangeMin").val();
-		sn.tempRange.max=$("tempRangeMax").val();
+		sn.thermostat={}
+		sn.thermostat.min=$("tempRangeMin").val();
+		sn.thermostat.max=$("tempRangeMax").val();
+		sn.thermostat.step=$("tempStep").val();
+		sn.thermostat.hysteresis=$('#hysteresis').val();
 		arr.push(sn);
 		return arr;
 	}

@@ -3,7 +3,6 @@
         "thermostat": "38",
         "power": "40"
     },
-    "hysteresis": "0.5",
     "mqtt": {
         "host": "192.168.1.5",
         "port": "1883",
@@ -23,9 +22,11 @@
         "xbee": "disabled",
         "sinric": "enabled"
     },
-    "tempRange": {
+    "thermostat": {
         "min":"0",
-        "max":"30"
+        "max":"30",
+        "step":"0.5",
+        "hysteresis":"0.5"
     },
     "localSensorID": "28-00000704830c"
 }

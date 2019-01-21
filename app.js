@@ -60,6 +60,7 @@ app.use('/bootstrap-slider', express.static(path.join(__dirname, '/node_modules/
 app.use('/select2', express.static(path.join(__dirname, '/node_modules/select2/dist/')))
 app.use('/pickadate', express.static(path.join(__dirname, '/node_modules/pickadate/lib/')))
 app.use('/object-hash', express.static(path.join(__dirname, '/node_modules/object-hash/dist/')))
+app.use('/chart.js', express.static(path.join(__dirname, '/node_modules/chart.js/dist/')))
 
 // passport config
 var account = require('./my_modules/account')

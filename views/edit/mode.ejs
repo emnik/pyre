@@ -1,16 +1,22 @@
 <!DOCTYPE html>
 <html>
 	<head>
-	<% include ../partials/head %>
+			<link rel="stylesheet" type="text/css" href="/stylesheets/font-awesome.min.css">
+			<% include ../partials/head %>
 	</head>
 	<style type="text/css">
 		p {
-			color:lightblue;
+			color:lightcyan;
 			margin-right: 80px;
 			margin-left: 80px;
 		}
-		a>p,h3 {
-			color: white;
+		a>p {
+			font-weight: bold;
+			font-size: 15px;
+			color: lightcyan;
+		}
+		a>h3 {
+			color: rgb(17, 103, 184);
 		}
 		a:hover {
 			color:white;
@@ -66,7 +72,7 @@
 				<div class="col-xs-6 text-center">
 					<!-- <div class="config_btn"> -->
 					<a href="#" onclick="editProfile(1);">
-						<h3><span class="glyphicon glyphicon-repeat"></span></h3>
+						<h3><span class="fa fa-2x fa-repeat"></span></h3>
 						<p>Constant mode</p>
 					</a>
 					<!-- </div> -->
@@ -76,7 +82,7 @@
 				</div>
 				<div class="col-xs-6 text-center">
 					<a href="#" onclick="editProfile(2);">
-						<h3><span class="glyphicon glyphicon-refresh"></span></h3>
+						<h3><span class="fa fa-2x fa-refresh"></span></h3>
 						<p>Daylight mode</p>
 					</a>
 					<p class="hidden-xs" >
@@ -89,7 +95,7 @@
 			<div class="row">
 				<div class="col-xs-6 text-center">
 					<a href="#" onclick="editProfile(3);">
-						<h3><span class="glyphicon glyphicon-calendar"></span></h3>
+						<h3><span class="fa fa-2x fa-calendar"></span></h3>
 						<p>Weekly mode</p>
 					</a>
 					<p class="hidden-xs">
@@ -98,7 +104,7 @@
 				</div>
 				<div class="col-xs-6 text-center">
 					<a href="#" onclick="editProfile(4);">
-						<h3><span class="glyphicon glyphicon-time"></span></h3>
+						<h3><span class="fa fa-2x fa-clock-o"></span></h3>
 						<p>Custom mode</p>
 					</a>
 					<p class="hidden-xs">

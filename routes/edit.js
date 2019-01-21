@@ -4,6 +4,8 @@ var router = express.Router()
 var sqlite3 = require('sqlite3').verbose()
 var db = new sqlite3.cached.Database('/home/pi/apps/pyre/sensor-data.sqlite')
 
+var config = require('../config.json')
+
 var main = require('../my_modules/main') // for updating the target temp of the current running profile
 
 function isRequestLocal (req, res, next) {
@@ -294,7 +296,10 @@ router.get('/:id', isRequestLocal, isAuthenticated, get_sensors, get_timewindows
         sensors: req.sensors,
         base_url: base_url,
         isLocal: req.isLocal,
-        show_edit: show_edit
+        show_edit: show_edit,
+        minTemp : config.thermostat.min,
+        maxTemp : config.thermostat.max,
+        stepTemp : config.thermostat.step
       })
     })
   } else if (req.params.id === '2') { // DAYNIGHT MODE
@@ -317,7 +322,10 @@ router.get('/:id', isRequestLocal, isAuthenticated, get_sensors, get_timewindows
         sensors: req.sensors,
         base_url: base_url,
         isLocal: req.isLocal,
-        show_edit: show_edit
+        show_edit: show_edit,
+        minTemp : config.thermostat.min,
+        maxTemp : config.thermostat.max,
+        stepTemp : config.thermostat.step
       })
     })
   } else if (req.params.id === '3') { // WEEKLY MODE

@@ -1,7 +1,6 @@
 var express = require('express')
 var router = express.Router()
 
-
 var sqlite3 = require('sqlite3').verbose()
 var db = new sqlite3.cached.Database('/home/pi/apps/pyre/sensor-data.sqlite')
 
@@ -365,7 +364,10 @@ router.get('/:section', isRequestLocal, isAuthenticated, get_timetables, get_sen
       sensors: req.sensors,
       base_url: base_url,
       isLocal: req.isLocal,
-      show_edit: show_edit
+      show_edit: show_edit,
+      minTemp : config.thermostat.min,
+      maxTemp : config.thermostat.max,
+      stepTemp : config.thermostat.step
     })
   } else if (req.params.section === 'sensors') {
     res.render('config/' + req.params.section, {
