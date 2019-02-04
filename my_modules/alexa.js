@@ -44,13 +44,7 @@ function CreateWebSocket(){
 // Send heartbeat every 2 mins in order to avoid disconnections during ISP resetting IPs over night.
 const interval = setInterval(function() {
     if (!serverDown){
-      console.log("sending Heartbeat...")
-      ws.send('H', function ack (err){
-        if(err){
-          console.error(err)
-          reconnect()
-        }
-      })
+        sendHeartBeat()
     }
     else {
       console.log("Heartbeat is cancelled due to sinric server being down...")
@@ -58,21 +52,29 @@ const interval = setInterval(function() {
   }, HEARTBEAT_INTERVAL);
 
 
+function sendHeartBeat(){
+    console.log("sending Heartbeat...")
+    ws.send('H', function ack (err){
+      if(err){
+        console.error(err)
+        main.sendSinricStatus('Offline')
+        reconnect()
+      }
+      else {
+        main.sendSinricStatus('Online')
+      }
+    })
+}
+
 async function open(){
   console.log('Connected to sinric. Waiting for amazon alexa\'s commands..')
+  main.sendSinricStatus('Online')
   serverDown = false
   if(targetBuf!==null){
-    manualTargetUpdate(targetBuf)
-    targetBuf=null
-  } else {
-    try {
-      var target = await main.sendTargetTemp()
-      manualTargetUpdate(target)
-    }
-    catch (e) {
-      console.error(e)
-    }
-  }
+    // manualTargetUpdate(targetBuf)
+    console.log('trying to resend the last message...')
+    send(targetBuf)
+  } 
 }
 
 function error(err){
@@ -80,6 +82,7 @@ function error(err){
   if (err.message === "Unexpected server response: 521"){ //status 521 means CloudFlare Server which hosts the sinric service is down... 
     serverDown=true
     console.log("Sinric server is currently down. Will try to reconnect in 4 minutes...")
+    main.sendSinricStatus('Server down!')
     setTimeout(reconnect, 240000)
   }
   else {
@@ -88,6 +91,7 @@ function error(err){
 }
 
 function reconnect(){
+  main.sendSinricStatus('Reconnecting ...')
   //TODO: maybe I should set a reconnect interval that gets canceled if the connection is made...
   //although this may not be needed in my case as I periodically send the Heartbeat and if it fails it will try to recoonect...
   if (ws.readyState===WebSocket.CLOSED){
@@ -108,15 +112,14 @@ function incoming (data) {
       if (jsonData.value === 'ON') {
         console.log('Setting AWAY Mode to FALSE...')
         if(globals.away != false){
-          main.awayToggle(null)
+          main.awayToggle()
         }
       } else {
         console.log('Setting AWAY Mode to TRUE...')
         if(globals.away != true){
-          main.awayToggle(null)
+          main.awayToggle()
         }
       }
-      console.log(globals)
     } else {
       if (jsonData.action === 'SetTargetTemperature') {
         // command: "Alexa set thermostat to 20 degrees"
@@ -125,8 +128,8 @@ function incoming (data) {
         var targetSetpoint = targetData.targetSetpoint
         var value = targetSetpoint.value
         var scale = targetSetpoint.scale
-        main.updateTarget(value) // send the new target to main!
-        console.log('thermostat is set to ' + value + ' ' + scale)
+        main.overrideTarget(value, 'alexa');
+        console.log('target is overrided by Alexa to ' + value + ' ' + scale +' until next schedule!')
       } else {
         if (jsonData.action === 'AdjustTargetTemperature') {
           // RAISE TEMPERATURE:
@@ -146,7 +149,7 @@ function incoming (data) {
           console.log('thermostat is changing by ' + deltaValue + ' ' + deltaScale)
           main.deltaTarget(deltaValue) // send the new target to main!
         } else {
-          if (jsonData.action === 'SetThermostatMode') {
+          if (jsonData.action === 'SetThermostatMode') { //NOT CURRENTLY IMPLEMENTED ...
             // command: "Alexa set thermostat mode to AUTO"
             // other possible modes are: "COOL", "ECO", "HEAT" and "OFF"
             // {"deviceId":"5a99d846b950f610a7e65f75","action":"SetThermostatMode","value":{"thermostatMode":{"value":"AUTO"}}}
@@ -168,7 +171,7 @@ function manualTargetUpdate(temp){
     var wsdata = {"action":"SetTargetTemperature", "deviceId":thermostatId, "value":{"targetSetpoint":{"value":temp, "scale":"CELSIUS"}}}
     var jsonwsdata = JSON.stringify(wsdata)
     var buffer = Buffer.from(jsonwsdata)
-    ws.send(buffer)
+    send(buffer)
   }
   else {
     console.log("Sinric server is down... Cancelling target update for now.")
@@ -182,7 +185,7 @@ function manualTempUpdate(ambient, target){
     var wsdata = {"action":"SetTemperatureSetting", "deviceId":thermostatId, "value":{"temperatureSetting":{"setpoint":target, "scale":"CELSIUS", "ambientTemperature":ambient}}}
     var jsonwsdata = JSON.stringify(wsdata)
     var buffer = Buffer.from(jsonwsdata)
-    ws.send(buffer)
+    send(buffer)
   }
   else {
     console.log("Sinric server is down... Cancelling temp update for now.")
@@ -190,13 +193,22 @@ function manualTempUpdate(ambient, target){
 }
 
 
-
-function getTargetTemp(target){
-  //as soon I get the target temp I send alexa the info!
-  targetBuf = target
+function send(buffer){
+    ws.send(buffer, function ack(err){
+        if (err!==undefined){
+            console.log(err)
+            console.log('send failed')
+            targetBuf = buffer
+        }
+        else {
+            console.log('message successfully send!')
+            targetBuf = null
+        }
+    })
 }
+
 
 
 module.exports.manualTempUpdate = manualTempUpdate
 module.exports.manualTargetUpdate = manualTargetUpdate
-module.exports.getTargetTemp = getTargetTemp
+module.exports.sendHeartBeat = sendHeartBeat

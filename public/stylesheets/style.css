@@ -113,12 +113,27 @@ a.navbar-brand {
 	height:1px;
 }
 
-/* Changing modal's header color */
+/* Changing modals header color */
 #infoModal .modal-header{
 	background-color:lightblue;
 }
 #infoModal .modal-content {
    overflow:hidden;
+}
+
+/* Changing modal's size */
+
+#overrideModal.modal.fade.in {
+	padding-right: 0px !important;
+}
+
+#overrideModal .modal-body {
+	padding-bottom: 5px;
+}
+
+#overrideModal .modal-footer {
+	padding-top: 10px;
+	padding-bottom: 10px;
 }
 
 /*Changing navbar's color style*/

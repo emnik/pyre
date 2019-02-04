@@ -81,7 +81,8 @@
 							<label class="col-sm-2 control-label" for="sensorlocation<%=sensor.id%>">Location</label>
 						    <div class="col-sm-10">
 						    	<select class="form-control" style="width:100%;" id="sensorlocation<%=sensor.id%>" name="sensorlocation">
-						    		<option value="LivingRoom">LivingRoom</option>
+									<option value="Thermostat">Thermostat</option>
+									<option value="LivingRoom">LivingRoom</option>
 						    		<option value="KidsRoom">KidsRoom</option>
 						    		<option value="Bedroom">Bedroom</option>
 						    		<option value="Hall">Hall</option>
@@ -99,14 +100,14 @@
 							</div>
 						</div>
 						<div class="form-group">
-							<label class="col-xs-12 col-sm-2 control-label <%if (sensor.uid==''){%>hidden<%};%>" for="sensor<%=sensor.id%>">uID</label>
-						    <div class="col-xs-12 col-sm-4 <%if (sensor.uid==''){%>hidden<%};%>">
+							<label class="col-xs-12 col-sm-2 control-label" for="sensor<%=sensor.id%>">uID</label>
+						    <div class="col-xs-12 col-sm-6">
 						    	<input type="text" class="form-control" name="sensoruid" id="sensor<%=sensor.id%>" value="<%=sensor.uid%>">
 							</div>
 						</div>
 						<div class="form-group">
 							<label class="col-xs-12 col-sm-2 control-label" for="sensorPriority<%=sensor.id%>">Priority</label>
-						    <div class="col-xs-12 col-sm-4">
+						    <div class="col-xs-12 col-sm-6">
 								<select class="form-control" style="width:100%;" id="sensorPriority<%=sensor.id%>" name="sensorPriority">
 						    		<option value="1">1</option>
 						    		<option value="2">2</option>

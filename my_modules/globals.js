@@ -1,5 +1,6 @@
 var Globals = {
-    "away" : false
+    "away" : false,
+    "overrideSchedule" : false
 }
 
 module.exports = Globals;

@@ -32,7 +32,7 @@ function runAsync (sql) {
           if (err)
               reject(err);
           else
-              resolve();
+              resolve(this.lastID);
       });
   })
 };

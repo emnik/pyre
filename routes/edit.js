@@ -142,6 +142,7 @@ router.post('/update_profile', function (req, res) {
         }
       })
     })
+    main.start()
   }
 })
 

@@ -23,10 +23,9 @@
         "sinric": "enabled"
     },
     "thermostat": {
-        "min":"0",
-        "max":"30",
-        "step":"0.5",
-        "hysteresis":"0.5"
-    },
-    "localSensorID": "28-00000704830c"
+        "min": "10",
+        "max": "30",
+        "step": "0.5",
+        "hysteresis": "0.5"
+    }
 }

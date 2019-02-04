@@ -5,6 +5,7 @@ var init = require('../my_modules/initiate')
 var main = require('../my_modules/main')
 var sqlite3 = require('sqlite3').verbose()
 var db = new sqlite3.cached.Database('/home/pi/apps/pyre/sensor-data.sqlite')
+var globals = require("../my_modules/globals")
 var config = require('../config.json')
 if (config.modules.sinric==='enabled'){
     var alexa = require('../my_modules/alexa')
@@ -60,15 +61,41 @@ function isRequestLocal (req, res, next) {
 
 
   router.post('/away', function(req, res) {
-    main.awayToggle(function(status){
-      res.send({
-          result: 'ok',
-          status: status
-        })
-      })
+    main.awayToggle()
+    res.contentType('json')
+    res.send({result: 'ok' })
   })
 
 
+  router.post('/checkSinric', function(req, res) {
+    if (config.modules.sinric==='enabled'){
+      alexa.sendHeartBeat()
+      res.contentType('json')
+      res.send({
+        result: 'ok'
+      })
+      //no need to return data as we trigger a heartbeat that will emit back the result via socket.io 
+    }
+  })
+
+  router.post('/checkOverride', function(req, res){
+    main.checkOverride(function(rdata){
+      console.log(rdata)
+      rdata.result = 'ok'
+      res.contentType('json')
+      res.send(rdata)
+    })
+  })
+
+  router.post('/override_temp', function(req, res){
+    var oTemp = req.body.overrideTemp
+    var oOption = req.body.overrideOption
+    main.overrideTarget(oTemp, oOption)
+    res.contentType('json')
+    res.send({result: 'ok'})
+  })
+
+ 
   router.post('/update_temp', function (req, res) {
       var targettemp = req.body.newtemp // numeric
       var twid = req.body.twid 
@@ -76,17 +103,11 @@ function isRequestLocal (req, res, next) {
       var ids = sensor_ids.join(',') // array->string
       db.run('UPDATE time_window SET temp=?, sensor_ids=? WHERE id=?', targettemp, ids, twid, function (err) {
       if (err == null) {
-        main.updateTarget(targettemp, function(status){
-          console.log('status received='+status)
           res.contentType('json')
           res.send({
-            result: 'ok',
-            status: status
+            result: 'ok'
           })
-          if (config.modules.sinric==='enabled'){
-            alexa.manualTargetUpdate(targettemp)
-          }
-        }) // update the running profile's target temp!
+        // }) // update the running profile's target temp!
       } else {
         // if the query is successfull, then this object contains the following -as an example.
         // { sql: 'UPDATE time_window SET temp=?, sensor_ids=? WHERE id=?',lastID: 0,changes: 1 }
@@ -103,13 +124,14 @@ function isRequestLocal (req, res, next) {
 
 async function render_pyre (req, res) {
     var data = await init.run()
-    // var data = await main.start()
     var base_url = req.headers.host
     data.base_url = base_url
     data.isLocal = req.isLocal
     data.minTemp = config.thermostat.min
     data.maxTemp = config.thermostat.max
     data.stepTemp = config.thermostat.step
+    data.sinric = config.modules.sinric
+    data.overrideSchedule = globals.overrideSchedule
     // console.log(data)
 
     res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate')

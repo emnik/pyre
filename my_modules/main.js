@@ -58,7 +58,7 @@ var status = require('../my_modules/status')
 var sqlite3 = require('sqlite3').verbose()
 var db = new sqlite3.cached.Database('/home/pi/apps/pyre/sensor-data.sqlite')
 
-if (config.modules.sinric === 'enabled') {
+if (config.modules.sinric == 'enabled') {
     // load module alexa responsible for the amazon alexa support, powered via sinric smart home skill
     var alexa = require('../my_modules/alexa')
 }
@@ -74,11 +74,15 @@ const server = require('../my_modules/server');
 const socket = server.io
 
 // LOCAL GLOBALS ;-)
+// globals.overrideSchedule = false
 var prevstate = ""
+var overrideType = ""
+var overrideEndTime = ""
 var latestTempData = null
 var curdate = new Date()
 var curday = curdate.getDay()
 var data = null
+var target = null
 var duration = 300 // the last x seconds of temperature data that we want to retrieve from the database
 
 /**  
@@ -87,26 +91,28 @@ var duration = 300 // the last x seconds of temperature data that we want to ret
 
 start()
 
+setInterval(getTemp, 60000) // repeat every 1 min
 
-setInterval(function () {
-  temperature.get_temp_data(duration, function (err, result) {
-    if (err) {
-      console.error(err)
-    }
-    else {
-      curstate = onData(result) // send the temperature and sensor data to the main module
-      latestTempData = result
-      emitSocketIOData(result, null, curstate)
-    }
-  })
-}, 60000) // repeat every 1 min
+function getTemp(){
+    temperature.get_temp_data(duration, function (err, result) {
+        if (err) {
+          console.error(err)
+        }
+        else {
+          curstate = onData(result) // send the temperature and sensor data to the main module
+          latestTempData = result
+          emitSocketIOData(result, curstate)
+        }
+      })
+}
 
 
-
-if (config.modules.sinric==='enabled'){
+if (config.modules.sinric=='enabled'){
     setInterval(function () {
         var ambient = sensorsTempCalc(latestTempData)
-        alexa.manualTempUpdate(ambient.curtemp, time_window_data[0].temp)
+        if (target!=null && target != undefined){
+            alexa.manualTempUpdate(ambient.curtemp, target)
+        }
       }, 180000) // repeat every 3 min
 }
 
@@ -116,35 +122,39 @@ async function start(){
     console.log('Hello from main.start() function')
     data = await init.run()
     prevstate = data.status
-    if (prevstate==="Away"){
+    if (prevstate=="Away"){
         globals.away = true
     }
     console.log('the prevstate is: ' + prevstate)
     if (data!=null){
-        if (data.state.err==="") {
+        if (data.state.err=="" && globals.overrideSchedule==false) {
+            target = data.time_window_data[0].temp;
             latestTempData = data.tempdata
-            if (config.modules.sinric === 'enabled') {
-                alexa.getTargetTemp(data.time_window_data[0].temp) //send alexa the target temp on start...
+            if (config.modules.sinric == 'enabled') {
+                alexa.manualTargetUpdate(target)
             }
             curstate = onData(data.tempdata)
-            emitSocketIOData(data.tempdata, null, curstate)
+            emitSocketIOData(data.tempdata, curstate)
+        } else {
+            getTemp(); //if not in a timewindow lets get at least the temperature data to start...
         }
     }
     return data
 }
 
 
-function emitSocketIOData(newtemp, newtarget, newstatus){
+function emitSocketIOData(newtemp, newstatus){
     if(newtemp!=null){
-        socket.emit('temperatures', newtemp) //emit the sensors data
+        socket.emit("temperatures", newtemp) //emit the sensors data
     }
-    if(newtarget!==null){
-        socket.emit('new_target', {
-            newtemp: newtarget
-          }) 
-    }
+
     if(newstatus!=null){
-        socket.emit('curstate',{curstate: newstatus}) //emit the curstate
+        socket.emit("curstate", {
+            "curstate": newstatus,
+            "override": globals.overrideSchedule,
+            "overrideTarget": (globals.overrideSchedule ? target : null), 
+            "overrideEndTime": (globals.overrideSchedule ? reportOverrideEndTime() : null)
+        }) //emit the curstate and override state-temp
     }
 }
 
@@ -186,11 +196,9 @@ function sensorsTempCalc(tempdata){
     var allfound=0;
     var sumtemp=0;
     var prioritySum=0;
-    // var sensorIdStatus = {enabled, disabled}
     for (var i = data.sensors.length - 1; i >= 0; i--){
-        var sensor_found=0;
         for (var j = tempdata.length - 1; j >= 0; j--) {
-            if(tempdata[j].id === data.default_sensor){
+            if(tempdata[j].id == data.default_sensor){
                 var default_temp = tempdata[j].average; //default temp is used if all sensors (except the default) are offline !!!
             }
             if(data.sensors[i] == tempdata[j].id){
@@ -200,7 +208,6 @@ function sensorsTempCalc(tempdata){
                 sumtemp = sumtemp + tempdata[j].average * tempdata[j].priority;
             }
         }
-        // if (sensor_found===0) {sensorIdStatus.disabled=sensors[i]} else {sensorIdStatus.enabled=sensors[i]}
     }
 
     if(sumtemp!=0){
@@ -215,15 +222,21 @@ function sensorsTempCalc(tempdata){
         curtemp=avgtemp
     }
 
-    // return {sensorIdStatus: sensorIdStatus, curtemp:curtemp}
-    return {curtemp:curtemp}
+    if (data.state.err==''){
+        console.log('using average from live sensors')
+        return {curtemp:curtemp}
+    } else {
+        console.log('using default sensor')
+        return {curtemp:default_temp}
+    }
+    
 }
 
 
 
 function setRelay(curstate){
     var act
-    if (curstate==="Paused" || curstate==="Away") act=0; else act=1
+    if (curstate=="Paused" || curstate=="Away") act=0; else act=1
     relay.act(pin.thermostat, act, function (err) { // 0 = OFF
         if (err) {
             console.error(err)
@@ -246,99 +259,207 @@ function getCurTime() {
 
 function manage(curTemp){
     var cur = getCurTime();
-    if (data.state.err==="") //true if there is no error so we are in a time window...
-    {
-        if (cur.time >= data.time_window_data[0].on_time && cur.time < data.time_window_data[0].off_time)
-        {
-            if (prevstate==="Working"){
-                if (curTemp >= data.time_window_data[0].temp){
-                    //the status is: paused
-                    curstate = "Paused";
-                }
-                else
-                {
-                    //the status is: working
-                    curstate = "Working";
-                }
-
+    if (globals.overrideSchedule){
+        if (overrideType=='timed'){
+            if (cur.day>curday && overrideEndTime>"23:59"){
+                var oT = overrideEndTime.split(':');
+                var oH = parseInt(oT[0])-24;
+                var oM = oT[1]
+                var oHs = oH.toString();
+                if (oHs<10) oHs="0"+oHs;
+                overrideEndTime = oHs + ":" + oM;
+                console.log(overrideEndTime)
             }
-            else //prevstate==="Paused" or prevstate==="Away" or prevstate==="" Initial state - we just got data for the first time!
-            {
-                if(curTemp+hysteresis <= data.time_window_data[0].temp){
-                    //the status is: working
-                    curstate = "Working";
+            if (cur.time < overrideEndTime) {
+                console.log('in timed override until: '+ overrideEndTime)
+                if (prevstate=="Working"){
+                     if (curTemp >= target) {curstate = "Paused";} else {curstate = "Working";}
                 }
-                else
-                {
-                    //the status is: paused
-                    curstate = "Paused";
+                else {
+                    if(curTemp+hysteresis <= target) {curstate = "Working";} else {curstate = "Paused";}
                 }
             }
-            // console.log(curstate);
+            else {
+                globals.overrideSchedule = false; 
+                curstate="Refresh";
+            }
         }
-        else
-        {
-            //we just went off the time window so we refresh to get new data
-            console.log('refresh');
-            curstate="Refresh"
+        else if (overrideType == 'schedule') {
+            if (data.state.err=="") { //true if there is no error so we are in a time window... 
+                if (cur.time < data.time_window_data[0].off_time) {
+                    console.log('in schedule override until '+ data.time_window_data[0].off_time)
+                    if (prevstate=="Working"){ if (curTemp >= target){curstate = "Paused";} else {curstate = "Working";}}
+                    else if(curTemp+hysteresis <= target){curstate = "Working";} else {curstate = "Paused";}
+                }
+                else {globals.overrideSchedule = false; curstate="Refresh";}
+        } else if (data.state.err=="No_time_window") {
+            if (Object.keys(data.time_window_next).length!==0) {//true if there is a following time window...
+                if (cur.time < data.time_window_next.on_time && cur.day == curday){
+                    if (prevstate=="Working"){ if (curTemp >= target){curstate = "Paused";} else {curstate = "Working";}}
+                    else if(curTemp+hysteresis <= target){curstate = "Working";} else {curstate = "Paused";}
+                }
+                else {globals.overrideSchedule = false; curstate="Refresh";}
+            } else if (cur.day == curday){
+                    if (prevstate=="Working"){ if (curTemp >= target){curstate = "Paused";} else {curstate = "Working";}}
+                    else if(curTemp+hysteresis <= target){curstate = "Working";} else {curstate = "Paused";}
+                }
+                else {globals.overrideSchedule = false; curstate="Refresh";}
+                }
+            
+        }
+        else if (overrideType == 'manual') {
+            if (prevstate=="Working"){ if (curTemp >= target){curstate = "Paused";} else {curstate = "Working";}}
+            else if(curTemp+hysteresis <= target){curstate = "Working";} else {curstate = "Paused";}
         }
     }
-    else if (data.state.err==="No_time_window") //true if we are not in a time window...
+    else // no override!
     {
-        console.log("Not in a time window...");
-        //the status is: paused
-        curstate = "Paused";
-        if (Object.keys(data.time_window_next).length!==0) //true if there is a following time window...
+        if (data.state.err=="") //true if there is no error so we are in a time window...
         {
-            console.log("There is a following time window. Waiting...");
-            //when we get in this following time window we refresh to update our data...
-            if (cur.time >= data.time_window_next.on_time && cur.time < data.time_window_next.off_time) {
-                curstate="Refresh"
-                //console.log('refresh on new time window!!!');
-            }
-            console.log("Or maybe the next day comes first!");
-            // console.log(cur.day, curday);
-            if (cur.day > curday)
+            if (cur.time >= data.time_window_data[0].on_time && cur.time < data.time_window_data[0].off_time)
             {
-                //console.log("refresh on new day!!!");
+                if (prevstate=="Working"){
+                    if (curTemp >= target) {curstate = "Paused";} else {curstate = "Working";}
+                }
+                else //prevstate=="Paused" or prevstate=="Away" or prevstate=="" Initial state - we just got data for the first time!
+                {
+                    if (curTemp+hysteresis <= target) {curstate = "Working";} else {curstate = "Paused";}
+                }
+            }
+            else
+            {
+                //we just went off the time window so we refresh to get new data
+                console.log('refresh');
                 curstate="Refresh"
             }
         }
-        else //there is not a time window neither a following one so we refresh for new data on the next day!!!
+        else if (data.state.err=="No_time_window") //true if we are not in a time window...
         {
-            console.log("There isn't a time window following. Will refresh on next day! Waiting...");
-            //the status is: paused
+            console.log("Not in a time window...");
             curstate = "Paused";
-            if (cur.day > curday)
+            if (Object.keys(data.time_window_next).length!==0) //true if there is a following time window...
             {
-                //console.log("refresh on new day!!!");
-                curstate="Refresh"
+                console.log("There is a following time window. Waiting...");
+                //when we get in this following time window we refresh to update our data...
+                if (cur.time >= data.time_window_next.on_time && cur.time < data.time_window_next.off_time) {
+                    curstate="Refresh"
+                }
+                console.log("Or maybe the next day comes first!");
+                if (cur.day > curday)
+                {
+                    curstate="Refresh"
+                }
+            }
+            else //there is not a time window neither a following one so we refresh for new data on the next day!!!
+            {
+                console.log("There isn't a time window following. Will refresh on next day! Waiting...");
+                curstate = "Paused";
+                if (cur.day > curday)
+                {
+                    curstate="Refresh"
+                }
             }
         }
+        else //there is an Overlap!!!
+        {
+            curstate = "Paused";
+            console.log("Do nothing - wait for the user to fix the overlap!!!");
+        }
     }
-    else //there is an Overlap!!!
-    {
-        curstate = "Paused";
-        console.log("Do nothing - wait for the user to fix the overlap!!!");
-    }
-    
     return curstate
 }
 
-function updateTarget(target, callback){ // callback(status)
-    data.time_window_data[0].temp = parseFloat(target)
-    console.log('new temp target set: ' + target)
+
+/******* OVERRIDE SCHEDULE *******
+ ******* RELATED FUNCTIONS *******/
+
+function checkOverride(callback){
     curstate = onData(latestTempData)
-    if (callback!= null && callback!=undefined){
-        callback(curstate) // report back the status!
+    var data = {"curstate": curstate,
+        "override": globals.overrideSchedule,
+        "overrideTarget": (globals.overrideSchedule ? target : null), 
+        "overrideEndTime": (globals.overrideSchedule ? reportOverrideEndTime() : null)
     }
-    else {
-        emitSocketIOData(null, target, curstate)
-        saveNewTargetTemp2DB(target, data.time_window_data[0].id)
+    callback(data)
+}
+
+function setOverrideEndTime(deltaHours){
+    var d = new Date();
+    var n = d.getDay();
+    var h = d.getHours();
+    h += deltaHours;
+    var m = d.getMinutes();
+    if (h<10) h="0"+h;
+    if (m<10) m="0"+m;
+    var endTime = h+":"+m;
+    return endTime;
+}
+
+
+function reportOverrideEndTime(){
+    if(overrideType=='timed'){
+        if (overrideEndTime>="23:59") {
+            var oT = overrideEndTime.split(":");
+            var oH = parseInt(oT[0])-24;
+            if (oH<10) oH = "0" + oH;
+            return (oH+":"+oT[1])
+        }
+        else {
+            return overrideEndTime
+        }
+    } 
+    else if (overrideType == 'manual') {
+        return 'manually changed'
+    }
+    else if (overrideType=='schedule'){
+        return 'next schedule'
     }
 }
 
-function awayToggle(callback){ // callback(status)
+function overrideTarget(newtarget, option){
+    console.log('newtarget=' + newtarget +' ,option=' + option);
+    if (newtarget!=null){ //this is null when option='cancel' and there is not a valid timewindow
+        target = parseFloat(newtarget)
+         if (config.modules.sinric == 'enabled'){
+            if (option != 'alexa'){
+               alexa.manualTargetUpdate(target)
+            }
+        }
+    }
+    if (option == 'timed1'){
+        overrideEndTime = setOverrideEndTime(2);
+        overrideType = 'timed';
+        globals.overrideSchedule = true;
+    } 
+    else if (option == 'timed2') {
+        overrideEndTime = setOverrideEndTime(4);
+        overrideType = 'timed';
+        globals.overrideSchedule = true;
+    } 
+    else if (option == 'schedule') {
+        overrideType = 'schedule';
+        globals.overrideSchedule = true;
+    }
+    else if (option == 'manual') {
+        overrideType = 'manual';
+        globals.overrideSchedule = true;
+    }
+    else if (option == 'cancel') {
+        console.log('target override is canceled!')
+        overrideType = 'cancel';
+        globals.overrideSchedule = false;
+    } else if (option == 'alexa') {
+        overrideType = 'schedule';
+        globals.overrideSchedule = true;
+    }
+
+    curstate = onData(latestTempData)
+    emitSocketIOData(null, curstate)
+}
+
+
+
+function awayToggle(){
     globals.away = !globals.away
     if (globals.away){
         curstate = "Away"
@@ -347,16 +468,13 @@ function awayToggle(callback){ // callback(status)
         console.log(latestTempData)
         curstate = onData(latestTempData)
     }
+
     if (curstate != prevstate){
         status.set_status(curstate)
-        }
-    setRelay(curstate)
-
-    if(callback!=null){
-        callback(curstate)
-    } else {
-        emitSocketIOData(null, null, curstate)
     }
+
+    setRelay(curstate)
+    emitSocketIOData(null, curstate)
 }
 
 /** 
@@ -366,45 +484,23 @@ function awayToggle(callback){ // callback(status)
 **/
 
 function deltaTarget(delta){ 
-    if (delta===1){
-        delta = parseFloat(config.hysteresis)
-    }
-    data.time_window_data[0].temp += delta
-    console.log('new temp target set: ' + data.time_window_data[0].temp)
-    curstate = onData(latestTempData)
-    emitSocketIOData(null, data.time_window_data[0].temp, curstate)
-    saveNewTargetTemp2DB(data.time_window_data[0].temp, data.time_window_data[0].id)
+    delta = parseFloat(config.hysteresis)
+    var newtarget = target+delta;
+    overrideTarget(newtarget, 'schedule')
+    console.log('target is overrided by Alexa to ' + newtarget + ' until next schedule!')
 }
 
-function sendTargetTemp(){
-    //send Alexa the target temp if "she asks for it!"
-    return new Promise(function(resolve, reject){
-        if(data!=null){
-            if (data.state.err===""){
-                resolve(data.time_window_data[0].temp)
-            }
-            else {
-                reject('No temp data - Error or no timewindow...')
-            }
-        }
-    })
-}
 
-function saveNewTargetTemp2DB(targettemp, id){
-    db.run('UPDATE time_window SET temp=? WHERE id=?', targettemp, id, function (err) {
-        if (err == null) {
-            console.log("the new setpoint is saved in db!")
-        } else {
-            // if the query is successfull, then this object contains the following -as an example.
-            // { sql: 'UPDATE time_window SET temp=?, sensor_ids=? WHERE id=?',lastID: 0,changes: 1 }
-            console.error(err)
-        }
-    })
+function sendSinricStatus(status){
+    socket.emit('sinric', {
+        status: status
+      }) 
 }
 
 module.exports.start = start
 module.exports.onData = onData
-module.exports.updateTarget = updateTarget
+module.exports.overrideTarget = overrideTarget
+module.exports.checkOverride = checkOverride
 module.exports.deltaTarget = deltaTarget
-module.exports.sendTargetTemp = sendTargetTemp
 module.exports.awayToggle = awayToggle
+module.exports.sendSinricStatus = sendSinricStatus

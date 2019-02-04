@@ -39,10 +39,10 @@
 				<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 					<ul class="nav navbar-nav navbar-right">
 						<!-- <li><a href="#" onclick="openPage('config')">Config</a></li> -->
-						<li><a href="#" onclick="openPage('settings')">Settings</a></li>
+						<li><a href="#" onclick="openPage('settings')">Config</a></li>
 						<li><a href="#" onclick="openPage('about')">About</a></li>
 						<!-- <li><a href="http://<%=base_url%>/about">About</a></li> -->
-						<li><a id="awayOrNot" href="#" onclick="toggleAway()">Away</a></li>
+						<!-- <li><a id="awayOrNot" href="#" onclick="toggleAway()">Away</a></li> -->
 						<%if(!isLocal){%>
 						<li><a href="http://<%=base_url%>/logout">Logout</a></li>
 						<%}%>
@@ -83,6 +83,9 @@
 				</div>
 				<div class="modal-body">
 					<p></p>
+					<!-- <ul> -->
+						<!-- <li></li> -->
+					<!-- </ul> -->
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -92,10 +95,59 @@
 	</div><!-- /.modal -->
 
 
+	<div id="overrideModal" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<!-- <div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title">
+						Hold for...
+					</h4>
+				</div> -->
+				<div class="modal-body">
+					<b class="modal-title">
+						Hold <span id="overrideTarget"></span> for...
+					</b>
+					<div class="radio">
+						<label>
+						  <input type="radio" name="overrideOptions" id="overrideOptions1" value="timed1">
+						  2 hours
+						</label>
+					  </div>
+					  <div class="radio">
+						<label>
+						  <input type="radio" name="overrideOptions" id="overrideOptions2" value="timed2">
+						  4 hours
+						</label>
+					  </div>
+					  <div class="radio">
+						<label>
+						  <input type="radio" name="overrideOptions" id="overrideOptions3" value="schedule">
+						  Until next schedule
+						</label>
+					  </div>
+					  <div class="radio">
+						<label>
+						  <input type="radio" name="overrideOptions" id="overrideOptions4" value="manual">
+						  Until I change it
+						</label>
+					  </div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" id="cancelOverride" class="btn btn-sm btn-danger" data-dismiss="modal">Cancel</button>
+				</div>
+			</div><!-- /.modal-content -->
+		</div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
+
+	<div class='device-check visible-xs' data-device='xs'></div>
+	<div class='device-check visible-sm' data-device='sm'></div>
+	<div class='device-check visible-md' data-device='md'></div>
+	<div class='device-check visible-lg' data-device='lg'></div>
+
 	<!-- ################################################################################################################-->
 	<!-- ########################################### ONLY FOR PITFT 2.8 ################################################# -->
 	<!-- ################################################################################################################-->
-
 
 
 	<div class="visible-xs-block" style="height:100%;  overflow-y:hidden; overflow-x:hidden;">
@@ -103,7 +155,7 @@
 			<div class="row">
 				<div class="col-xs-12">
 					<div style="margin-top:10px;">
-						<% if (state.err==="") {%>
+						<% if (state.err!=="Overlap") {%>
 							<% if (status ==="Working") {%>
 							<span id="awayOrNot-pitft" class="fa fa-2x fa-home fa-pull-left" style="cursor:pointer; color:lightseagreen;" onClick="toggleAway()"></span>
 							<span id="status-pitft" class="fa fa-2x fa-fire status-pitft working""></span>
@@ -121,6 +173,7 @@
 								<span id="awayOrNot-pitft" class="fa fa-2x fa-home fa-pull-left" style="cursor:pointer; color:lightseagreen;"></span>
 								<span id="status-pitft" class="fa fa-2x fa-fire status-pitft default" style="color:lightseagreen;"></span>
 							<%};%>
+							<span id="override-pitft" class="fa fa-2x fa-thumb-tack hidden" style="color:red;margin-left:5px;cursor:pointer;" onClick="overrideTemp(<%if( state.err==''){%><%=time_window_data[0].temp%><%}else{%><%='null'%><%}%>, 'cancel')"> </span>
 						<div class="pull-right">
 							<span id="infos-pitft" class="fa fa-2x fa-info-circle" style="cursor:pointer; color:rgb(130, 155, 238); padding-right: 10px;" onClick="showInfoModal();"></span>
 							<span class=" fa fa-2x fa-navicon" style="cursor:pointer; color:lightseagreen;" onClick="return openPage('/config/settings')"></span>
@@ -236,59 +289,6 @@
 
 
 	<!-- ################################################################################################################-->
-	<!-- #################### ONLY FOR EXTRA SMALL SCREENS LIKE PHONE ########################################### -->
-	<!-- ################################################################################################################-->
-
-
-	<div class="card-main-xs hidden">
-		<div onclick="toggleAway()" style="text-align:center;">
-			<div id="status-xs" style="padding-bottom: 0px;">
-				<% if (state.err==="") {%>
-				<% if (status ==="Working") {%>
-				<span class="status working fa fa-fire"></span>
-				<% } else if (status ==="Paused") {%>
-				<span class="status paused fa fa-fire "></span>
-				<% } else if (status ==="Away") {%>
-				<span class="status away fa fa-fire"></span>
-				<% } else {%>
-				<span class="status default fa fa-fire"></span>
-				<% }
-				}; %>
-			</div>
-			<!-- status can be either: Working / Paused / Overlap-->
-		</div>
-		<div id="temp-xs" style="text-align: center;" onClick="location.reload();">
-			<div style="font-size:300%;font-weight:lighter;">
-				<!-- <i class="fa fa-thermometer-half" aria-hidden="true"></i> -->
-				<span>
-					...
-				</span>&deg;C
-			</div>
-		</div>
-
-		<div style="margin-top:0px;">
-			<div id="circle-xs" class="circle" style="margin-left:auto;margin-right:auto;">
-				<strong>
-					<span id="newTargetTemp-xs">
-						<% if (state.err==="") {%>
-						<%=time_window_data[0].temp%>
-						<% } else {%> -
-						<%}%>
-					</span>
-					&deg C
-				</strong>
-			</div>
-
-		</div>
-		<% if (typeof time_window_data[0]!=="undefined"){%>
-		<div style="margin-top:20px;padding-left:15px;padding-right:15px;">
-			<input id="range-xs" type="range" min="<%=minTemp%>" max="<%=maxTemp%>" value="<%=time_window_data[0].temp%>" step='<%=stepTemp%>'>
-		</div>
-		<%}%>
-	</div>
-
-
-	<!-- ################################################################################################################-->
 	<!-- #################### ONLY FOR TABLETS OR PCS (DESKTOP / LAPTOP) ################################################ -->
 	<!-- ################################################################################################################-->
 
@@ -305,7 +305,7 @@
 							<div class="card-main" style="height:450px;">
 								<div onclick="toggleAway()" style="margin-top:40px;text-align:center;#F6F4EC;">
 									<div id="status" style="padding-bottom: 10px;">
-										<% if (state.err==="") {%>
+										<% if (state.err!=="Overlap") {%>
 										<% if (status ==="Working") {%>
 										<!-- <span class="label label-success">Working</span> -->
 										<span class="status working fa fa-fire"></span>
@@ -336,7 +336,7 @@
 									<div id="circle" class="circle" style="margin-left:auto;margin-right:auto;">
 										<strong>
 											<span id="newTargetTemp">
-												<% if (state.err==="") {%>
+												<% if (state.err=="") {%>
 												<%=time_window_data[0].temp%>
 												<% } else {%> -
 												<%}%>
@@ -345,11 +345,10 @@
 										</strong>
 									</div>
 
-									<% if (typeof time_window_data[0]!=="undefined"){%>
-										<div style="margin-top:20px;padding-left:15px;padding-right:15px;">
-											<input id="range" type="range" min="<%=minTemp%>" max="<%=maxTemp%>" value="<%=time_window_data[0].temp%>" step='<%=stepTemp%>'>
-										</div>
-									<%}%>
+									
+									<div style="margin-top:20px;padding-left:15px;padding-right:15px;">
+										<input id="range" type="range" min="<%=minTemp%>" max="<%=maxTemp%>" step='<%=stepTemp%>'>
+									</div>
 
 									<div style="color:white; padding-left:10px;margin-top: 20px;text-align: center;" id="details">
 											<%if (typeof time_window_data[0]!=="undefined" && Object.keys(time_window_next).length!==0){%>
@@ -412,17 +411,23 @@
 							<!-- <div class="row"> -->
 							<div class="card-secondary" style="height:450px;">
 								<p>
-									<span onClick="return openPage('/edit/mode')" class="fa-pull-right fa fa-cog" style="padding-right:10px; cursor:pointer;color: darkgray"></span>
+									<span onClick="return openPage('/edit/mode')" class="btn btn-xs btn-default pull-right" style="margin-right:10px; letter-spacing: 1px; cursor:pointer;">Set up</span>
 									SCHEDULE
 								</p>
 
 								<p id="date"></p>
-
-								<% if (typeof time_window_data[0]!=="undefined"){%>
-								<div id="content" onClick="return openPage('/edit/<% profiles.forEach(function(item){if (item.status==1){%><%=item.id%><%}})%>')"
-								 style="cursor:pointer;">
-									<h2>Timeline</h2>
-
+								<p id="override"></p>
+								
+								<div id="content">
+									<h2>Upcoming events
+									<span class="btn btn-xs btn-default pull-right" style="margin-right:10px;margin-top:5px;cursor:pointer;" onClick="return openPage('/edit/<% profiles.forEach(function(item){if (item.status==1){%><%=item.id%><%}})%>')">edit</span>
+									</h2>
+									<p>
+										<!-- <h2> -->
+											(<% profiles.forEach(function(item){if (item.status==1){%><%= item.name %><%}});%> Mode)
+										<!-- </h2> -->
+									</p>
+									<% if (typeof time_window_data[0]!=="undefined"){%>
 									<ul class="timeline">
 										<% if (typeof time_window_data[0]!=="undefined") {%>
 										<li class="event" data-date="<%=time_window_data[0].on_time%> - <%=time_window_data[0].off_time%>">
@@ -441,8 +446,11 @@
 										</li>
 										<%}%>
 									</ul>
+									<%} else {%>
+										<p> There is no schedule for today...</p>
+									<%}%>
 								</div>
-								<%};%>
+
 
 								<!-- <p>
 									<span class="label-group" id='profiles'>
@@ -479,7 +487,7 @@
 
 						<div class="col-xs-6">
 							<div class="card-extra" style="height:130px;">
-								<p>SENSORS</p>
+								<p>SENSORS CURRENTLY USED</p>
 								<div style="margin-right:15px; ">
 									<span style="font-size: 65px; color:rgb(45, 50, 53); text-shadow: -1px 0 lightgrey, 0 1px lightgrey, 1px 0 lightgrey, 0 -1px lightgrey;"
 									 class="fa fa-bullseye fa-pull-right"></span>
@@ -537,7 +545,7 @@
 					</div>
 					<div class="col-xs-12">
 						<div class="row">
-							<div class="col-xs-4">
+							<div class="col-xs-6">
 								<div class="card-secondary" id="system" onClick="return openPage('/config/system');" style="cursor: pointer;height:130px;">
 									<p>SETTINGS</p>
 									<div style="text-align: right; margin-right:15px; ">
@@ -545,7 +553,23 @@
 										 class="fa fa-sliders"></span>
 									</div>
 								</div>
-							</div>
+                            </div>
+                            <%if (sinric==="enabled"){%>
+                            <div class="col-xs-6">
+								<div class="card-extra" id="system" style="height:130px;">
+									<p>ALEXA (Sinric)</p>
+										<div style="margin-right:15px;">
+											<span style="font-size: 65px; color:rgb(45, 50, 53); text-shadow: -1px 0 lightslategrey, 0 1px lightslategrey, 1px 0 lightslategrey, 0 -1px lightslategrey;"
+										 	class="fa fa-amazon fa-pull-right"></span>
+										<span style="padding-left:10px; padding-top:10px; font-size:20px;" class="pull-left">
+											<span id="sinricStatus" class="label label-default">
+												Checking status ...
+											</span>
+										</span>
+									</div>
+								</div>
+                            </div>
+                            <%}%>
 						</div>
 					</div>
 				</div>
@@ -569,6 +593,11 @@
 	var myVar; //used for the timing of raising and lowering the temperature
 	var socket;
 	var myChart;
+	var overrideInfo="";
+	var grid=get_current_grid_option();
+	var gridPrev=get_current_grid_option();
+
+
 	$(document).ready(function () {
 
 		$('#date').text(curdate.toDateString());
@@ -595,11 +624,11 @@
 			$('#info-pitft').remove();
 			infomsg = '<p id="info" style="color:lightblue;font-size:small;">' +
 				'<span class="fa fa-info-circle" style="padding-right:5px;"></span>' +
-				'Thermostat is set to constant operation! No schedule is active!'
+				'Thermostat is set to constant operation!'
 			$('#details').append(infomsg);
 			infomsgPitft = '<p id="info-pitft" style="color:lightblue;font-size:small;">' +
 				'<span class="fa fa-info-circle" style="padding-right:5px;"></span>' +
-				'Thermostat is set to constant operation! No schedule is active!'
+				'Thermostat is set to constant operation!'
 			$('#details-pitft').append(infomsgPitft);
 		}
 
@@ -679,10 +708,10 @@
 		$("#status-pitft").removeClass("working default away paused");
 		$("#status-pitft").addClass("paused");
 
-		$("#status>span, #status-xs>span").removeClass("default");
-		$("#status>span, #status-xs>span").addClass("paused");
+		$("#status>span").removeClass("default");
+		$("#status>span").addClass("paused");
 
-		$('#temp>div>span, #temp-xs>div>span, #temp-pitft>div>span').text(<%=default_temp %>); //this is the first attempt... If the sensors are all remote, we might get data in a while...
+		$('#temp>div>span, #temp-pitft>div>span').text(<%=default_temp %>); //this is the first attempt... If the sensors are all remote, we might get data in a while...
 
 		var msg = '<p id="info" style="color:lightblue;font-size:small;">' +
 			'<span class="fa fa-warning" style="padding-right:5px;"></span>' +
@@ -700,8 +729,18 @@
 		else
 	{
 		// manage(<%=avgtemp%>);
-		$('#temp>div>span, #temp-xs>div>span, #temp-pitft>div>span').text(<%=avgtemp %>);
+		$('#temp>div>span, #temp-pitft>div>span').text(<%=avgtemp %>);
 	}
+
+
+	$('#range').val(function(index, value){
+		<% if (state.err==""){%>
+			value = <%=time_window_data[0].temp%>
+		<%} else {%>
+			value = $('#temp>div>span').text()
+		<%}%>
+		return value
+	});
 
 
 	socket.on('temperatures', function (data) {
@@ -753,37 +792,41 @@
 		$("#status-pitft").removeClass("working default away paused");
 		$("#status-pitft").addClass("paused");
 		// $("#status-pitft").text("Paused");
-		$("#status>span, #status-xs>span").removeClass("default");
-		$("#status>span, #status-xs>span").addClass("paused");
-		$("#temp-pitft>div>span, #temp-xs>div>span, #temp>div>span").text(default_temp); //If the sensors are all remote, we will get data when / if they become available... Until then we just use the default sensor to show the temperature. We don't use this value though for managing the thermostat.
-		var msg = '<p id="info" style="color:lightblue;font-size:small;">' +
-			'<span class="fa fa-warning" style="padding-right:5px;"></span>' +
-			' Paused until a sensor becomes online.' +
-			'</p>'
-		$('#info').remove();
-		$('#details').append(msg);
-		var msgPitft = '<p id="info-pitft" style="color:lightblue;font-size:small;">' +
-			'<span class="fa fa-warning" style="padding-right:5px;"></span>' +
-			' Paused until a sensor becomes online.' +
-			'</p>'
-		$('#info-pitft').remove();
-		$('#details-pitft').append(msgPitft);
+		$("#status>span").removeClass("default");
+		$("#status>span").addClass("paused");
+		$("#temp-pitft>div>span, #temp>div>span").text(default_temp); //If the sensors are all remote, we will get data when / if they become available... Until then we just use the default sensor to show the temperature. We don't use this value though for managing the thermostat.
+		// var msg = '<p id="info" style="color:lightblue;font-size:small;">' +
+		// 	'<span class="fa fa-warning" style="padding-right:5px;"></span>' +
+		// 	' Paused until a sensor becomes online.' +
+		// 	'</p>'
+		// $('#info').remove();
+		// $('#details').append(msg);
+		// var msgPitft = '<p id="info-pitft" style="color:lightblue;font-size:small;">' +
+		// 	'<span class="fa fa-warning" style="padding-right:5px;"></span>' +
+		// 	' Paused until a sensor becomes online.' +
+		// 	'</p>'
+		// $('#info-pitft').remove();
+		// $('#details-pitft').append(msgPitft);
 	}
 	else {
-		$("#temp-pitft>div>span, #temp-xs>div>span, #temp>div>span").text(avgtemp);
+		$("#temp-pitft>div>span, #temp>div>span").text(avgtemp);
 
-		$('#info, #info-pitft').remove();
-		$('#details').append(infomsg);
-		$('#details-pitft').append(infomsgPitft);
+		// $('#info, #info-pitft').remove();
+		// $('#details').append(infomsg);
+		// $('#details-pitft').append(infomsgPitft);
 
 
 		//update live graph with new data if <Live graph> is selected.
 
-		var duration = $('#graph_duration').val();
-		if (duration == '1') { //Live graph
-			update_live_graph(avgtemp);
-		}
-
+		if (grid !='xs'){
+			var duration = $('#graph_duration').val();
+			if (duration == '1') { //Live graph
+				update_live_graph(avgtemp);
+			}
+		} 
+		// else {
+		// 	console.log('chart is not visible and will not be updated with the new data...');
+		// }
 	}
 	});
 
@@ -806,8 +849,6 @@
 			localData['next_sensors'] = '<%=time_window_next.sensor_ids%>';
 			localData['next_temp'] = '<%=time_window_next.temp%>';
 			<%};%>
-			// console.log('receiving working data...');
-			// console.log(localData);
 			var hash = objectHash.sha1(localData);
 		// console.log(hash);
 		if (hash !== data) {
@@ -819,45 +860,24 @@
 		}
 	});
 
-	socket.on('new_target', function (data) {
-		console.log(data.newtemp);
-		if ($('#newTargetTemp, #newTargetTemp-xs, #targetTemp-pitft').text() != data.newtemp) {
-			$('#newTargetTemp, #newTargetTemp-xs, #targetTemp-pitft').text(data.newtemp);
-			$('#range, #range-xs').val(data.newtemp);
-		}
-	});
-
 	socket.on('curstate', function (data) {
-		console.log(data.curstate);
-		if (data.curstate === "Paused") {
-			$("#status-pitft").removeClass("working default away paused");
-			$("#status-pitft").addClass("paused");
-			$("#status>span, #status-xs>span").removeClass("default working paused away");
-			$("#status>span, #status-xs>span").addClass("paused");
-			setHomeAwayBtnsStyle("Home")
-			$('#awayOrNot-pitft').removeClass('fa-home, fa-road');
-			$('#awayOrNot-pitft').addClass('fa-home');
-		}
-		else if (data.curstate === "Working") {
-			$("#status-pitft").removeClass("working default away paused");
-			$("#status-pitft").addClass("working");
-			$("#status>span, #status-xs>span").removeClass("default working paused away");
-			$("#status>span, #status-xs>span").addClass("working");
-			setHomeAwayBtnsStyle("Home")
-			$('#awayOrNot-pitft').removeClass('fa-home, fa-road');
-			$('#awayOrNot-pitft').addClass('fa-home');
-		}
-		else if (data.curstate === "Away") {
-			$("#status-pitft").removeClass("working default away paused");
-			$("#status-pitft").addClass("away");
-			$("#status>span, #status-xs>span").removeClass("default working paused away");
-			$("#status>span, #status-xs>span").addClass("away");
-			setHomeAwayBtnsStyle("Away")
-			$('#awayOrNot-pitft').removeClass('fa-home, fa-road');
-			$('#awayOrNot-pitft').addClass('fa-road');
-		}
-
+		console.log(data);
+		handleStateUpdate(data)
 	});
+
+	socket.on('sinric', function(data){
+		$('#sinricStatus').removeClass('label-success label-info label-danger label-default')
+		if (data.status==='Online'){
+			$('#sinricStatus').addClass('label-success')
+		 } else if (data.status==='Reconnecting ...') {
+			$('#sinricStatus').addClass('label-info')
+		 } else if (data.status==='Server down!') {
+			$('#sinricStatus').addClass('label-danger')
+		 } else {
+			$('#sinricStatus').addClass('label-default')
+		 }
+		$('#sinricStatus').text(data.status);
+	})
 
 	socket.on('disconnect', function () {
 		console.log('SOCKET DISCONNECTED!'); //the server is propably down
@@ -875,24 +895,23 @@
 	{
 		$("#status-pitft").removeClass("working default away paused");
 		$("#status-pitft").addClass("default");
-		$("#status>span, #status-xs>span").removeClass("default working paused away");
-		$("#status>span, #status-xs>span").addClass("default");
+		$("#status>span").removeClass("default working paused away");
+		$("#status>span").addClass("default");
 		$('#errModal').modal('show');
 	}
 		else if (<%= (state.err === "No_time_window") %>) //true if not in a time window
 	{
 		$("#status-pitft").removeClass("working default away paused");
 		$("#status-pitft").addClass("paused");
-		$("#status>span, #status-xs>span").removeClass("default working paused away");
-		$("#status>span, #status-xs>span").addClass("paused");
+		$("#status>span").removeClass("default working paused away");
+		$("#status>span").addClass("paused");
 	}
 		else if (<%= tempdata === {} %>) //no error -we are in a time window... but no initial temp data - this should not happen...
 	{
 		$("#status-pitft").removeClass("working default away paused");
 		$("#status-pitft").addClass("default");
-		// $("#status-pitft").text("Waiting data...");
-		$("#status>span, #status-xs>span").removeClass("default working paused away");
-		$("#status>span, #status-xs>span").addClass("default");
+		$("#status>span").removeClass("default working paused away");
+		$("#status>span").addClass("default");
 	}
 
 	$('[name="graph_duration"]').select2({
@@ -904,80 +923,89 @@
 
 
 	$("#raiseTempBtn").on('mousedown touchstart', function () {
-			<%if (typeof time_window_data[0] !== "undefined") {%>
-			tempC = $('#targetTemp-pitft').text();
-			var fl = parseFloat(tempC);
+			<%if (state.err=='') {%>
+				tempC = $('#targetTemp-pitft').text();
+				var fl = parseFloat(tempC);
+				<%} else {%>
+				tempC = $('#temp>div>span').text();
+				var fl = parseFloat(tempC);
+				fl = Math.round(fl)
+			<%}%>
 			const step = <%=stepTemp%>;
 			const max = <%=maxTemp%>;
 			myVar = window.setInterval(function () {
 				fl = Math.round(fl * 10 + step*10) / 10;
 				if ((fl <= parseFloat(tempC) + 2 && (fl<max))) {
-					$('#newTargetTemp, #newTargetTemp-xs, #targetTemp-pitft').text(fl);
-					$('#range, #range-xs').val(fl);
+					$('#newTargetTemp, #targetTemp-pitft').text(fl);
+					$('#range').val(fl);
 				}
 				else if (fl >= max) {
-					$('#newTargetTemp, #newTargetTemp-xs, #targetTemp-pitft').text(max);
-					$('#range, #range-xs').val(max);
+					$('#newTargetTemp, #targetTemp-pitft').text(max);
+					$('#range').val(max);
 				}
 				else {
 					window.clearInterval(myVar);
 				}
 			}, 300);
-			<%};%>
 			return false;
 	});
 
 
 	$("#raiseTempBtn").on('mouseup touchend', function () {
-			<%if (typeof time_window_data[0] !== "undefined") {%>
 			window.clearInterval(myVar); // in case the mousedown-touchstart ended before clearingInterval...
 			tempC = $('#targetTemp-pitft').text();
 			var t = parseFloat(tempC);
-			// var name = "<%if(typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].name%><%};%>";
-			// var sensor_ids = "<%if(typeof time_window_data[0]!=="undefined"){%><%=time_window_data[0].sensor_ids%><%};%>".split(',');
-			// setTemp(t, name, sensor_ids);
-			setTemp(t);
-			<% }
-		else { %>
-			console.log("Nothing to do! There is not target temp!");
-			<% };%>
+			$("input:radio").prop('checked', false);
+    		$("input:radio").closest("label").removeClass("active");
+			$("#overrideTarget").text(t);
+			$("#overrideModal").modal({
+				keyboard:false,
+				backdrop:false
+			});
 			return false;
 	});
 
 
 	$("#lowerTempBtn").on('mousedown touchstart', function () {
-			<%if (typeof time_window_data[0] !== "undefined") {%>
+		<%if (state.err=='') {%>
 			tempC = $('#targetTemp-pitft').text();
 			var fl = parseFloat(tempC);
-			const step = <%=stepTemp%>;
-			const min = <%=minTemp%>; 
-			myVar = window.setInterval(function () {
-				fl = Math.round(fl * 10 - step*10) / 10;
-				if ((fl >= parseFloat(tempC) - 2) && (fl > min)) {
-					$('#newTargetTemp, #newTargetTemp-xs, #targetTemp-pitft').text(fl);
-					$('#range, #range-xs').val(fl);
-				}
-				else if (fl <= min) {
-					$('#newTargetTemp, #newTargetTemp-xs, #targetTemp-pitft').text(min);
-					$('#range, #range-xs').val(min);
-				}
-				else {
-					window.clearInterval(myVar);
-				}
-			}, 300);
-			<%};%>
-			});
+			<%} else {%>
+			tempC = $('#temp>div>span').text();
+			var fl = parseFloat(tempC);
+			fl = Math.round(fl)
+		<%}%>
+		const step = <%=stepTemp%>;
+		const min = <%=minTemp%>; 
+		myVar = window.setInterval(function () {
+			fl = Math.round(fl * 10 - step*10) / 10;
+			if ((fl >= parseFloat(tempC) - 2) && (fl > min)) {
+				$('#newTargetTemp, #targetTemp-pitft').text(fl);
+				$('#range').val(fl);
+			}
+			else if (fl <= min) {
+				$('#newTargetTemp, #targetTemp-pitft').text(min);
+				$('#range').val(min);
+			}
+			else {
+				window.clearInterval(myVar);
+			}
+		}, 300);
+	});
 
 	$("#lowerTempBtn").on('mouseup touchend', function () {
-			<%if (typeof time_window_data[0] !== "undefined") {%>
 			tempC = $('#targetTemp-pitft').text();
 			window.clearInterval(myVar);
 			var t = parseFloat(tempC);
-			setTemp(t);
-			<%}
-		else {%>
-			console.log("Nothing to do! There is not target temp!");
-			<%};%>
+			// setTemp(t);
+
+			$("input:radio").prop('checked', false);
+    		$("input:radio").closest("label").removeClass("active");
+			$("#overrideTarget").text(t);
+			$("#overrideModal").modal({
+				keyboard:false,
+				backdrop:false
+			});
 		});
 
 	update_graph();
@@ -998,31 +1026,73 @@
 			$('#circle-xs, #circle').css("border-color", "rgb(0, 156, 181)")
 		}
 
-		$('#newTargetTemp, #newTargetTemp-xs, #targetTemp-pitft').text(this.value);
+		$('#newTargetTemp, #targetTemp-pitft').text(this.value);
 	})
 
 	$("input[type=range]").on('change', function () {
 		console.log(this.value);
-		<%if (typeof time_window_data[0] !== "undefined") {%>
-			tempC = this.value;
-			$('#newTargetTemp, #newTargetTemp-xs, #targetTemp-pitft').text(tempC)
-			$('#circle-xs, #circle').css("border-color", "rgb(0, 156, 181)")
-			var t = parseFloat(tempC);
-			setTemp(t);
-			<%}
-		else {%>
-			console.log("Nothing to do! There is not target temp!");
-			<%};%>
+		tempC = this.value;
+		$("input:radio").prop('checked', false);
+		$("input:radio").closest("label").removeClass("active");
+		$("#overrideTarget").text(this.value);
+		$("#overrideModal").modal({
+			keyboard:false,
+			backdrop:false
+		});
 	})
 	
-	}); //end of $(document).ready
+	<%if(sinric==="enabled"){%>
+		checkSinricServerStatus()
+	<%}%>
+	
+	<%if(overrideSchedule){%>
+		checkOverride()
+	<%}%>
 
-	<% if (state.err === "") {%>
-		<% if (status === "Working") {%>
+	$("input[name='overrideOptions']").on('change', function(){
+		console.log('override option: ' + this.value)
+		<% if(state.err==''){%> // we are in a valid time window
+			var sTarget = <%=time_window_data[0].temp%>
+		<%} else {%>
+			var sTarget = $('#temp>div>span').text() //when in no time window use the current temperature...
+		<%}%>
+		var oTarget = $("#overrideTarget").text();
+		console.log('scheduled target: '+ sTarget)
+		console.log('overrided target: '+ oTarget)
+		var CancelbtnHtml = "<p id='info'><button type='button' class='btn btn-sm btn-default' onClick=" + '"overrideTemp(' + sTarget + ",'cancel')"+'">Cancel override</button></p>'
+		$('#newTargetTemp, #targetTemp-pitft').text(oTarget)
+		$('#circle-xs, #circle').css("border-color", "rgb(0, 156, 181)")
+		$("#overrideModal").modal('hide');
+		$('#override-pitft').removeClass('hidden')
+		overrideTemp(oTarget, this.value)
+		$("#info").replaceWith(CancelbtnHtml)
+	})
+
+	$("#cancelOverride").click(function(){
+		console.log("canceled")
+		<% if(state.err==''){%> // we are in a valid time window
+			var sTarget = <%=time_window_data[0].temp%>
+			$('#range').val(sTarget)
+		<%} else {%>
+			var sTarget = '-' //when in no time window use the current temperature for a start...
+			var rv=$('#temp>div>span').text()
+			$('#range').val(rv)
+		<%}%>
+		$('#circle-xs, #circle').css("border-color", "rgb(0, 156, 181)")
+		$('#newTargetTemp, #targetTemp-pitft').text(sTarget)
+		$('#override-pitft').addClass('hidden')
+		$("#info").replaceWith(infomsg)
+
+	})
+
+}); //end of $(document).ready
+
+	<% if (state.err == "") {%>
+		<% if (status == "Working") {%>
 			setHomeAwayBtnsStyle("Home")
-			<% } else if (status === "Paused") {%>
+			<% } else if (status == "Paused") {%>
 				setHomeAwayBtnsStyle("Home")
-				<% } else if (status === "Away") {%>
+				<% } else if (status == "Away") {%>
 					setHomeAwayBtnsStyle("Away")
 					<%}; %>
 	<%}; %>
@@ -1122,11 +1192,8 @@
 			url: "/pyre/update_graph",
 			data: JSON.stringify({ sensor: sensor, duration: duration }),
 			success: function (rdata) {
-				// console.log(rdata);
 				if (rdata.result === "success") {
 					var data = rdata.graph_data;
-					// console.log(Math.max.apply(null,data.temps));
-					// console.log(Math.min.apply(null,data.temps));
 					var newtemp_range = Math.max.apply(null, data.temps) - Math.min.apply(null, data.temps);
 					if (newtemp_range < 1) {
 						var newscaleStep = 0.2;
@@ -1155,7 +1222,6 @@
 							}
 						]
 					}
-
 					var options = {
 						legend: { display: false },
 						title: { display: false },
@@ -1200,9 +1266,6 @@
 
 		var min_y = myChart.options.scales.yAxes[0].ticks.suggestedMin;
 		var max_y = myChart.options.scales.yAxes[0].ticks.suggestedMax;
-
-		console.log("min y="+min_y);
-		console.log("max y="+max_y);
 		if (temp <= min_y || temp >= max_y) {
 			console.log("live data are out of the y axis range so we trigger a graph update!");
 			myChart.update();
@@ -1211,7 +1274,6 @@
 		else {
 			var label = getCurTime().time;
 			//remove datapoints only if there are more than 24 of them esle just add
-			// console.log(myChart)
 			if (myChart.data.datasets[0].data.length > 24) {
 				myChart.data.datasets[0].data.shift();
 				myChart.data.labels.shift();
@@ -1243,66 +1305,39 @@
 		window.location.href = setUrl;
 	}
 
-	function setTemp(t) {
-		var name = "<%if(typeof time_window_data[0]!=='undefined'){%><%=time_window_data[0].name%><%};%>";
-		var sensor_ids = "<%if(typeof time_window_data[0]!=='undefined'){%><%=time_window_data[0].sensor_ids%><%};%>".split(',');
-		var twid = "<%if(typeof time_window_data[0]!=='undefined'){%><%=time_window_data[0].id%><%};%>";
-		if (sensor_ids != null) {
-			$.ajax({
-				type: "POST",
-				contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
-				url: "/pyre/update_temp",
-				data: JSON.stringify({ twid: twid, newtemp: t, name: name, sensor_ids: sensor_ids }),
-				/*JavaScript Object Notation is a way to share data between applications in object format.
-				However, you cannot send an object over an HTTP request without first turning it into a string
-				and sending it as a single variable. The functions JSON.parse() and JSON.stringify() do this for us.*/
-				success: function (rdata) { //rdata = remote data that the server sends as feedback...
-					// console.log(rdata.result);
-					if (rdata.result === "ok") {
-						console.log("success");
-						//send the new target to server to broadcast to all other clients!
-						var temp_info = { newtemp: t };
-						var status_info = { curstate: rdata.status }
-						socket.emit('newtemp', temp_info);
-						socket.emit('newstatus', status_info)
-						if (rdata.status === 'Away') {
-							$("#status-pitft").removeClass("working default away paused");
-							$("#status-pitft").addClass("away");
-							$("#status>span, #status-xs>span").removeClass("default working paused away");
-							$("#status>span, #status-xs>span").addClass("away");
-							$('#awayOrNot-pitft').removeClass('fa-home, fa-road');
-							$('#awayOrNot-pitft').addClass('fa-road');
-							$('#awayOrNot').text("I'm back");
-						}
-						else if (rdata.status == 'Paused') {
-							$("#status-pitft").removeClass("working default away paused");
-							$("#status-pitft").addClass("paused");
-							$("#status>span, #status-xs>span").removeClass("default working paused away");
-							$("#status>span, #status-xs>span").addClass("paused");
-							$('#awayOrNot-pitft').removeClass('fa-home, fa-road');
-							$('#awayOrNot-pitft').addClass('fa-home');
-							$('#awayOrNot').text('Away');
-						}
-						else if (rdata.status == 'Working') {
-							$("#status-pitft").removeClass("working default away paused");
-							$("#status-pitft").addClass("working");
-							$("#status>span, #status-xs>span").removeClass("default working paused away");
-							$("#status>span, #status-xs>span").addClass("working");
-							$('#awayOrNot-pitft').removeClass('fa-home, fa-road');
-							$('#awayOrNot-pitft').addClass('fa-home');
-							$('#awayOrNot').text('Away');
-						}
-					}
-					else {
-						console.log('error');
-					}
-				},
-				dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
-			});
+
+	function overrideTemp(overrideTemp,overrideOption) {
+		if (overrideOption=='cancel'){
+			<%if(state.err==''){%>
+				var sTarget = <%=time_window_data[0].temp%>
+				$('#range').val(sTarget)
+			<%} else {%>
+				var sTarget = '-';
+				var rv=$('#temp>div>span').text()
+				$('#range').val(rv)
+			<%}%>
+			$('#circle-xs, #circle').css("border-color", "rgb(0, 156, 181)")
+			$('#newTargetTemp, #targetTemp-pitft').text(sTarget)
+			$("#info").replaceWith(infomsg)
+			$('#override-pitft').addClass('hidden')
+			overrideInfo = "";
 		}
-		else {
-			console.log('Something is wrong! No timewindow?');
-		}
+		$.ajax({
+			type: "POST",
+			contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
+			url: "/pyre/override_temp",
+			data: JSON.stringify({overrideTemp: overrideTemp, overrideOption: overrideOption }),
+			success: function (rdata) { //rdata = remote data that the server sends as feedback...
+				// console.log(rdata.result);
+				if (rdata.result === "ok") {
+					console.log("success");
+				}
+				else {
+					console.log('error');
+				}
+			},
+			dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
+		});
 	}
 
 	function toggleAway() {
@@ -1311,41 +1346,8 @@
 			contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
 			url: "/pyre/away",
 			success: function (rdata) { //rdata = remote data that the server sends as feedback...
-				// console.log(rdata.result);
 				if (rdata.result === "ok") {
 					console.log("success")
-					var status_info = { curstate: rdata.status }
-					socket.emit('newstatus', status_info)
-					if (rdata.status === 'Away') {
-						$("#status-pitft").removeClass("working default away paused");
-						$("#status-pitft").addClass("away");
-						$("#status>span, #status-xs>span").removeClass("default working paused away");
-						$("#status>span, #status-xs>span").addClass("away");
-						$('#awayOrNot').text("I'm back");
-						$('#awayOrNot-pitft').removeClass('fa-home, fa-road');
-						$('#awayOrNot-pitft').addClass('fa-road');
-						setHomeAwayBtnsStyle("Away");
-					}
-					else if (rdata.status == 'Paused') {
-						$("#status-pitft").removeClass("working default away paused");
-						$("#status-pitft").addClass("paused");
-						$("#status>span, #status-xs>span").removeClass("default working paused away");
-						$("#status>span, #status-xs>span").addClass("paused");
-						$('#awayOrNot').text('Away');
-						$('#awayOrNot-pitft').removeClass('fa-home, fa-road');
-						$('#awayOrNot-pitft').addClass('fa-home');
-						setHomeAwayBtnsStyle("Home");
-					}
-					else if (rdata.status == 'Working') {
-						$("#status-pitft").removeClass("working default away paused");
-						$("#status-pitft").addClass("working");
-						$("#status>span, #status-xs>span").removeClass("default working paused away");
-						$("#status>span, #status-xs>span").addClass("working");
-						$('#awayOrNot').text('Away');
-						$('#awayOrNot-pitft').removeClass('fa-home, fa-road');
-						$('#awayOrNot-pitft').addClass('fa-home');
-						setHomeAwayBtnsStyle("Home");
-					}
 				}
 				else {
 					console.log('error');
@@ -1354,6 +1356,44 @@
 			dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
 		})
 	}
+
+	function checkSinricServerStatus() {
+		$.ajax({
+			type: "POST",
+			contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
+			url: "/pyre/checkSinric",
+			//no need to return data as we trigger a heartbeat that will emit back the result via socket.io 
+			success: function (rdata) { //rdata = remote data that the server sends as feedback...
+					// console.log(rdata.result);
+					if (rdata.result === "ok") {
+						console.log("success");
+					}
+					else {
+						console.log('error');
+					}
+				},
+				dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
+		})
+	}
+	
+	function checkOverride() {
+		$.ajax({
+			type: "POST",
+			contentType: "application/json; charset=utf-8", //contentType is the type of data you're sending
+			url: "/pyre/checkOverride",
+			//no need to return data as we trigger a heartbeat that will emit back the result via socket.io 
+			success: function (rdata) { //rdata = remote data that the server sends as feedback...
+					console.log(rdata);
+					if (rdata.result === "ok") {
+						console.log("success")
+						console.log(rdata)
+						handleStateUpdate(rdata)
+					}
+				},
+			dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
+		})
+	}
+
 
 	function setHomeAwayBtnsStyle(location) {
 		if (location === "Home") {
@@ -1382,7 +1422,91 @@
 
 	function showInfoModal(){
 		var info = $('#info-pitft').text();
-		$('#infoModal .modal-body > p').text(info);
+		if (overrideInfo!=""){
+			$('#infoModal .modal-body > p').text(overrideInfo);
+		}
+		else {
+			$('#infoModal .modal-body > p').text(info);
+		}
 		$('#infoModal').modal();
 	}
+
+	function handleStateUpdate(data){
+		if (data.curstate === "Paused") {
+			$("#status-pitft").removeClass("working default away paused");
+			$("#status-pitft").addClass("paused");
+			$("#status>span").removeClass("default working paused away");
+			$("#status>span").addClass("paused");
+			setHomeAwayBtnsStyle("Home")
+			$('#awayOrNot-pitft').removeClass('fa-home, fa-road');
+			$('#awayOrNot-pitft').addClass('fa-home');
+		}
+		else if (data.curstate === "Working") {
+			$("#status-pitft").removeClass("working default away paused");
+			$("#status-pitft").addClass("working");
+			$("#status>span").removeClass("default working paused away");
+			$("#status>span").addClass("working");
+			setHomeAwayBtnsStyle("Home")
+			$('#awayOrNot-pitft').removeClass('fa-home, fa-road');
+			$('#awayOrNot-pitft').addClass('fa-home');
+		}
+		else if (data.curstate === "Away") {
+			$("#status-pitft").removeClass("working default away paused");
+			$("#status-pitft").addClass("away");
+			$("#status>span").removeClass("default working paused away");
+			$("#status>span").addClass("away");
+			setHomeAwayBtnsStyle("Away")
+			$('#awayOrNot-pitft').removeClass('fa-home, fa-road');
+			$('#awayOrNot-pitft').addClass('fa-road');
+		}
+		
+		if (data.override){
+			<%if(state.err==''){%>
+				var sTarget = <%=time_window_data[0].temp%>
+			<%} else {%>
+				var sTarget = null
+			<%}%>
+			var CancelbtnHtml = "<p id='info'><button type='button' class='btn btn-sm btn-default' onClick=" + '"overrideTemp(' + sTarget + ",'cancel')"+'">Cancel override</button></p>'
+			$("#info").replaceWith(CancelbtnHtml)
+			$('#override-pitft').removeClass('hidden')
+			$('#newTargetTemp, #targetTemp-pitft').text(data.overrideTarget)
+			overrideInfo = 'The setpoint is currently overrided until ' + data.overrideEndTime;
+			$('#override').text(overrideInfo)
+		} else {
+			overrideInfo = "";
+			$('#override').text("")
+			<%if(state.err==''){%>
+				var sTarget = <%=time_window_data[0].temp%>
+				$('#range').val(sTarget)
+			<%} else {%>
+				var sTarget = '-'
+				var rv=$('#temp>div>span').text()
+				$('#range').val(rv)
+			<%}%>
+			$('#circle-xs, #circle').css("border-color", "rgb(0, 156, 181)")
+			$('#newTargetTemp, #targetTemp-pitft').text(sTarget)
+			$("#info").replaceWith(infomsg)
+			$('#override-pitft').addClass('hidden')
+		}
+	}
+
+		function get_current_grid_option() { return $('.device-check:visible').attr('data-device') }
+
+/*
+* When in xs grid the chart is hidden and is not get updated with new temp data
+* If the grid size changes and the chart become visible we refresh it to get the latest data!
+*/
+$(window).resize(function(){
+	grid = get_current_grid_option();
+	if (grid=='xs'){
+		gridPrev=grid;
+	} else {
+		if (gridPrev == 'xs'){
+			myChart.destroy();
+			update_graph();
+			gridPrev=grid;
+		}
+	}
+})
+
 </script>
