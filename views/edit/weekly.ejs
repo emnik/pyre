@@ -29,9 +29,16 @@
 							<optgroup label="Available time windows:">
 				    		<% timewindow.forEach(function(item){ %>
 							  <option value="<%=item.id%>">
-							  	<%=item.name%> <!-- (<%=item.on_time%>-<%=item.off_time%>) : <%=item.temp%>&degC -->
+								  <%=item.name%>
+								  (<%=item.on_time%> to <%=item.off_time%>)
+								  <!-- <%=item.temp%>&degC -->
 							  </option>
 							<%});%>
+							</optgroup>
+							<optgroup label="Other options:">
+								<option value="new">
+									Add New
+								</option>
 							</optgroup>
 				    	</select>
 				    </p>
@@ -111,8 +118,8 @@ var prevtimewindows=[];
 
 		//disabling the keyboard showing up on mobile devices!
 		$('[name="timewindows"]').on('select2:opening select2:closing', function( event ) {
-    var $searchfield = $(this).parent().find('.select2-search__field');
-    $searchfield.prop('disabled', true);
+			var $searchfield = $(this).parent().find('.select2-search__field');
+			$searchfield.prop('disabled', true);
 		});
 
 		<%schedule.forEach(function(item){%>
@@ -121,76 +128,82 @@ var prevtimewindows=[];
 		<%})%>
 
 		$('[name="timewindows"]').on('change', function(){
-			var timewindows_id = this.value;
-			// console.log($(this));
-			var listgroup = $(this).parent().parent().next();
-			var listgroup_id = listgroup.attr('id');
-			$.ajax({
-				type: "POST",
-				contentType: "application/json; charset=utf-8",
-				url: "/edit/get_timewindow_by_id",
-				data: JSON.stringify({id:timewindows_id}),
-				success: function(rdata) { //rdata = remote data that the server sends as feedback...
-					// console.log(rdata.result);
-					if (rdata.result==="ok"){
-						console.log("success");
-						var timewindow = rdata.timewindow[0];
-						var sensors = rdata.sensors;
-				  		var html = "<li id='"+listgroup_id+"-window"+timewindow.id+"'"+"class='list-group-item'>"+
-				  			"<h4 class='list-group-item-heading'>"+
-				  				timewindow.name +" : <small>"+timewindow.on_time+"-"+timewindow.off_time+"</small>"+
-				  			"</h4>"+
-				  			"<span class='label-group'>";
-				  		var arr=timewindow.sensor_ids.split(',');
-				  		arr.forEach(function(i){
-				  			sensors.forEach(function(j){
-				  				if(j.id == i){
-				  					html = html + "<span class='label label-default'>"+ j.location +"</span>";
-				  				}
-				  			})
-				  		});
-						html= html+"</span>"+
-							"<span style='padding-left:10px;'>"+timewindow.temp+"&degC</span>"+
-							"<a href='#' onclick="+'"'+"windowremove('#"+listgroup_id+"-window"+timewindow.id+"');return false;"+'"'+
-							"style='color:black;'><span style='margin-top:-15px;' class='pull-right glyphicon glyphicon-remove'>"+
-							"</span></a>"+
-				  		"</li>";
+			if(this.value=='new'){
+				console.log('go to timewindows')
+				editTimeWindows()
+			}
+			else {
+				var timewindows_id = this.value;
+				// console.log($(this));
+				var listgroup = $(this).parent().parent().next();
+				var listgroup_id = listgroup.attr('id');
+				$.ajax({
+					type: "POST",
+					contentType: "application/json; charset=utf-8",
+					url: "/edit/get_timewindow_by_id",
+					data: JSON.stringify({id:timewindows_id}),
+					success: function(rdata) { //rdata = remote data that the server sends as feedback...
+						// console.log(rdata.result);
+						if (rdata.result==="ok"){
+							console.log("success");
+							var timewindow = rdata.timewindow[0];
+							var sensors = rdata.sensors;
+							var html = "<li id='"+listgroup_id+"-window"+timewindow.id+"'"+"class='list-group-item'>"+
+								"<h4 class='list-group-item-heading'>"+
+									timewindow.name +" : <small>"+timewindow.on_time+"-"+timewindow.off_time+"</small>"+
+								"</h4>"+
+								"<span class='label-group'>";
+							var arr=timewindow.sensor_ids.split(',');
+							arr.forEach(function(i){
+								sensors.forEach(function(j){
+									if(j.id == i){
+										html = html + "<span class='label label-default'>"+ j.location +"</span>";
+									}
+								})
+							});
+							html= html+"</span>"+
+								"<span style='padding-left:10px;'>"+timewindow.temp+"&degC</span>"+
+								"<a href='#' onclick="+'"'+"windowremove('#"+listgroup_id+"-window"+timewindow.id+"');return false;"+'"'+
+								"style='color:black;'><span style='margin-top:-15px;' class='pull-right glyphicon glyphicon-remove'>"+
+								"</span></a>"+
+							"</li>";
 
-						// listgroup.append(html);
-						//Add the new time window into the proper position based on start time!
-						var target=null;
-						listgroup.find('.list-group-item-heading').children().each(function(){
-							var start_hour = $(this).text().split('-')[0];
-							var new_hour = timewindow.on_time.split('-')[0];
-							if (new_hour>start_hour){
-								target = $(this).parent().parent();
+							// listgroup.append(html);
+							//Add the new time window into the proper position based on start time!
+							var target=null;
+							listgroup.find('.list-group-item-heading').children().each(function(){
+								var start_hour = $(this).text().split('-')[0];
+								var new_hour = timewindow.on_time.split('-')[0];
+								if (new_hour>start_hour){
+									target = $(this).parent().parent();
+								}
+							});
+							if(target!=null)
+							{
+								target.after(html);
 							}
-						});
-						if(target!=null)
-						{
-							target.after(html);
+							else
+							{
+								listgroup.prepend(html);
+							}
+
+							curtimewindows = get_current_timewindows();
+							$("#savebtn").empty();
+							if (curtimewindows.compare(lastsavedwindows)){
+								$("#savebtn").append('Save');
+								$("#savebtn").prop('disabled',true);}
+							else {
+								$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
+								$("#savebtn").prop('disabled',false);}
 						}
 						else
 						{
-							listgroup.prepend(html);
+							console.log('error');
 						}
-
-						curtimewindows = get_current_timewindows();
-						$("#savebtn").empty();
-						if (curtimewindows.compare(lastsavedwindows)){
-							$("#savebtn").append('Save');
-							$("#savebtn").prop('disabled',true);}
-						else {
-							$("#savebtn").append('Save <span class="glyphicon glyphicon-transfer"</span>');
-							$("#savebtn").prop('disabled',false);}
-					}
-					else
-					{
-						console.log('error');
-					}
-				},
-				dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
-			});
+					},
+					dataType: "json" // dataType is what you're expecting back from the server: json, html, text,
+				});
+			}
 			$(this).val(null).trigger('change.select2');
 		})
 

@@ -8,6 +8,12 @@
 		<% include ../partials/head %>
 	</head>
 
+	<style>
+		.picker__list-item--disabled {
+    		display: none;
+		}
+	</style>
+
 <body>
 	<header>
 		<% include ../partials/header_edits %>
@@ -119,7 +125,13 @@ var latest_saved_data=[];
 		$('.timepicker').pickatime({
 			format: 'HH:i',
 			formatSubmit: 'HH:i',
-			interval:30
+			interval:1,
+			disable: [
+				true,
+				[0, 0], [0, 30], [1, 0], [1, 30], [2, 0], [2, 30], [3, 0], [3, 30], [4, 0], [4,30], [5, 0], [5,30], [6, 0], [6,30], [7, 0], [7,30], [8, 0], [8,30], [9, 0], [9,30], [10, 0], [10,30], [11, 0], [11,30],
+				[12, 0], [12,30], [13, 0], [13,30], [14, 0], [14,30], [15, 0], [15,30], [16, 0], [16,30], [17, 0], [17,30], [18, 0], [18,30], [19, 0], [19,30], [20, 0], [20,30], [21, 0], [21,30], [22, 0], [22,30],
+				[23, 0], [23,30], [23, 59]
+			]
 		});
 
 		$("input[name='setTargetTemp']").TouchSpin({
@@ -336,7 +348,13 @@ var latest_saved_data=[];
 					TimeTarget.pickatime({
 						format: 'HH:i',
 						formatSubmit: 'HH:i',
-						interval:30
+						interval:1,
+						disable: [
+							true,
+							[0, 0], [0, 30], [1, 0], [1, 30], [2, 0], [2, 30], [3, 0], [3, 30], [4, 0], [4,30], [5, 0], [5,30], [6, 0], [6,30], [7, 0], [7,30], [8, 0], [8,30], [9, 0], [9,30], [10, 0], [10,30], [11, 0], [11,30],
+							[12, 0], [12,30], [13, 0], [13,30], [14, 0], [14,30], [15, 0], [15,30], [16, 0], [16,30], [17, 0], [17,30], [18, 0], [18,30], [19, 0], [19,30], [20, 0], [20,30], [21, 0], [21,30], [22, 0], [22,30],
+							[23, 0], [23,30], [23, 59]
+						]
 					});
 
 					var SensorTarget = $('.newtm').children('.panel-body').children().find("[name='sensors']");
@@ -429,7 +447,7 @@ var latest_saved_data=[];
 			tw.temp = $(this).find('[name="setTargetTemp"]').val()*10/10
 			tw.on = $(this).find('[name="on_time"]').val();
 			tw.off = $(this).find('[name="off_time"]').val();
-			if(tw.off=='00:00'){tw.off='24:00'};
+			// if(tw.off=='00:00'){tw.off='24:00'};
 			var sensor_ids = $(this).find('[name="sensors"]').val();
 			if (sensor_ids!=null){
 				tw.sensors = sensor_ids.join(',');

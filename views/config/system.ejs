@@ -156,7 +156,45 @@
 			</div>			
 		</div>			
 		<div class="row">			
-
+			<div class="col-xs-12 col-sm-6 col-lg-4">
+				<div class="panel panel-default">
+					<!-- Default panel contents -->
+					<div class="panel-heading">
+						<span class="pull-left large-panel-heading">MQTT Support</span>
+						<span class="pull-right">
+							<input type="checkbox" data-size="small" data-onstyle="info" data-on="Enabled" data-off="Disabled" class="form-control"  id="mqttToggle"  name="mqttToggleBtn">
+						</span>
+					</div>
+					<div class="panel-body <% if(config.modules.mqtt!=='enabled'){%> hidden <%}%>" id="mqttConfig">
+						<form class="form-horizontal">	
+							<div class="form-group">
+								<label for="mqttHost" class="col-xs-12 col-sm-4 control-label">Server IP </label>
+								<div class="col-xs-12 col-sm-8">
+									<input type="url" class="form-control" id="mqttHost" placeholder="ex: 192.168.1.5" <% if(config.mqtt.host!=undefined){ %> value=<%=config.mqtt.host%> <%}%> >
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="mqttPort" class="col-xs-12 col-sm-4 control-label">Port </label>
+								<div class="col-xs-12 col-sm-8">
+									<input type="text" class="form-control" id="mqttPort" placeholder="ex: 1883"  <% if(config.mqtt.port!=undefined){ %> value=<%=config.mqtt.port%> <%}%> >
+								</div>
+							</div>													
+							<div class="form-group">
+								<label for="mqttUser" class="col-xs-12 col-sm-4 control-label">Username </label>
+								<div class="col-xs-12 col-sm-8">
+									<input type="text" class="form-control" id="mqttUser" placeholder="ex: mosquitto"  <% if(config.mqtt.username!=undefined){ %> value=<%=config.mqtt.username%> <%}%> >
+								</div>
+							</div>	
+							<div class="form-group">
+								<label for="mqttPass" class="col-xs-12 col-sm-4 control-label">Password </label>
+								<div class="col-xs-12 col-sm-8">
+									<input type="password" class="form-control" id="mqttPass"  <% if(config.mqtt.password!=undefined){ %> value=<%=config.mqtt.password%> <%}%> >
+								</div>
+							</div>	
+						</form>
+					</div>
+				</div>
+			</div>
 			<div class="col-xs-12 col-sm-6 col-lg-4">
 				<div class="panel panel-default">
 					<!-- Default panel contents -->
